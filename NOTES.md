@@ -5,6 +5,9 @@
 ### CURRENT PHONE STATE - ORIGINAL BOOT RESTORED; REAL DIAGNOSTIC PID1 VERIFIED
 
 15:29:50 UTC: original BOOT restored and full 96 MiB partition hash verified.
+Final control: restored UN1CA Android sys.boot_completed=1, then native existing
+recovery returned; zero XNU entry markers in the fresh console baseline. Evidence
+backup/a52q/pid1-posttest-control/. Phone is now TWRP with original BOOT.
 RECOVERY/DTBO/VBMETA unchanged. No restoration pending. Phone remains in TWRP.
 Receipt backup/a52q/pid1-hardware/receipt.json requires_restore=false.
 Result backup/a52q/pid1-hardware/boot-result.json: baseline zero XNU markers;
@@ -23,9 +26,8 @@ Next stage: inspect real iOS16 rootfs requirements, read-only A52 UFS evidence,
 and independent portable HFS/entitlements dependencies. Do not flash a complete
 Redmi image or enable its hardware guards. Diagnostic AMFI explicitly rejects
 Apple userland until a separately reviewed provider/policy is implemented.
-Fresh Android control boot is needed before another phone trial because pstore
-currently retains this PID1 test. Original Android is preserved and last control
-boot succeeded. Automatic BOOT-only authorization persists, not userdata format.
+A fresh Android control boot has now completed after the trial and returned
+TWRP: no stale XNU markers remain. Original Android is preserved and boots. Automatic BOOT-only authorization persists, not userdata format.
 Host C has ~2GiB free; D has ~80GiB free, E:\Minecraft is unavailable. No IPSW
 found in repo research or user's Downloads. Sources may go in a new D task dir;
 do not move/delete unrelated user files. Original phone backups remain on C.
@@ -52,7 +54,10 @@ It contains that now-obsolete kernel and still has the known query abort.
 Current AMFI relink 43047319220 SUCCEEDED at verified head 01821f4.
 Downloaded research/a52q-relink-43047319220; QEMU running under
 shim/out/a52q-amfi-lowmem-qemu/run (research/qemu_amfi_lowmem.py).
-Full build also auto-triggered. No new phone test, original BOOT still safe in TWRP.
+Full source build 43047254951 SUCCEEDED at verified head 01821f4.
+Latest host CI 43050205118 passed repository/Python/C checks but failed the
+Ubuntu toolchain-install step due DNS; local cross-build/QEMU/hardware checks
+ran successfully. Do not describe Linux CI as wholly passing. No new phone test, original BOOT still safe in TWRP.
 The host no longer has enough commit headroom for a 4GiB guest. Added QEMU-only
 --qemu-lowmem allocator from generated emulated RAM minus boot/log spans, and
 --ram-mib 2048 plus a 32MiB TCG cache. Current QEMU allocation 0x4a000000 is NOT
@@ -799,3 +804,18 @@ What it took today (in order): 0058 HID services (Apple IOHIDFamily-1915 user cl
      cpu_init, before arm_vm_init.
   5. panic hook at top of panic_trap_to_debugger: va_copy + _doprnt(fmt, &copy, sweet_early_putc, 16).
   Verify with tools/xnu-cc.py (compile+symbols) and patch-order simulation before the single CI run.
+
+
+### Next-stage source metadata and storage evidence
+
+Primary Apple CDN BuildManifest fetched by bounded range requests, CRC checked:
+D:/A52-iOS16/metadata/BuildManifest.plist and source.json. Version16.7.16,
+build20H392, d22ap OS087-86698-044.dmg (4730814044 bytes), SystemOS087-86593-047.dmg
+(2743074816 bytes inflated ZIP member), AppOS087-86715-047.dmg (10485760 bytes).
+No full firmware downloaded, no Apple userland committed, no real launchd run.
+Read-only UFS evidence backup/a52q/ufs-evidence/twrp-sysfs.txt: 4096-byte blocks,
+Samsung KM2V8001CM-B707 rev0003, LUN0, ufshc1d84000; Linux runtime suspended.
+Bootloader UFS clock/PHY/power/DMA state remains unmeasured. Do not reuse Redmi
+initialization values. General FS+read-only storage+entitlement support are the
+next iOS-userland gates. Existing WSL distros all point to missing E paths;
+D has enough free space for a future dedicated Linux/rootfs workspace.
