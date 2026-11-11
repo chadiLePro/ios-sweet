@@ -10,6 +10,8 @@ import argparse
 import hashlib
 import json
 import re
+import struct
+import zlib
 
 HERE = Path(__file__).resolve().parent
 
@@ -82,6 +84,30 @@ def apply(root):
             '#if !VMAPPLE && !defined(SWEET) && !defined(A52Q)')
     replace('osfmk/arm64/start.s', '#if defined(SWEET)\n\t/* Complete local TLB',
             '#if defined(SWEET) || defined(A52Q)\n\t/* Complete local TLB')
+    # A no-stack, MMU-off marker identifies real XNU entry even if its MMU
+    # bootstrap faults before C code. Each of three copies carries a CRC32.
+    entry = b'A52QXNU ENTRY v1\n'
+    frame = entry + f'crc32={zlib.crc32(entry):08x}\n'.encode() + b'A52QXNU END\n'
+    record = frame * 3
+    padded = record + bytes(-len(record) % 4)
+    asm = ['#if defined(A52Q)', '\tMOV64 x0, A52Q_RAMLOG_BASE', '\tstr wzr, [x0]']
+    for offset in range(0, len(padded), 4):
+        value, = struct.unpack_from('<I', padded, offset)
+        asm += [f'\tMOV64 x1, {value}', f'\tstr w1, [x0, #{12 + offset}]']
+    asm += [f'\tmov w1, #{len(record)}', '\tstr w1, [x0, #4]', '\tstr w1, [x0, #8]',
+            '\tdsb sy', '\tMOV64 x1, 0x43474244', '\tstr w1, [x0]', '\tdsb sy', '#endif', '']
+    replace('osfmk/arm64/start.s', '\tmov\t\tx21, #0\n', '\tmov\t\tx21, #0\n' + '\n'.join(asm))
+    # No current CPU/bus clock was captured. Leave those ADT fields absent,
+    # report zero, and avoid pe_identify_machine's unconditional divide by zero.
+    replace('pexpert/arm/pe_identify_machine.c', '\t/* Set the num / den pairs form the hz values. */',
+            '#if defined(A52Q)\n\tif (gPEClockFrequencyInfo.bus_clock_rate_hz == 0) {\n'
+            '\t\tgPEClockFrequencyInfo.bus_clock_rate_num = 0;\n'
+            '\t\tgPEClockFrequencyInfo.bus_clock_rate_den = 1;\n'
+            '\t\tgPEClockFrequencyInfo.bus_to_cpu_rate_num = 0;\n'
+            '\t\tgPEClockFrequencyInfo.bus_to_cpu_rate_den = 1;\n'
+            '\t\tgPEClockFrequencyInfo.bus_to_dec_rate_num = 0;\n'
+            '\t\tgPEClockFrequencyInfo.bus_to_dec_rate_den = 1;\n\t\treturn;\n\t}\n#endif\n'
+            '\t/* Set the num / den pairs form the hz values. */')
     marker = '\t/* Ensure TTEs are visible */'
     mapping = '''#if defined(A52Q)
     /* One L3 table for ONLY the reserved console. RAM is below 64 GiB,
