@@ -1,0 +1,42 @@
+name: A52Q XNU console leaf rebuild
+on:
+  push:
+    branches: [bringup/a52q-diagnostics]
+    paths: ['.github/workflows/xnu-a52q-console-relink.yml']
+  workflow_dispatch:
+    inputs:
+      base_run:
+        description: Successful full A52Q build run containing its link archive
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  relink:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-15-intel
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download verified A52 inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_RUN: ${{ inputs.base_run }}
+        run: |
+          [[ "$BASE_RUN" =~ ^[0-9]+$ ]]
+          gh run download "$BASE_RUN" -R "$GITHUB_REPOSITORY" -n a52q-xnu-bootstrap-NOT-A-BOOT-IMAGE -D base
+          gh run view "$BASE_RUN" -R "$GITHUB_REPOSITORY" --log > base.log
+          SHA=$(gh run view "$BASE_RUN" -R "$GITHUB_REPOSITORY" --json headSha --jq .headSha)
+          echo "BASE_SHA=$SHA" >> "$GITHUB_ENV"
+          echo 'DEVELOPER_DIR=/Applications/Xcode_16.0.app/Contents/Developer' >> "$GITHUB_ENV"
+          sudo xcode-select -s /Applications/Xcode_16.0.app
+      - name: Recompile and relink console only
+        run: python3 tools/relink_a52q_console.py --artifact base --log base.log --base-sha "$BASE_SHA" --out out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: a52q-console-relink-NOT-A-BOOT-IMAGE
+          path: out/
+          retention-days: 7

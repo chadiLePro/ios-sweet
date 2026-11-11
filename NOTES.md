@@ -45,6 +45,15 @@ Keep A52 link archive/flags in future artifacts for targeted iterations.
 QEMU logs: shim/out/a52q-xnu-first-qemu/run-r2. OLD kernel must NOT be flashed.
 User confirmed they are at the phone for the button return to TWRP. Original
 BOOT remains restored; no new phone write. New build required for alignment fix.
+Alignment-fix full build 43029834033 is running from 5380646. It now retains
+actual A52 .link archive/options and libfirehose for future leaf rebuilds.
+New console-only relink workflow/helper is prepared (not yet exercised). It
+requires the identical base board/overlay/patch-set/full-workflow definitions,
+reuses that A52 build's compiler command and member order, and only recompiles
+sweet_early.c including the A52 console. Never mix in SWEET control objects.
+Host checks now 60/60; post-link symbol and payload validation enforce 16 KiB
+table alignment and accept legitimate file-only __CTF metadata. The blacktop
+banner omits the machine; A52 identity uses console/table symbols instead.
 
 Embedded loader added under shim/a52q/loader.c, enabled only with --payload in
 build_a52q_diag.py. New a52q_payload.py derives minimal ADT and 32 MiB aligned
