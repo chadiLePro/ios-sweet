@@ -4,9 +4,9 @@ import sys
 import struct
 import hashlib
 import unittest
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import mkinit
 import mkpayload
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import adt
 from a52q_payload import make_adt, validate_payload, validate_kernel, validate_bootstrap_init, PAGE, PANIC
 from qemu_a52q_xnu import entry_copies

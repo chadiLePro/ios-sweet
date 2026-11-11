@@ -32,6 +32,19 @@ explicitly authorized automatic BOOT-only trials and confirmed availability for
 physical button return. Explain BOOT scope, no format and restore before each
 write. Always collect pstore and restore original BOOT immediately on TWRP return.
 
+### Current replacement kernel run
+
+55fe10f fixes the two barrier-constant errors. Run 43038919058, job 130585664813,
+is building on macos-15-intel. Do not confuse the canceled 43037064641 with a
+successful kernel. Its static init was downloaded and validated:
+aaacee08d03b7f0d93b0b34aa1d2436b0c3798b370ebf1e623732c5739c4473e, 16635 B.
+QEMU RAM-disk container test shim/out/a52q-init-container-qemu/run reached
+loader stage 6, verified three CRC entry records, then the old kernel's expected
+missing-platform panic. No CPU-service/PID1 proof in that baseline test.
+Private research/run_a52q_platform_qemu.py is prepared for the NEW artifact;
+pass its actual artifact directory as argument (default points to canceled run).
+Original BOOT remains installed; fresh control baseline remains clean in TWRP.
+
 ### CPU-only platform implementation and validation in progress
 
 Commit e2adc9f adds independent A52PlatformExpert/A52CPU and polling RAM serial.
