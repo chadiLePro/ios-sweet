@@ -32,6 +32,38 @@ explicitly authorized automatic BOOT-only trials and confirmed availability for
 physical button return. Explain BOOT scope, no format and restore before each
 write. Always collect pstore and restore original BOOT immediately on TWRP return.
 
+### Current AMFI diagnostic interface build (latest work)
+
+01821f4 adds a52q_amfi.c, a separate minimal no-entitlements AMFI interface.
+It does not register the Redmi permissive root/platform-binary policy. Its
+adjustContextWithoutMonitor permits only the pinned ad-hoc diagnostic signature;
+boolean/string/object entitlement queries deny, unavailable operations explicitly
+panic or return unsupported. Kernel signature/page checks remain. It is not Apple
+AMFI and does not yet support real iOS userland. STARTUP registers the interface.
+
+Full build 43044546028 (93573aa) SUCCEEDED and is the AMFI leaf relink base.
+First static-init dispatch 43044546812 resolved a stale branch head; rejected
+unknown leaf without building. Correct-head 43044854516 SUCCEEDED, producing
+81ef0a6699ff8c5f59d11f4d776e6bb24c59140835d28e4bf0850e5ee46f9687.
+QEMU selected md0 and passed the diagnostic pin check, then aborted at
+IOTaskHasEntitlement+0x44, FAR 0x1b0: another unconditional absent-AMFI query.
+Thus no PID1 yet. A prepared old phone image exists but DO NOT INSTALL it:
+shim/out/a52q-static-init-hardware/build/a52q-static-init-UNTESTED.img.
+It contains that now-obsolete kernel and still has the known query abort.
+
+Current AMFI relink 43047319220 SUCCEEDED at verified head 01821f4.
+Downloaded research/a52q-relink-43047319220; QEMU running under
+shim/out/a52q-amfi-lowmem-qemu/run (research/qemu_amfi_lowmem.py).
+Full build also auto-triggered. No new phone test, original BOOT still safe in TWRP.
+The host no longer has enough commit headroom for a 4GiB guest. Added QEMU-only
+--qemu-lowmem allocator from generated emulated RAM minus boot/log spans, and
+--ram-mib 2048 plus a 32MiB TCG cache. Current QEMU allocation 0x4a000000 is NOT
+a phone map: packaging rejects that environment. Phone placement stays 0x106000000.
+Generated research/qemu-a52q-2g.dtb and existing measured 2GiB diagnostic
+shim/out/qemu-a52q-r4-final-el1/result.json provide emulator evidence.
+64 local tests pass; host pin guard exercised 26 cases. Full overlay verified
+in memory against actual original patched source (59 changed/generated files).
+
 ### Current blocker: no AMFI interface during diagnostic exec
 
 RAM-root relink 43042852228 SUCCEEDED after fixing the Mach-O validator to
