@@ -18,6 +18,9 @@ Applied successfully to the actual control build's patched source (43 files).
 New .github/workflows/xnu-a52q.yml builds the A52Q kernel after staging original
 software providers; compilation is not yet demonstrated. Original BOOT remains
 restored and phone is connected in TWRP. No new device write during this turn.
+First A52Q run 43018055671 failed before compilation: Xcode's Python 3.9 rejects
+Path.write_text(newline=...). Fixed to write_bytes; common provider conditions
+use ARM64_BOARD_CONFIG_A52Q directly, so they also work before board.h inclusion.
 Next: actual A52Q compiler results, evidence-bound payload/ADT/loader and QEMU
 early-kernel validation, then BOOT-only hardware attempt with restoration.
 

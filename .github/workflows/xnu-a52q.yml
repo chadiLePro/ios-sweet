@@ -69,6 +69,7 @@ jobs:
             shasum -a 256 out/kernel.development.a52q > out/SHA256SUMS
             nm -n out/kernel.development.a52q > out/kernel.symbols.txt
           fi
+          mkdir -p dxb/build/xnu.obj dxb/fakeroot/usr/local/include
           tar czf out/buildtree.tgz --exclude='*.o' --exclude='*.cpo' --exclude='*.a' \
             --exclude='*.dSYM' --exclude='*.unstripped' --exclude='kernel.development.*' --exclude='.git' \
             -C dxb build/xnu.obj fakeroot/usr/local/include xnu

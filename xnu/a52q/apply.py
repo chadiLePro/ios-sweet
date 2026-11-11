@@ -47,7 +47,7 @@ def apply(root):
         text = read(name)
         for macro in ('SWEET', 'ARM64_BOARD_CONFIG_SWEET'):
             # Including !defined: negate the entire disjunction, not one arm.
-            text = text.replace(f'defined({macro})', f'(defined({macro}) || defined(A52Q))')
+            text = text.replace(f'defined({macro})', f'(defined({macro}) || defined(ARM64_BOARD_CONFIG_A52Q))')
         if text == read(name):
             raise ValueError(f'{name}: expected portable provider guard missing')
         changes[name] = text
@@ -140,7 +140,7 @@ static void a52q_early_map_final(void)
     for name, text in changes.items():
         path = root / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding='utf-8', newline='\n')
+        path.write_bytes(text.encode('utf-8'))
     report = {'target': 'A52Q', 'status': 'source overlay applied, not a boot claim',
               'shared_software_guards': COMMON,
               'files_sha256': {n: hashlib.sha256(t.encode()).hexdigest() for n, t in changes.items()}}
