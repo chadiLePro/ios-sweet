@@ -32,6 +32,25 @@ explicitly authorized automatic BOOT-only trials and confirmed availability for
 physical button return. Explain BOOT scope, no format and restore before each
 write. Always collect pstore and restore original BOOT immediately on TWRP return.
 
+### Current blocker: no AMFI interface during diagnostic exec
+
+RAM-root relink 43042852228 SUCCEEDED after fixing the Mach-O validator to
+ignore STABS debug records, requiring a defined N_SECT table in a loaded range.
+The earlier raw relink table actually WAS aligned; an N_GSYM debug record at
+zero was wrongly counted as a second definition. Host tests now 63 passing.
+Full RAM-root build 43042057807 also SUCCEEDED and is the next relink base.
+QEMU shim/out/a52q-ramroot-qemu/run now selects md0, mounts mockfs and attempts
+/sbin/launchd (our static diagnostic). It aborts in
+accelerate_entitlement_queries+0x1c, FAR 0x1a0: missing AMFI callback dereference.
+No PID1 has run. No new phone test; original BOOT stays installed in TWRP.
+
+New static_init.py patch is narrowly scoped: absent AMFI permits only our exact
+ad-hoc diagnostic CodeDirectory cdhash20 a8a6ba5e162a5c73966e22700c1ba0a7386b35a2,
+with no XML/DER/parsed entitlements. All others return ENOTSUP. Kernel signature
+and executable-page hash checking remains; no platform status or entitlements
+granted. This is not AMFI emulation or Apple-userland compatibility. The UBC
+source hash is pinned and overlay/helper apply the same bounded transform.
+
 ### NEW BUILD SUCCEEDED; QEMU advanced to RAM root, then missing IOStorageFamily
 
 Run 43038919058 SUCCEEDED (55fe10f). Kernel SHA256:

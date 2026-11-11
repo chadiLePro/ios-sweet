@@ -23,6 +23,7 @@ LEAVES = {
     'platform': ('A52PlatformExpert.cpp', 'iokit/Kernel/arm/SweetPlatformExpert.cpp', 'SweetPlatformExpert.cpo', 'iokit'),
     'serial': ('a52q_serial.inc', 'pexpert/arm/pe_serial.c', 'pe_serial.o', 'pexpert'),
     'ram-root': (None, 'iokit/Kernel/IOService.cpp', 'IOService.cpo', 'iokit'),
+    'static-init': (None, 'bsd/kern/ubc_subr.c', 'ubc_subr.o', 'bsd'),
 }
 # xnu-8796.141.3 + the original 81 patches, independently identical in the
 # successful full A52 build and original patched source. No Redmi objects used.
@@ -53,7 +54,16 @@ def main():
         new = (root / name).read_bytes()
         # One reviewed transition for a RAM-only root: enable the existing
         # no-IOStorageFamily handling, and nothing else in the overlay logic.
-        if a.leaf == 'ram-root' and name == 'xnu/a52q/apply.py' and old != new:
+        if a.leaf == 'static-init' and name == 'xnu/a52q/apply.py' and old != new:
+            normalized = new
+            for addition in (b'import static_init\n',
+                    b'    changes[static_init.TARGET] = static_init.transform(read(static_init.TARGET))\n'):
+                if normalized.count(addition) != 1:
+                    raise SystemExit('full build required: unexpected static-init overlay delta')
+                normalized = normalized.replace(addition, b'')
+            if normalized != old:
+                raise SystemExit('full build required: unreviewed static-init overlay change')
+        elif a.leaf == 'ram-root' and name == 'xnu/a52q/apply.py' and old != new:
             addition = b"    'iokit/Kernel/IOService.cpp',\n"
             if new.count(addition) != 1 or new.replace(addition, b'') != old:
                 raise SystemExit('full build required: unreviewed overlay change')
@@ -64,6 +74,9 @@ def main():
     for key, (name, _, _, _) in LEAVES.items():
         if name and key != a.leaf and run('git', 'show', a.base_sha + ':xnu/a52q/' + name, cwd=root) != (root / 'xnu/a52q' / name).read_bytes():
             raise SystemExit('full build required: unselected implementation changed: ' + name)
+    if a.leaf != 'static-init' and (root / 'xnu/a52q/static_init.py').exists():
+        if run('git', 'show', a.base_sha + ':xnu/a52q/static_init.py', cwd=root) != (root / 'xnu/a52q/static_init.py').read_bytes():
+            raise SystemExit('full build required: unselected static-init policy changed')
     report = json.loads((base / 'a52q-overlay.json').read_text())
     if report['target'] != 'A52Q':
         raise SystemExit('artifact is not an A52Q build')
@@ -92,7 +105,19 @@ def main():
         if hashlib.sha256((work / 'xnu' / name).read_bytes()).hexdigest() != expected:
             raise SystemExit('base source hash mismatch: ' + name)
     name, unit, member, component = LEAVES[a.leaf]
-    if a.leaf == 'ram-root':
+    if a.leaf == 'static-init':
+        import importlib.util
+        source = work / 'xnu' / unit
+        # Only this existing C unit is recompiled, with the identical API and
+        # full-build flags. The transform rejects a mismatching function anchor.
+        spec = importlib.util.spec_from_file_location('a52q_static_init', root / 'xnu/a52q/static_init.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        if module.TARGET != unit:
+            raise SystemExit('static-init transform targets a different source')
+        source.write_text(module.transform(source.read_text()))
+        name = 'ubc_subr.c (pinned diagnostic-only no-AMFI path)'
+    elif a.leaf == 'ram-root':
         source = work / 'xnu' / unit
         original = source.read_bytes()
         if hashlib.sha256(original).hexdigest() != ROOT_MEDIA_BASE_SHA256:

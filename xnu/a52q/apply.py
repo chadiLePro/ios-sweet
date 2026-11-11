@@ -12,6 +12,7 @@ import json
 import re
 import struct
 import zlib
+import static_init
 
 HERE = Path(__file__).resolve().parent
 
@@ -54,6 +55,7 @@ def apply(root):
         if text == read(name):
             raise ValueError(f'{name}: expected portable provider guard missing')
         changes[name] = text
+    changes[static_init.TARGET] = static_init.transform(read(static_init.TARGET))
 
     replace('makedefs/MakeInc.def', 'VMAPPLE SWEET\n', 'VMAPPLE SWEET A52Q\n')
     replace('makedefs/MakeInc.def', 'ifneq ($(CURRENT_MACHINE_CONFIG),SWEET)',
