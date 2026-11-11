@@ -2,6 +2,22 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### UFS NOP trial prepared; user ready; no pending phone restore yet
+
+User confirmed near phone/able to return TWRP. Prepared shim/out/a52q-ufs-nop/
+a52q-ufs-nop-UNTESTED.img; source tools/a52q_ufs_nop.py +shim/a52q/ufs_nop*.
+Uses actual pinned Samsung1024-byte UPIU layout (NOT assumed512). New16KiB pool
+derived0x106000000 from old CPUCRC+RAM planner; no XNU loaded in this diagnostic.
+One NOP only, noSCSI/PRDT/flashwrite; identityDMA hypothesis explicitly unproven
+(liveUFS node has NO iommu bindings). Guard idle/64bit/HCE/AHIT/timebase; stopempty
+list, programownBASE, NOPdoorbell, 1svirtualcountertimeout; completedrequest restores
+BASE/RSR, timeout holdsRAMuntil physicalreset. ShortA52U1 response/OCS CRC5copies.
+NativeGNUbuild +hostCpacketlayouttest +77Python tests pass. Default r4 bit-identical.
+Private installhelper updated --ufs-nop, validates configuration against exact
+capture/sources/memory proof; refuses accidentalNOP under ordinary --handoff.
+Next: explain BOOT-only/noformat/recovery, install, startwatcher, user10s+TWRP,
+collect/restore FIRST. No claim of XNU storage/Apple UI yet.
+
 ### Resumed: verified HFS build and HFS RAM root in QEMU; phone original BOOT
 
 Current device recovery, live BOOT sha d6bf... matches backup (read again).

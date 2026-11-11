@@ -19,6 +19,20 @@ class HandoffTests(unittest.TestCase):
     config = {'tag': 12, 'group': 'display', 'registers': [
         {'label': 'test', 'address': 0xae05014}]}
 
+    def test_nop_result_requires_intact_capture_bound_record(self):
+        def frame(kind, body):
+            raw = body.encode()
+            return kind.encode() + b' ' + raw + f' {zlib.crc32(raw):08x}\n'.encode()
+        config = dict(self.config, capture_id=81)
+        metadata = frame('A52M2', '0000000000000051/000000000000000c/01/01/ffffffffffffffff')
+        nop = frame('A52U1', '0000000000000051/00000000/20000000/00000000')
+        checked = decode(metadata + nop, config)
+        self.assertEqual(checked['ufs_nop'], {'ocs': 0, 'response_header': 0x20000000, 'doorbell': 0})
+        self.assertEqual(checked['valid_ufs_nop_copies'], 1)
+        self.assertIsNone(decode(metadata + nop.replace(b'20000000', b'21000000'), config)['ufs_nop'])
+        with self.assertRaisesRegex(ValueError, 'NOP records disagree'):
+            decode(metadata + nop + frame('A52U1', '0000000000000051/0000000f/00000000/00000001'), config)
+
     def test_checked_snapshot_and_corrupted_copy(self):
         result = decode(sample() + sample(copy=1).replace(b'12345678', b'12345679'), self.config)
         self.assertTrue(result['complete'])

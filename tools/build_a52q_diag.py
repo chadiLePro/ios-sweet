@@ -28,6 +28,9 @@ def main():
     p.add_argument('--register-sources', type=Path, help='four pinned Samsung register source files')
     p.add_argument('--display-test-log', type=Path, help='explicit splash refresh experiment: CRC capture console')
     p.add_argument('--display-test-build', type=Path, help='original capture build.json for the refresh experiment')
+    p.add_argument('--ufs-nop-log', type=Path, help='explicit NOP exchange: prior CRC-checked UFS capture console')
+    p.add_argument('--ufs-nop-build', type=Path, help='original UFS capture build.json')
+    p.add_argument('--ufs-nop-cpu-log', type=Path, help='intact CPU diagnostic for RAM planning and timer')
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     # A failed rebuild must not leave an earlier success manifest usable.
@@ -45,6 +48,11 @@ def main():
         contract = None
         handoff = None
         display_test = None
+        ufs_nop = None
+        if any((a.ufs_nop_log, a.ufs_nop_build, a.ufs_nop_cpu_log)):
+            if (not all((a.ufs_nop_log, a.ufs_nop_build, a.ufs_nop_cpu_log)) or
+                    a.handoff != 'ufs' or a.display_test_log):
+                raise ValueError('NOP experiment requires UFS handoff and all three capture/CPU artifacts')
         if bool(a.display_test_log) != bool(a.display_test_build):
             raise ValueError('display experiment needs both capture log and build manifest')
         if a.handoff:
@@ -63,6 +71,12 @@ def main():
                 json.loads(a.display_test_build.read_text()), a.display_test_log.read_bytes())
             (a.out / 'display-config.h').write_text(display_header(display_test))
             flags += ['-DA52Q_DISPLAY_TEST']
+        if a.ufs_nop_log:
+            from a52q_ufs_nop import configuration as nop_configuration, header as nop_header
+            ufs_nop = nop_configuration(a.evidence, a.register_sources,
+                json.loads(a.ufs_nop_build.read_text()), a.ufs_nop_log.read_bytes(), a.ufs_nop_cpu_log)
+            (a.out / 'ufs-nop-config.h').write_text(nop_header(ufs_nop))
+            flags += ['-DA52Q_UFS_NOP']
         if a.evidence:
             output = configuration(a.evidence)
             contract = kernel_contract((a.evidence / 'boot.img').read_bytes())
@@ -144,6 +158,8 @@ def main():
             report['handoff_probe'] = handoff
         if display_test:
             report['display_test'] = display_test
+        if ufs_nop:
+            report['ufs_nop'] = ufs_nop
         (a.out / 'build.json').write_text(json.dumps(report, indent=2) + '\n')
     except (OSError, subprocess.SubprocessError, ValueError, StopIteration, KeyError) as exc:
         p.exit(1, f'diagnostic build failed: {exc}\n')

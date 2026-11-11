@@ -154,6 +154,15 @@ def decode_records(data, config):
             stages.append((stage, esr))
     if len(set(stages)) > 1:
         raise ValueError('CRC-valid stage records disagree')
+    nop = []
+    for m in re.finditer(rb'A52U1 ([0-9a-f]{16}/[0-9a-f]{8}/[0-9a-f]{8}/[0-9a-f]{8}) ([0-9a-f]{8})\n', data):
+        if zlib.crc32(m[1]) != int(m[2], 16):
+            continue
+        cap, ocs, response, doorbell = [int(v, 16) for v in m[1].split(b'/')]
+        if cap == nonce:
+            nop.append((ocs, response, doorbell))
+    if len(set(nop)) > 1:
+        raise ValueError('CRC-valid UFS NOP records disagree')
     values = {}
     copies = {}
     for m in re.finditer(rb'A52R2 ([0-9a-f]{16}/[0-9a-f]{2}/[0-9a-f]{8}/[0-9a-f]{8}) ([0-9a-f]{8})\n', data):
@@ -173,5 +182,7 @@ def decode_records(data, config):
             'completed_reads': done, 'active_index': active, 'missing_indices': missing,
             'stage': stages[0][0] if stages else None,
             'esr': stages[0][1] if stages else None, 'valid_stage_copies': len(stages),
+            'ufs_nop': dict(zip(('ocs', 'response_header', 'doorbell'), nop[0])) if nop else None,
+            'valid_ufs_nop_copies': len(nop),
             'integrity': 'Only intact per-record CRCs accepted; no byte repair',
             'registers': [dict(config['registers'][i], value=values[i]) for i in sorted(values)]}
