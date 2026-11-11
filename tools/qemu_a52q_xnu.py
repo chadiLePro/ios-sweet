@@ -87,8 +87,14 @@ def run(build, out, qemu, seconds=25, expected_loader_stage=None):
             report['loader_record'] = decode_record(qmp.dump(load + symbols['a52q_diagnostic'],
                 metadata['diagnostic_record_bytes'], out / 'record.bin'))
             report['crc_valid_entry_copies'] = entry_copies(raw)
+            report['diagnostic_pid1_observed'] = (
+                '*** A52Q bootstrap userspace: init running as PID 1 ***' in console)
+            report['diagnostic_init_heartbeats'] = console.count('A52Q bootstrap init: still alive')
+            report['cpu_self_sgi_observed'] = 'A52Q CPU: single boot CPU initialized; self-SGI delivered' in console
             if 'A52QXNU PANIC:' in console or 'panic(cpu ' in console:
                 report['status'] = 'XNU panic observed'
+            elif report['diagnostic_pid1_observed']:
+                report['status'] = 'diagnostic PID1 observed in QEMU; not Apple iOS userland'
             elif 'A52QXNU stage=' in console:
                 report['status'] = 'XNU C bootstrap observed'
             elif report['crc_valid_entry_copies']:

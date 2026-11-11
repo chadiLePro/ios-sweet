@@ -1,8 +1,10 @@
-# A52Q revision 3: manual diagnostic test and BOOT restoration
+# Archived A52Q revision 3 diagnostic kit (superseded)
 
-This test is optional and has **not been performed on the phone**. It is a shim
-diagnostic, not XNU or iOS. The operator must review the risk and perform any
-device-writing steps themselves. No supplied script flashes the phone.
+This records the earlier r3 manual test kit and is retained for provenance.
+Do not use its old candidate for current XNU trials. See [A52Q.md](A52Q.md) for
+the current hardware results, build artifacts and remaining milestones.
+The user later explicitly authorized automatic BOOT-only diagnostic trials;
+this does not authorize userdata formatting or other partition writes.
 
 Use only for the already identified SM-A525F/DS, a52q, unlocked bootloader
 A525FXXSCFYF1, and the unchanged BOOT/DTBO/RECOVERY/VBMETA captured in this chat.
