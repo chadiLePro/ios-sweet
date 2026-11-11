@@ -2,6 +2,30 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### FIRST XNU HARDWARE TRIAL PREPARED — phone still original BOOT
+
+Alignment-fix build 43029834033 SUCCEEDED. Kernel SHA256:
+de8f43d1b5c3644ecae1f07856699f27fe238ddbdcb3f77cba4fb1474d1e70b5.
+QEMU variant shim/out/a52q-xnu-headless-qemu/run verifies 3 entry CRC copies,
+arm_init, topology, pmap_bootstrap, final TTBR1, serial init and timer IRQs.
+It then panics on missing samsung,a52q platform expert (next target service).
+Headless boot needs -noprogress; default progress-image positioning asserted
+without a screen. No root filesystem or Apple userland has been created.
+
+Hardware-only payload uses actual GIC 0x17a00000/0x17a60000, CNTFRQ 19200000,
+PPI 19 and selected snapshot RAM 0x106000000 (255 MiB managed + 1 MiB panic).
+Reviewed candidate: shim/out/a52q-xnu-first-hardware/build/a52q-xnu-early-UNTESTED.img
+SHA256 9e32a6f7332966987d46da69d3118ab39f9789dc6942597920e683167079cf7f,
+96 MiB, original BOOT template/ramdisk/DTB and Samsung trailer preserved.
+No write yet. User explicitly confirmed they are nearby for button return to
+TWRP. Prior automatic BOOT-only authorization still applies; disclose exact
+BOOT scope/recovery before installation. Private session helper:
+research/a52q_xnu_device_test.py, phases check/install/collect-restore.
+After trial: immediately collect pstore and restore exact original BOOT with
+full readback. Keep receipt under backup/a52q/xnu-first-hardware/. Never lose
+track of pending restoration. Baseline entry markers must be absent (helper
+checks) to avoid mistaking retained old XNU text for a new boot.
+
 ### Active kernel bring-up — user requests focus on booting iOS
 
 Control 43012318206 SUCCEEDED: Xcode 16.0 built xnu-8796.141.3, plain arm64,

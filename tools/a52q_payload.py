@@ -216,7 +216,7 @@ def main():
         tree_path = a.out.with_suffix('.adt')
         tree_path.write_bytes(adt.serialize(make_adt(base, total, gic, hz, intid, mpidr)))
         payload, info = mkpayload.build(str(a.kernel), str(tree_path),
-                                       'debug=0xc serial=3 cpus=1 keepsyms=1 -v rd=md0')
+                                       'debug=0xc serial=3 cpus=1 keepsyms=1 -v -noprogress rd=md0')
         report = {'target': 'A52Q', 'status': 'bootstrap payload; physical RAM access not yet verified',
                   'environment': environment,
                   'phys_base': hex(base), 'mem_size': hex(total - PANIC), 'panic_log_size': hex(PANIC),
