@@ -2,19 +2,35 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
-### RESTORE PENDING: READ-ONLY UFS SNAPSHOT IN BOOT
+### PHONE SAFE: ORIGINAL BOOT RESTORED; UFS HANDOFF VERIFIED
 
-UFS register-only probe installed/read back and TWRP System reboot sent.
-backup/a52q/ufs-handoff/receipt.json requires_restore=true. Watcher
-research/watch_ufs_restore.py unified session9750. User asked10s +returnTWRP.
-On recovery FIRST collect/restore and verify original BOOT. No UFS commands,
-clock/reset writes, or userdata format. New short A52S2 nonce/stage/ESR CRC
-records included, 5 replicas. Native build+packaging and72 tests passed.
-Candidate shim/out/a52q-ufs-handoff/a52q-ufs-readonly-UNTESTED.img.
+16:47:55 UTC original BOOT restored with full96MiB hash; recovery/DTBO/vbmeta
+unchanged. Phone TWRP. backup/a52q/ufs-handoff/receipt.json requires_restore=false.
+All9 register records CRC-valid,3 intact short stage records:stage80,ESR0.
+checked-snapshot.json holds raw provenance. Controllerbase1d84000 fromliveDT:
+CAP1587031f,VER210,AHIT0,HCS10f,HCE1,UTRLBA95f9c000/0,DBR0,RSR1.
+Header confirms UFSHCI2.1 (NOT device flash version),32slots,64bitaddresses;
+HCS device-present+UTRL/UTMR/UIC ready bits set. This is ABL handoff evidence,
+NOT XNU disk I/O. Do NOT reuse ABL descriptor95f9c000 or assume identity DMA.
+Need A52 SMMU/coherency ownership and read-only NOP/READ CAPACITY/read validation
+before root storage. No UFS commands/clock/reset writes/userdata format performed.
+Candidate shim/out/a52q-ufs-handoff/a52q-ufs-readonly-UNTESTED.img SHA45533abe440b9a97ecfcde94f3a7d2a78aac79cd7746afd55309f129a021352c.
+User says only2% usage left: no further phone trial started. Save clear handoff.
 
 HFS full build RUNNING https://github.com/chadiLePro/ios-sweet/actions/runs/43061413864
 verified head16cf668234b1d8fe558176ff5c5cc6222abe3f56, filesystem=hfs.
 Push-default mockfs run43061385487 canceled by concurrency, expected.
+As of16:48 UTC kernel build still running, not a success claim. Job130664888963
+live logs404 until finalization. Check gh run view43061413864, download artifact
+to E:/A52-iOS16/builds/43061413864 (C only~2GiBfree), verify overlay filesystem=hfs,
+then QEMU first. This build retains diagnostic AMFI, rejects Apple launchd.
+Real iOS16 root copy is active session97266 (LinuxqemuPID285), still copyingOS;
+do not use incomplete host image. Log E:/A52-iOS16/ios16-root-copy.log.
+Private research/build_ios16_hfs_appliance.py writes build report only on complete
+copy/fsck. Current image includes no bring-up tweaks. No new phone writes needed
+to finish these host tasks. Keep E plugged in. Next: finish/verify root copy,
+validate HFS kernel using small RAM-root fixture in QEMU, then A52 UFS read path
+and explicit Apple userland entitlement provider. Actual SpringBoard not run.
 
 ### RGB trial collected; ORIGINAL BOOT RESTORED; visibility inconclusive
 
