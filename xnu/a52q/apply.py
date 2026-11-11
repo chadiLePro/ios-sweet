@@ -17,6 +17,7 @@ HERE = Path(__file__).resolve().parent
 
 # Portable providers and bootstrap support, not Qualcomm device drivers.
 COMMON = [
+    'iokit/Kernel/IOService.cpp',
     'bsd/kern/kern_trustcache.c', 'bsd/sys/pthread_internal.h',
     'bsd/pthread/sweet_pthread_synch.c', 'bsd/pthread/sweet_pthread_support.c',
     'bsd/pthread/sweet_pthread_init.c',

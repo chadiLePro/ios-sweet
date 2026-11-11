@@ -22,7 +22,11 @@ LEAVES = {
     'cpu': ('A52CPU.cpp', 'iokit/Kernel/arm/SweetCPU.cpp', 'SweetCPU.cpo', 'iokit'),
     'platform': ('A52PlatformExpert.cpp', 'iokit/Kernel/arm/SweetPlatformExpert.cpp', 'SweetPlatformExpert.cpo', 'iokit'),
     'serial': ('a52q_serial.inc', 'pexpert/arm/pe_serial.c', 'pe_serial.o', 'pexpert'),
+    'ram-root': (None, 'iokit/Kernel/IOService.cpp', 'IOService.cpo', 'iokit'),
 }
+# xnu-8796.141.3 + the original 81 patches, independently identical in the
+# successful full A52 build and original patched source. No Redmi objects used.
+ROOT_MEDIA_BASE_SHA256 = '3e97419a2ce90729537e65cd5de200887e7eaddebd01e90502f05a485efbe7a3'
 
 
 def main():
@@ -45,12 +49,20 @@ def main():
 
     # Only the selected implementation may differ from the compiled source.
     for name in ('xnu/a52q/A52Q.h', 'xnu/a52q/apply.py', '.github/workflows/xnu-a52q.yml'):
-        if run('git', 'show', a.base_sha + ':' + name, cwd=root) != (root / name).read_bytes():
+        old = run('git', 'show', a.base_sha + ':' + name, cwd=root)
+        new = (root / name).read_bytes()
+        # One reviewed transition for a RAM-only root: enable the existing
+        # no-IOStorageFamily handling, and nothing else in the overlay logic.
+        if a.leaf == 'ram-root' and name == 'xnu/a52q/apply.py' and old != new:
+            addition = b"    'iokit/Kernel/IOService.cpp',\n"
+            if new.count(addition) != 1 or new.replace(addition, b'') != old:
+                raise SystemExit('full build required: unreviewed overlay change')
+        elif old != new:
             raise SystemExit('full build required: changed ' + name)
     if run('git', 'diff', '--name-only', a.base_sha, 'HEAD', '--', 'xnu/patches', cwd=root).strip():
         raise SystemExit('full build required: base patch set changed')
     for key, (name, _, _, _) in LEAVES.items():
-        if key != a.leaf and run('git', 'show', a.base_sha + ':xnu/a52q/' + name, cwd=root) != (root / 'xnu/a52q' / name).read_bytes():
+        if name and key != a.leaf and run('git', 'show', a.base_sha + ':xnu/a52q/' + name, cwd=root) != (root / 'xnu/a52q' / name).read_bytes():
             raise SystemExit('full build required: unselected implementation changed: ' + name)
     report = json.loads((base / 'a52q-overlay.json').read_text())
     if report['target'] != 'A52Q':
@@ -80,10 +92,21 @@ def main():
         if hashlib.sha256((work / 'xnu' / name).read_bytes()).hexdigest() != expected:
             raise SystemExit('base source hash mismatch: ' + name)
     name, unit, member, component = LEAVES[a.leaf]
-    source = work / 'xnu' / Path(unit).parent / name
-    if source.relative_to(work / 'xnu').as_posix() not in report['files_sha256']:
-        raise SystemExit('base build lacks the selected A52 implementation')
-    source.write_bytes((root / 'xnu/a52q' / name).read_bytes())
+    if a.leaf == 'ram-root':
+        source = work / 'xnu' / unit
+        original = source.read_bytes()
+        if hashlib.sha256(original).hexdigest() != ROOT_MEDIA_BASE_SHA256:
+            raise SystemExit('RAM-root base source differs from the reviewed build')
+        guard = b'defined(ARM64_BOARD_CONFIG_SWEET)'
+        if original.count(guard) != 3:
+            raise SystemExit('RAM-root guard count differs')
+        source.write_bytes(original.replace(guard, b'(defined(ARM64_BOARD_CONFIG_SWEET) || defined(ARM64_BOARD_CONFIG_A52Q))'))
+        name = 'IOService.cpp (reviewed absence-of-IOStorageFamily guards only)'
+    else:
+        source = work / 'xnu' / Path(unit).parent / name
+        if source.relative_to(work / 'xnu').as_posix() not in report['files_sha256']:
+            raise SystemExit('base build lacks the selected A52 implementation')
+        source.write_bytes((root / 'xnu/a52q' / name).read_bytes())
     # Recover the exact compiler command from the full build, not guessed flags.
     commands = set()
     for line in a.log.read_text().splitlines():

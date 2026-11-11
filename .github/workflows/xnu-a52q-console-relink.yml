@@ -12,7 +12,7 @@ on:
         description: One implementation; board/overlay/other implementations must match base
         type: choice
         default: console
-        options: [console, cpu, platform, serial]
+        options: [console, cpu, platform, serial, ram-root]
 permissions:
   contents: read
   actions: read
