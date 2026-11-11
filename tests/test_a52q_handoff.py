@@ -35,6 +35,24 @@ class HandoffTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 decode(data, self.config)
 
+    def test_short_records_reject_stale_capture_and_keep_intact_values(self):
+        config = dict(self.config, capture_id=81)
+        def frame(kind, body):
+            raw = body.encode()
+            return kind.encode() + b' ' + raw + f' {zlib.crc32(raw):08x}\n'.encode()
+        metadata = frame('A52M2', '0000000000000051/000000000000000c/01/01/ffffffffffffffff')
+        record = frame('A52R2', '0000000000000051/00/0ae05014/12345678')
+        stale = frame('A52R2', '0000000000000050/00/0ae05014/00000000')
+        result = decode(metadata + record + record.replace(b'12345678', b'12345679') + stale, config)
+        self.assertTrue(result['complete'])
+        self.assertEqual(result['registers'][0]['value'], 0x12345678)
+        self.assertEqual(result['valid_register_copies'], {0: 1})
+        missing = decode(metadata + stale, config)
+        self.assertFalse(missing['complete'])
+        self.assertEqual(missing['missing_indices'], [0])
+        with self.assertRaises(ValueError):
+            decode(metadata + record + frame('A52R2', '0000000000000051/00/0ae05014/00000002'), config)
+
 
 if __name__ == '__main__':
     unittest.main()

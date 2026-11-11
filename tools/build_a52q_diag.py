@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import struct
 import subprocess
+import secrets
 from a52q_ramoops import configuration
 from android_boot_evidence import kernel_contract
 
@@ -46,6 +47,7 @@ def main():
                 raise ValueError('handoff needs evidence/register sources and cannot include XNU')
             from a52q_handoff import layout, header
             handoff = layout(a.evidence, a.register_sources, a.handoff)
+            handoff['capture_id'] = secrets.randbits(64)
             (a.out / 'handoff-config.h').write_text(header(handoff))
             flags += ['-DA52Q_HANDOFF', '-I', str(a.out.resolve())]
         if a.evidence:

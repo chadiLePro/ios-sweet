@@ -92,11 +92,14 @@ def header(config):
     rows = config['registers']
     return (f'#define A52Q_HANDOFF_COUNT {len(rows)}U\n'
             f'#define A52Q_HANDOFF_TAG 0x{config["tag"]:016x}ULL\n'
+            f'#define A52Q_CAPTURE_ID 0x{config["capture_id"]:016x}ULL\n'
             'static const uintptr_t handoff_addresses[A52Q_HANDOFF_COUNT] = {\n' +
             ''.join(f'    0x{r["address"]:x}ULL,\n' for r in rows) + '};\n')
 
 
 def decode(data, config):
+    if 'capture_id' in config:
+        return decode_records(data, config)
     pattern = (rb'A52QHANDOFF v1 copy=([0-2])\n'
                rb'((?:[a-z0-9_.]+=0x[0-9a-f]{16}\n)+)'
                rb'crc32=0x([0-9a-f]{16})\nA52QHANDOFF END\n')
@@ -127,3 +130,37 @@ def decode(data, config):
             'active_index': fields['active'], 'registers': [
                 dict(config['registers'][i], value=fields[f'r{i:03d}.value'])
                 for i in range(fields['completed'])]}
+
+
+def decode_records(data, config):
+    """Per-record CRCs tolerate retention loss without repairing any bytes."""
+    nonce = config['capture_id']
+    meta = []
+    for m in re.finditer(rb'A52M2 ([0-9a-f]{16}/[0-9a-f]{16}/[0-9a-f]{2}/[0-9a-f]{2}/[0-9a-f]{16}) ([0-9a-f]{8})\n', data):
+        if zlib.crc32(m[1]) != int(m[2], 16):
+            continue
+        cap, tag, count, done, active = [int(v, 16) for v in m[1].split(b'/')]
+        if cap == nonce and tag == config['tag'] and count == len(config['registers']) and done <= count:
+            meta.append((done, active))
+    if not meta or len(set(meta)) != 1:
+        raise ValueError('no consistent CRC-valid capture metadata')
+    done, active = meta[0]
+    values = {}
+    copies = {}
+    for m in re.finditer(rb'A52R2 ([0-9a-f]{16}/[0-9a-f]{2}/[0-9a-f]{8}/[0-9a-f]{8}) ([0-9a-f]{8})\n', data):
+        if zlib.crc32(m[1]) != int(m[2], 16):
+            continue
+        cap, index, address, value = [int(v, 16) for v in m[1].split(b'/')]
+        if cap != nonce or index >= done or address != config['registers'][index]['address']:
+            continue
+        if index in values and values[index] != value:
+            raise ValueError('CRC-valid register records disagree')
+        values[index] = value
+        copies[index] = copies.get(index, 0) + 1
+    missing = [i for i in range(done) if i not in values]
+    return {'format_version': 2, 'group': config['group'], 'capture_id': nonce,
+            'valid_metadata_copies': len(meta), 'valid_register_copies': copies,
+            'complete': done == len(config['registers']) and not missing,
+            'completed_reads': done, 'active_index': active, 'missing_indices': missing,
+            'integrity': 'Only intact per-record CRCs accepted; no byte repair',
+            'registers': [dict(config['registers'][i], value=values[i]) for i in sorted(values)]}

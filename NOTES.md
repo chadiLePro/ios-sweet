@@ -2,6 +2,18 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### Phone safe: display snapshot completed, BOOT restored; short-record retry prepared
+
+16:22:33 UTC: display-only read snapshot completed stage0x80, no exception (one
+intact CPU diagnostic CRC copy). Original BOOT restored/full readback verified;
+RECOVERY/DTBO/VBMETA unchanged. Receipt backup/a52q/display-handoff/receipt.json.
+All 37 MMIO reads completed but NONE of the long handoff CRC frames survived
+reset intact. Do not use unprotected values from that console.
+Changed to short independently checked metadata/register records, 5 replicas,
+with random per-build capture_id to exclude stale pstore without a control reboot.
+Decoder never repairs bytes; returns missing rows explicitly. Retry image under
+shim/out/a52q-display-handoff-v2/. No retry write yet, original BOOT is restored.
+
 ### Active interface work - E reconnected; display handoff probe prepared
 
 User requests actual iOS interface, faster. E is now present, D is absent.

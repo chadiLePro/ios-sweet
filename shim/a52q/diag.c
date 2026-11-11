@@ -61,33 +61,48 @@ static void log_hex(volatile struct ramlog *r, const char *key, uint64_t value)
 }
 
 #ifdef A52Q_HANDOFF
+static void handoff_hex(volatile struct ramlog *r, uint64_t value, unsigned bits)
+{
+    static const char hex[] = "0123456789abcdef";
+    for (int shift = (int)bits - 4; shift >= 0; shift -= 4)
+        log_char(r, hex[(value >> shift) & 15]);
+}
+
+static void handoff_begin(volatile struct ramlog *r, const char *kind)
+{
+    checksum_enabled = 0;
+    log_string(r, kind);
+    log_crc = 0xffffffffU;
+    checksum_enabled = 1;
+}
+
+static void handoff_end(volatile struct ramlog *r)
+{
+    uint32_t crc = log_crc ^ 0xffffffffU;
+    checksum_enabled = 0;
+    log_char(r, ' ');
+    handoff_hex(r, crc, 32);
+    log_char(r, '\n');
+}
+
 static void log_handoff(volatile struct ramlog *r)
 {
-    for (unsigned copy = 0; copy < 3; copy++) {
-        checksum_enabled = 0;
-        log_string(r, "A52QHANDOFF v1 copy=");
-        log_char(r, '0' + copy);
-        log_char(r, '\n');
-        log_crc = 0xffffffffU;
-        checksum_enabled = 1;
-        log_hex(r, "tag", A52Q_HANDOFF_TAG);
-        log_hex(r, "count", A52Q_HANDOFF_COUNT);
-        log_hex(r, "completed", handoff_done);
-        log_hex(r, "active", handoff_active);
+    for (unsigned copy = 0; copy < 5; copy++) {
+        handoff_begin(r, "A52M2 ");
+        handoff_hex(r, A52Q_CAPTURE_ID, 64); log_char(r, '/');
+        handoff_hex(r, A52Q_HANDOFF_TAG, 64); log_char(r, '/');
+        handoff_hex(r, A52Q_HANDOFF_COUNT, 8); log_char(r, '/');
+        handoff_hex(r, handoff_done, 8); log_char(r, '/');
+        handoff_hex(r, handoff_active, 64);
+        handoff_end(r);
         for (unsigned i = 0; i < handoff_done; i++) {
-            for (unsigned field = 0; field < 2; field++) {
-                log_char(r, 'r');
-                log_char(r, '0' + i / 100);
-                log_char(r, '0' + (i / 10) % 10);
-                log_char(r, '0' + i % 10);
-                log_char(r, '.');
-                log_hex(r, field ? "value" : "address",
-                        field ? handoff_values[i] : handoff_addresses[i]);
-            }
+            handoff_begin(r, "A52R2 ");
+            handoff_hex(r, A52Q_CAPTURE_ID, 64); log_char(r, '/');
+            handoff_hex(r, i, 8); log_char(r, '/');
+            handoff_hex(r, handoff_addresses[i], 32); log_char(r, '/');
+            handoff_hex(r, handoff_values[i], 32);
+            handoff_end(r);
         }
-        checksum_enabled = 0;
-        log_hex(r, "crc32", log_crc ^ 0xffffffffU);
-        log_string(r, "A52QHANDOFF END\n");
     }
 }
 #endif
