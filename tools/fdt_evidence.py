@@ -147,6 +147,45 @@ def regs(node):
     return out
 
 
+def physical_regs(node):
+    """Translate reg through explicit simple-bus ranges to root physical space.
+
+    DTSpec 2.3.8: an empty ranges is identity; a missing ranges is NOT identity.
+    Non-simple encodings (e.g. PCI 3-cell addresses) need a separate decoder.
+    """
+    result = regs(node)
+    bus = node.parent
+    while bus.parent is not None:
+        raw = bus.props.get('ranges')
+        if raw is None:
+            raise ValueError(f'{bus.path}: missing address translation')
+        ac, pc, sc = bus.cell('#address-cells'), bus.parent.cell('#address-cells'), bus.cell('#size-cells')
+        if any(n not in (1, 2) for n in (ac, pc, sc)):
+            raise ValueError(f'{bus.path}: unsupported bus address encoding')
+        if raw:
+            stride = (ac + pc + sc) * 4
+            if len(raw) % stride:
+                raise ValueError(f'{bus.path}: malformed ranges')
+            windows = []
+            for offset in range(0, len(raw), stride):
+                child = int.from_bytes(raw[offset:offset + ac * 4], 'big')
+                parent = int.from_bytes(raw[offset + ac * 4:offset + (ac + pc) * 4], 'big')
+                size = int.from_bytes(raw[offset + (ac + pc) * 4:offset + stride], 'big')
+                if not size or max(child, parent) + size > 1 << 64:
+                    raise ValueError(f'{bus.path}: invalid translation interval')
+                windows.append((child, parent, size))
+            translated = []
+            for base, size in result:
+                matches = [(parent + base - child, size) for child, parent, length in windows
+                           if child <= base and base + size <= child + length]
+                if len(matches) != 1:
+                    raise ValueError(f'{node.path}: missing or ambiguous covering bus range')
+                translated += matches
+            result = translated
+        bus = bus.parent
+    return result
+
+
 def describe(fdt):
     def ranges(items):
         return [{'base': hex(b), 'size': hex(s), 'end_exclusive': hex(b + s)} for b, s in items]

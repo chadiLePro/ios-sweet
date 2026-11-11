@@ -1,6 +1,7 @@
-/* A52 diagnostic core, not an XNU loader or a bootable phone port.
+/* A52 diagnostic core, with optional bounds-checked embedded XNU handoff.
  * No board MMIO, SMC, DMA, reset or storage. The default records into its own
  * image. Optional evidence-derived ramoops output uses reserved RAM only.
+ * The default diagnostic build does not include the loader or a kernel.
  */
 #include <stdint.h>
 
@@ -112,6 +113,11 @@ static void publish(uint64_t stage)
 #endif
 }
 
+#ifdef A52Q_XNU_PAYLOAD
+int a52q_load_embedded(void);
+void a52q_loader_stage(uint64_t stage) { publish(stage); }
+#endif
+
 void diag_main(uint64_t dtb)
 {
     a52q_diagnostic.magic = 0x4741494451323541ULL; /* LE "A52QDIAG" */
@@ -132,6 +138,10 @@ void diag_main(uint64_t dtb)
     a52q_diagnostic.isar0 = READ_REG("id_aa64isar0_el1");
     a52q_diagnostic.isar1 = READ_REG("id_aa64isar1_el1");
     publish(2);
+#ifdef A52Q_XNU_PAYLOAD
+    int error = a52q_load_embedded();
+    publish(0xe0 + (uint64_t)error);
+#endif
 }
 
 void diag_exception(uint64_t slot)

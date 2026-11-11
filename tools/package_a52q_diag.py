@@ -81,6 +81,8 @@ def main():
         if len(vbmeta) < 256 or vbmeta[:4] != b'AVB0' or not struct.unpack_from('>I', vbmeta, 120)[0] & 2:
             raise ValueError('captured vbmeta does not already disable verification; no policy changes implemented')
         build = json.loads((a.build / 'build.json').read_text())
+        if build.get('embedded_payload', {}).get('environment', '') not in ('', 'SM-A525F/DS hardware candidate'):
+            raise ValueError('refusing to package an emulation/test payload for a phone')
         raw = (a.build / 'diag-core.Image').read_bytes()
         if (build['output'] != log or build['template_kernel_contract'] != contract or
                 hashlib.sha256(raw).hexdigest() != build['image_sha256'] or

@@ -21,6 +21,25 @@ restored and phone is connected in TWRP. No new device write during this turn.
 First A52Q run 43018055671 failed before compilation: Xcode's Python 3.9 rejects
 Path.write_text(newline=...). Fixed to write_bytes; common provider conditions
 use ARM64_BOARD_CONFIG_A52Q directly, so they also work before board.h inclusion.
+Current A52Q run 43018957069 (4abdc23) is building. Run 43018731225 was superseded
+by entry CRC logging and unknown-clock handling. No kernel boot is claimed yet.
+
+Embedded loader added under shim/a52q/loader.c, enabled only with --payload in
+build_a52q_diag.py. New a52q_payload.py derives minimal ADT and 32 MiB aligned
+snapshot placement: 0x106000000, 256 MiB total, top 1 MiB reserved panic data.
+It uses actual FDT bus translations (soc 1/1 cells -> root 2/2 identity window),
+CRC-verified r4 CPU CNTFRQ/MPIDR and DT timer PPI. It refuses a SWEET kernel by
+Mach-O architecture and A52Q kernel banner/console identity. No root FS yet.
+Phone packaging refuses explicitly QEMU-only/test payloads. Loader source and
+destination bounds, own-image/ramoops overlap and a restore-after-probe word
+access precede segment copying and revision-2 boot_args handoff.
+
+59 host tests pass. Native GNU embedded loader builds. QEMU positive RET-stub
+handoff above 4 GiB reached expected return stage 0xe9; an injected excluded
+phys_base was rejected at 0xe4 before the copy/probe. These are loader tests,
+NOT XNU boots. Private reports under shim/out/a52q-loader-fixture/{qemu,qemu-rejected}.
+QEMU-generated DTB research/qemu-a52q-4g.dtb and measured frequency from positive
+fixture support explicit emulator-only payload generation when kernel is ready.
 Next: actual A52Q compiler results, evidence-bound payload/ADT/loader and QEMU
 early-kernel validation, then BOOT-only hardware attempt with restoration.
 

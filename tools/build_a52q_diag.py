@@ -22,6 +22,7 @@ def main():
     p.add_argument('--cross-prefix', default='aarch64-linux-gnu-')
     p.add_argument('--out', type=Path, default=ROOT / 'shim/out/a52q')
     p.add_argument('--evidence', type=Path, help='enable candidate ramoops output from verified live DT/runtime parameters')
+    p.add_argument('--payload', type=Path, help='validated embedded A52 XNU payload (requires adjacent .json manifest)')
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     # A failed rebuild must not leave an earlier success manifest usable.
@@ -48,10 +49,38 @@ def main():
                       f'-DA52Q_TEXT_OFFSET={contract["text_offset"]}']
         compiler = run('gcc', '--version').splitlines()[0]
         objects = []
-        for name in ('start.S', 'diag.c'):
+        names = ['start.S', 'diag.c']
+        payload_manifest = None
+        if a.payload:
+            if not a.evidence:
+                raise ValueError('embedded kernel requires evidence-bound ramoops output')
+            from a52q_payload import validate_payload
+            data = a.payload.read_bytes()
+            payload_manifest = json.loads(a.payload.with_suffix(a.payload.suffix + '.json').read_text())
+            validate_payload(data, payload_manifest)
+            if payload_manifest['live_dtb_sha256'] != output['live_dtb_sha256']:
+                raise ValueError('payload and shim device evidence differ')
+            base, size = (int(payload_manifest[k], 16) for k in ('phys_base', 'mem_size'))
+            (a.out / 'payload-config.h').write_text(
+                f'#define A52Q_PAYLOAD_BASE {base}ULL\n#define A52Q_PAYLOAD_SIZE {size}ULL\n'
+                f'#define A52Q_PAYLOAD_END {base + size}ULL\n', encoding='ascii')
+            asm = a.out / 'payload.S'
+            asm.write_text('.section .rodata.payload,"a"\n.balign 8\n.global _payload_start, _payload_end\n'
+                           '_payload_start:\n.incbin "' + a.payload.resolve().as_posix() + '"\n_payload_end:\n',
+                           encoding='utf-8')
+            flags += ['-DA52Q_XNU_PAYLOAD', '-I', str(a.out.resolve())]
+            names += ['loader.c']
+        for name in names:
             obj = a.out / (Path(name).stem + '.o')
             run('gcc', *flags, '-c', source / name, '-o', obj)
             objects.append(obj)
+        if a.payload:
+            obj = a.out / 'payload.o'
+            run('gcc', *flags, '-c', a.out / 'payload.S', '-o', obj)
+            objects.append(obj)
+            loader_relocs = run('readelf', '-rW', a.out / 'loader.o')
+            if 'R_AARCH64_ABS' in loader_relocs:
+                raise ValueError('loader contains absolute relocations')
         relocs = run('readelf', '-rW', objects[1])
         if 'R_AARCH64_ABS' in relocs:
             raise ValueError('C code contains absolute relocations; cannot run at arbitrary load address')
@@ -84,6 +113,8 @@ def main():
                   'output': output or 'own-image RAM record only; no persistent or external output',
                   'template_kernel_contract': contract,
                   'image_sha256': hashlib.sha256(image.read_bytes()).hexdigest()}
+        if payload_manifest:
+            report['embedded_payload'] = payload_manifest
         (a.out / 'build.json').write_text(json.dumps(report, indent=2) + '\n')
     except (OSError, subprocess.SubprocessError, ValueError, StopIteration, KeyError) as exc:
         p.exit(1, f'diagnostic build failed: {exc}\n')
