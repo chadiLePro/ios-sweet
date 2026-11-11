@@ -24,11 +24,19 @@ def entry_copies(data):
     return count
 
 
-def run(build, out, qemu, seconds=25, expected_loader_stage=None):
+def run(build, out, qemu, seconds=25, expected_loader_stage=None, ram_mib=4096):
     metadata = json.loads((build / 'build.json').read_text())
     payload = metadata.get('embedded_payload', {})
     if payload.get('environment') != 'QEMU virt ONLY; never flash':
         raise ValueError('requires an explicitly QEMU-only payload, with emulated GIC/timer values')
+    if ram_mib not in (2048, 4096):
+        raise ValueError('unsupported QEMU RAM budget')
+    end = 0x40000000 + (ram_mib << 20)
+    base, size = int(payload['phys_base'], 16), int(payload['mem_size'], 16)
+    log = metadata['output']
+    if not (0x40000000 <= base and base + size <= end and
+            0x40000000 <= log['base'] and log['base'] + log['size'] <= end):
+        raise ValueError('payload/console exceeds the selected emulated RAM')
     image = (build / 'diag-core.Image').resolve()
     if hashlib.sha256(image.read_bytes()).hexdigest() != metadata['image_sha256']:
         raise ValueError('Image hash mismatch')
@@ -44,13 +52,14 @@ def run(build, out, qemu, seconds=25, expected_loader_stage=None):
     with socket.socket() as probe:
         probe.bind(('127.0.0.1', 0))
         port = probe.getsockname()[1]
-    args = [qemu, '-M', 'virt,gic-version=3,virtualization=off', '-accel', 'tcg',
-            '-cpu', 'cortex-a76', '-m', '4096', '-smp', '1', '-nodefaults', '-display', 'none',
+    args = [qemu, '-M', 'virt,gic-version=3,virtualization=off', '-accel', 'tcg,tb-size=32',
+            '-cpu', 'cortex-a76', '-m', str(ram_mib), '-smp', '1', '-nodefaults', '-display', 'none',
             '-serial', 'null', '-monitor', 'none', '-nic', 'none', '-no-reboot', '-S',
             '-kernel', str(image), '-qmp', f'tcp:127.0.0.1:{port},server=on,wait=off',
             '-d', 'int,guest_errors', '-D', str((out / 'qemu.log').resolve())]
     (out / 'invocation.json').write_text(json.dumps(args, indent=2) + '\n')
     report = {'scope': 'QEMU virt only; no Samsung boot or hardware claim', 'status': 'unknown',
+              'emulated_ram_mib': ram_mib,
               'image_sha256': metadata['image_sha256'], 'payload': payload,
               'qemu': subprocess.check_output([qemu, '--version'], text=True).splitlines()[0]}
     process, qmp = None, None
@@ -123,8 +132,9 @@ if __name__ == '__main__':
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--qemu', default='qemu-system-aarch64')
     p.add_argument('--seconds', type=int, default=25)
+    p.add_argument('--ram-mib', type=int, choices=(2048, 4096), default=4096)
     p.add_argument('--expect-loader-stage', type=lambda v: int(v, 0))
     a = p.parse_args()
-    result = run(a.build, a.out, a.qemu, a.seconds, a.expect_loader_stage)
+    result = run(a.build, a.out, a.qemu, a.seconds, a.expect_loader_stage, a.ram_mib)
     print(json.dumps(result, indent=2))
     raise SystemExit(1 if 'error' in result or result['status'] == 'no XNU entry demonstrated' else 0)

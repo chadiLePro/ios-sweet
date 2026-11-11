@@ -21,6 +21,21 @@ from mkadt import node, u32, u64, cstr
 BLOCK, PAGE, PANIC = 0x2000000, 0x4000, 0x100000
 
 
+def qemu_placement(banks, total, excluded):
+    """Software allocation in emulated RAM only; not a Samsung memory map."""
+    for lo, size in banks:
+        candidate = (lo + BLOCK - 1) & ~(BLOCK - 1)
+        for start, end in sorted(excluded):
+            if candidate + total <= start:
+                break
+            if candidate < end and start < candidate + total:
+                candidate = (end + BLOCK - 1) & ~(BLOCK - 1)
+        if candidate + total <= lo + size and all(
+                candidate + total <= start or end <= candidate for start, end in excluded):
+            return candidate
+    raise ValueError('emulated RAM cannot fit the bootstrap outside boot data and console')
+
+
 def validate_bootstrap_init(data):
     """Accept a small static arm64 Mach-O, not a disk image or Apple dyld app.
 
@@ -258,6 +273,8 @@ def main():
                    help='static diagnostic PID1 from mkinit.py, served by mockfs; not Apple launchd')
     p.add_argument('--qemu-dtb', type=Path, help='QEMU-generated virt DTB; makes a payload that phone packaging rejects')
     p.add_argument('--qemu-diagnostic', type=Path, help='matching QEMU loader diagnostic result with measured CNTFRQ')
+    p.add_argument('--qemu-lowmem', action='store_true',
+                   help='allocate within emulated low RAM instead of testing the phone high-RAM placement')
     a = p.parse_args()
     try:
         if a.out.exists() or a.memory_mib < 128 or a.memory_mib > 1024 or a.memory_mib % 32:
@@ -273,6 +290,8 @@ def main():
         total = a.memory_mib << 20
         base, gic, hz, intid, mpidr, dt_hash = hardware(a.evidence, a.cpu_log, total)
         environment = 'SM-A525F/DS hardware candidate'
+        if a.qemu_lowmem and not a.qemu_dtb:
+            raise ValueError('low-memory allocation is QEMU-only')
         if bool(a.qemu_dtb) != bool(a.qemu_diagnostic):
             raise ValueError('QEMU DTB and diagnostic must be supplied together')
         if a.qemu_dtb:
@@ -280,7 +299,9 @@ def main():
             measured = json.loads(a.qemu_diagnostic.read_text())
             if not measured.get('scope', '').startswith('QEMU virt') or 'error' in measured:
                 raise ValueError('not a successful QEMU diagnostic result')
-            cpu = measured['loader_record']
+            cpu = measured.get('loader_record', measured.get('diagnostic'))
+            if not cpu or ('diagnostic' in measured and measured.get('status') != 'passed'):
+                raise ValueError('QEMU diagnostic did not pass')
             gics = [n for n in emu.nodes.values() if 'arm,gic-v3' in n.strings('compatible')]
             timers = [n for n in emu.nodes.values() if 'arm,armv8-timer' in n.strings('compatible')]
             if len(gics) != 1 or len(timers) != 1 or cpu['current_el'] != 4 or cpu['exception_slot']:
@@ -295,6 +316,16 @@ def main():
             hz, intid, mpidr = cpu['cntfrq'], ppi + 16, cpu['mpidr']
             banks = [r for n in emu.nodes['/'].children
                      if n.strings('device_type') == ['memory'] for r in physical_regs(n)]
+            if a.qemu_lowmem:
+                from a52q_ramoops import configuration
+                log = configuration(a.evidence)
+                # Reserve generous whole software blocks around the Linux Image
+                # and QEMU boot DTB; the loader independently checks actual spans.
+                excluded = [(cpu['image'] & ~(BLOCK - 1),
+                    (cpu['image'] + len(kernel) + (len(init_data) if init else 0) + 2 * BLOCK - 1) & ~(BLOCK - 1)),
+                    (cpu['dtb'] & ~(BLOCK - 1), (cpu['dtb'] & ~(BLOCK - 1)) + BLOCK),
+                    (log['base'], log['base'] + log['size'])]
+                base = qemu_placement(banks, total, excluded)
             if not any(lo <= base and base + total <= lo + size for lo, size in banks):
                 raise ValueError('QEMU RAM does not cover the payload destination')
             environment = 'QEMU virt ONLY; never flash'

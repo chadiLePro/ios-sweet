@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import mkinit
 import mkpayload
 import adt
-from a52q_payload import make_adt, validate_payload, validate_kernel, validate_bootstrap_init, PAGE, PANIC
+from a52q_payload import make_adt, validate_payload, validate_kernel, validate_bootstrap_init, qemu_placement, PAGE, PANIC
 from qemu_a52q_xnu import entry_copies
 import zlib
 from fdt_evidence import Node, physical_regs
@@ -96,6 +96,17 @@ def ramdisk_fixture():
 
 
 class PayloadTests(unittest.TestCase):
+    def test_emulator_allocation_excludes_boot_data_and_console(self):
+        banks = [(0x40000000, 0x80000000)]
+        excluded = [(0x40000000, 0x44000000), (0x48000000, 0x4a000000),
+                    (0xb4640000, 0xb4680000)]
+        base = qemu_placement(banks, 256 << 20, excluded)
+        self.assertEqual(base % (32 << 20), 0)
+        self.assertTrue(all(base + (256 << 20) <= lo or hi <= base for lo, hi in excluded))
+        self.assertTrue(0x40000000 <= base < base + (256 << 20) <= 0xc0000000)
+        with self.assertRaises(ValueError):
+            qemu_placement(banks, 256 << 20, [(0x40000000, 0xc0000000)])
+
     def test_static_init_geometry_and_architecture(self):
         data = init_fixture()
         validate_bootstrap_init(data)

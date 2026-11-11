@@ -56,6 +56,9 @@ def apply(root):
             raise ValueError(f'{name}: expected portable provider guard missing')
         changes[name] = text
     changes[static_init.TARGET] = static_init.transform(read(static_init.TARGET))
+    replace('bsd/kern/sweet_amfi.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
+            '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_amfi.c"\n#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
+    changes['bsd/kern/a52q_amfi.c'] = (HERE / 'a52q_amfi.c').read_text()
 
     replace('makedefs/MakeInc.def', 'VMAPPLE SWEET\n', 'VMAPPLE SWEET A52Q\n')
     replace('makedefs/MakeInc.def', 'ifneq ($(CURRENT_MACHINE_CONFIG),SWEET)',

@@ -24,7 +24,13 @@ LEAVES = {
     'serial': ('a52q_serial.inc', 'pexpert/arm/pe_serial.c', 'pe_serial.o', 'pexpert'),
     'ram-root': (None, 'iokit/Kernel/IOService.cpp', 'IOService.cpo', 'iokit'),
     'static-init': (None, 'bsd/kern/ubc_subr.c', 'ubc_subr.o', 'bsd'),
+    'amfi': ('a52q_amfi.c', 'bsd/kern/sweet_amfi.c', 'sweet_amfi.o', 'bsd'),
 }
+AMFI_OVERLAY_ADDITION = (
+    "    replace('bsd/kern/sweet_amfi.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',\n"
+    "            '#if defined(ARM64_BOARD_CONFIG_A52Q)\\n#include \"a52q_amfi.c\"\\n#endif\\n#if defined(ARM64_BOARD_CONFIG_SWEET)')\n"
+    "    changes['bsd/kern/a52q_amfi.c'] = (HERE / 'a52q_amfi.c').read_text()\n"
+).encode()
 # xnu-8796.141.3 + the original 81 patches, independently identical in the
 # successful full A52 build and original patched source. No Redmi objects used.
 ROOT_MEDIA_BASE_SHA256 = '3e97419a2ce90729537e65cd5de200887e7eaddebd01e90502f05a485efbe7a3'
@@ -54,7 +60,10 @@ def main():
         new = (root / name).read_bytes()
         # One reviewed transition for a RAM-only root: enable the existing
         # no-IOStorageFamily handling, and nothing else in the overlay logic.
-        if a.leaf == 'static-init' and name == 'xnu/a52q/apply.py' and old != new:
+        if a.leaf == 'amfi' and name == 'xnu/a52q/apply.py' and old != new:
+            if new.count(AMFI_OVERLAY_ADDITION) != 1 or new.replace(AMFI_OVERLAY_ADDITION, b'') != old:
+                raise SystemExit('full build required: unreviewed diagnostic AMFI overlay delta')
+        elif a.leaf == 'static-init' and name == 'xnu/a52q/apply.py' and old != new:
             normalized = new
             for addition in (b'import static_init\n',
                     b'    changes[static_init.TARGET] = static_init.transform(read(static_init.TARGET))\n'):
@@ -105,7 +114,17 @@ def main():
         if hashlib.sha256((work / 'xnu' / name).read_bytes()).hexdigest() != expected:
             raise SystemExit('base source hash mismatch: ' + name)
     name, unit, member, component = LEAVES[a.leaf]
-    if a.leaf == 'static-init':
+    if a.leaf == 'amfi':
+        source = work / 'xnu' / Path(unit).parent / name
+        source.write_bytes((root / 'xnu/a52q' / name).read_bytes())
+        wrapper = work / 'xnu' / unit
+        old_guard = '#if defined(ARM64_BOARD_CONFIG_SWEET)'
+        text = wrapper.read_text()
+        if text.count(old_guard) != 1:
+            raise SystemExit('diagnostic AMFI wrapper differs')
+        wrapper.write_text(text.replace(old_guard,
+            '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_amfi.c"\n#endif\n' + old_guard))
+    elif a.leaf == 'static-init':
         import importlib.util
         source = work / 'xnu' / unit
         # Only this existing C unit is recompiled, with the identical API and
