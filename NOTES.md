@@ -35,8 +35,11 @@ write. Always collect pstore and restore original BOOT immediately on TWRP retur
 ### CPU-only platform implementation and validation in progress
 
 Commit e2adc9f adds independent A52PlatformExpert/A52CPU and polling RAM serial.
-Full macOS build 43037064641 (job 130578574696) is running. The static diagnostic
-init assembly/Mach-O build step already succeeded; full kernel pending.
+Full macOS build 43037064641 found two A52CPU.cpp compiler errors: DSB_ISHST
+and ISB_SY undeclared. Add machine/atomic.h, matching the existing IOCPU API
+implementation include requirements. Canceled that superseded run and rebuilding.
+Platform expert/RAM serial compiled with no reported errors. Static diagnostic
+init assembly/Mach-O build step succeeded; full kernel remains pending.
 Commit a8add2b adds --bootstrap-init, bounds/signature/static-entry checks and
 requires ADT RAMDisk to match the last loaded protected segment + its SHA256.
 62 local host tests and repository validation pass. Original 81 patches intact.

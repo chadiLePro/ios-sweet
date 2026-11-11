@@ -4,6 +4,7 @@
 #include <libkern/c++/OSData.h>
 #include <libkern/c++/OSNumber.h>
 #include <arm64/proc_reg.h>
+#include <machine/atomic.h>
 #include <kern/clock.h>
 #include <kern/processor.h>
 #include <kern/thread.h>
