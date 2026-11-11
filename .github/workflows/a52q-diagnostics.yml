@@ -19,12 +19,18 @@ on:
 jobs:
   diagnostic-core:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu qemu-system-arm
       - run: python3 tools/validate-repo.py
       - run: python3 -m unittest discover -s tests -v
       - run: gcc -std=c11 -Wall -Wextra -Werror tests/host_ramlog_test.c -o /tmp/host-ramlog && /tmp/host-ramlog
+      - name: Install cross compiler and emulator (bounded mirror failures)
+        run: |
+          timeout 180 sudo apt-get -o Acquire::Retries=0 -o Acquire::http::Timeout=15 \
+            -o Acquire::https::Timeout=15 -o APT::Update::Error-Mode=any update
+          timeout 180 sudo apt-get -o Acquire::Retries=0 -o Acquire::http::Timeout=15 \
+            -o Acquire::https::Timeout=15 install -y --no-install-recommends gcc-aarch64-linux-gnu qemu-system-arm
       # CI has no private phone evidence, so builds the no-output core only.
       - run: python3 tools/build_a52q_diag.py
       - run: python3 tools/qemu_a52q_diag.py --build shim/out/a52q --out shim/out/qemu-a52q-ci-el1 --linux-entry
