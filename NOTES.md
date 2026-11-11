@@ -28,6 +28,10 @@ Memory planner committed/pushed as a317b56. Diagnostic CI 43013452142 PASSED:
 report: backup/a52q/20261111T100325Z/memory-plan.json. Source-only changes exclude
 all phone dumps and images. Snapshot inspector wording now distinguishes its
 own evidence scope from the separately proven hardware diagnostic milestone.
+Follow-up 2cf328f also PASSED diagnostic CI 43013734515. The source patch is
+regenerated at shim/out/a52q-source.patch. XNU control 43012318206 remains in its
+Build step as of about 11:41 UTC; inspect its completion/logs on continuation.
+No XNU success is claimed and no new phone test is pending restoration.
 Historical paragraphs below may say not pushed or need commit: 37c47ee already
 committed and pushed the r4 source/log decoder and toolchain control.
 
