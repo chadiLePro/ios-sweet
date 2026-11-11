@@ -2,6 +2,20 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### RESTORE PENDING: READ-ONLY UFS SNAPSHOT IN BOOT
+
+UFS register-only probe installed/read back and TWRP System reboot sent.
+backup/a52q/ufs-handoff/receipt.json requires_restore=true. Watcher
+research/watch_ufs_restore.py unified session9750. User asked10s +returnTWRP.
+On recovery FIRST collect/restore and verify original BOOT. No UFS commands,
+clock/reset writes, or userdata format. New short A52S2 nonce/stage/ESR CRC
+records included, 5 replicas. Native build+packaging and72 tests passed.
+Candidate shim/out/a52q-ufs-handoff/a52q-ufs-readonly-UNTESTED.img.
+
+HFS full build RUNNING https://github.com/chadiLePro/ios-sweet/actions/runs/43061413864
+verified head16cf668234b1d8fe558176ff5c5cc6222abe3f56, filesystem=hfs.
+Push-default mockfs run43061385487 canceled by concurrency, expected.
+
 ### RGB trial collected; ORIGINAL BOOT RESTORED; visibility inconclusive
 
 16:42:23 UTC original BOOT restored/full96MiB readback, other partitions unchanged.

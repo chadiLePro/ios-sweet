@@ -89,6 +89,11 @@ static void handoff_end(volatile struct ramlog *r)
 static void log_handoff(volatile struct ramlog *r)
 {
     for (unsigned copy = 0; copy < 5; copy++) {
+        handoff_begin(r, "A52S2 ");
+        handoff_hex(r, A52Q_CAPTURE_ID, 64); log_char(r, '/');
+        handoff_hex(r, a52q_diagnostic.stage, 32); log_char(r, '/');
+        handoff_hex(r, a52q_diagnostic.esr, 64);
+        handoff_end(r);
         handoff_begin(r, "A52M2 ");
         handoff_hex(r, A52Q_CAPTURE_ID, 64); log_char(r, '/');
         handoff_hex(r, A52Q_HANDOFF_TAG, 64); log_char(r, '/');

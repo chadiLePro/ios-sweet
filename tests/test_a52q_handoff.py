@@ -42,16 +42,21 @@ class HandoffTests(unittest.TestCase):
             return kind.encode() + b' ' + raw + f' {zlib.crc32(raw):08x}\n'.encode()
         metadata = frame('A52M2', '0000000000000051/000000000000000c/01/01/ffffffffffffffff')
         record = frame('A52R2', '0000000000000051/00/0ae05014/12345678')
+        stage = frame('A52S2', '0000000000000051/00000093/0000000000000000')
         stale = frame('A52R2', '0000000000000050/00/0ae05014/00000000')
-        result = decode(metadata + record + record.replace(b'12345678', b'12345679') + stale, config)
+        result = decode(metadata + stage + record + record.replace(b'12345678', b'12345679') + stale, config)
         self.assertTrue(result['complete'])
         self.assertEqual(result['registers'][0]['value'], 0x12345678)
         self.assertEqual(result['valid_register_copies'], {0: 1})
+        self.assertEqual((result['stage'], result['esr'], result['valid_stage_copies']), (0x93, 0, 1))
+        self.assertIsNone(decode(metadata + stage.replace(b'00000093', b'000000e9'), config)['stage'])
         missing = decode(metadata + stale, config)
         self.assertFalse(missing['complete'])
         self.assertEqual(missing['missing_indices'], [0])
         with self.assertRaises(ValueError):
             decode(metadata + record + frame('A52R2', '0000000000000051/00/0ae05014/00000002'), config)
+        with self.assertRaisesRegex(ValueError, 'stage records disagree'):
+            decode(metadata + stage + frame('A52S2', '0000000000000051/000000e9/0000000000000000'), config)
 
 
 if __name__ == '__main__':
