@@ -19,12 +19,18 @@ _head:
 .text
 _start:
     msr daifset, #0xf
-    /* Only EL1 is implemented. Do not write EL1 state from another EL. */
+    /* Linux permits EL1 or EL2 handoff. Diagnose either without changing EL. */
     mrs x9, CurrentEL
     cmp x9, #4
+    b.eq entry_el1
+    cmp x9, #8
     b.ne park
+    mrs x9, sctlr_el2
+    b check_mmu
+entry_el1:
     /* The Linux boot protocol requires MMU off. Leave unknown state alone. */
     mrs x9, sctlr_el1
+check_mmu:
     tbnz x9, #0, park
     mov x19, x0
     msr spsel, #1
@@ -37,7 +43,14 @@ _start:
     str xzr, [x9], #8
     b 1b
 2:  adr x9, vectors
+    mrs x10, CurrentEL
+    cmp x10, #8
+    b.eq vectors_el2
     msr vbar_el1, x9
+    b vectors_ready
+vectors_el2:
+    msr vbar_el2, x9
+vectors_ready:
     isb
     mov x0, x19
     bl diag_main

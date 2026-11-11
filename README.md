@@ -1,8 +1,8 @@
 # ios-sweet
 
 Experimental Galaxy A52 **4G** (`a52q`, SM-A525) bring-up is documented separately
-in [docs/A52Q.md](docs/A52Q.md). It currently provides a compiled diagnostic shim
-and an **untested unsigned** image candidate, not an A52 XNU/iOS boot. The Redmi
+in [docs/A52Q.md](docs/A52Q.md). Its diagnostic shim reached stage 2 on the A52;
+XNU/iOS has not booted. The unsigned diagnostic is experimental. The Redmi
 instructions below do not apply to Samsung Download Mode or partition layouts.
 
 **Apple's iOS 16 running on a Redmi Note 10 Pro.**

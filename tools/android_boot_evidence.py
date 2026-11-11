@@ -8,6 +8,8 @@ import hashlib
 import struct
 import gzip
 
+SEANDROID_TRAILER = b'SEANDROIDENFORCE\0'
+
 
 def inspect(data):
     if len(data) < 1632 or data[:8] != b'ANDROID!':
@@ -61,7 +63,40 @@ def inspect(data):
     result['aligned_image_end'] = off
     result['trailing_bytes'] = max(0, len(data) - off)
     result['avb_footer'] = len(data) >= 64 and data[-64:-60] == b'AVBf'
+    result['seandroid_trailer'] = data[off:off + len(SEANDROID_TRAILER)] == SEANDROID_TRAILER
+    if result['avb_footer']:
+        result['avb_metadata'] = inspect_avb_footer(data, off)
     return result
+
+
+def inspect_avb_footer(data, aligned_image_end):
+    """Structural checks only. Does not validate an AVB cryptographic signature."""
+    _, major, minor, original, offset, size = struct.unpack_from('>4sIIQQQ', data, len(data) - 64)
+    errors = []
+    if major != 1:
+        errors.append('unsupported AVB footer major version')
+    if not aligned_image_end <= original <= offset or offset + size > len(data) - 64:
+        errors.append('AVB footer offsets disagree with current boot image geometry')
+    if size < 256 or data[offset:offset + 4] != b'AVB0':
+        errors.append('AVB footer does not reference a VBMeta header')
+    return {'version': f'{major}.{minor}', 'original_image_size': original,
+            'vbmeta_offset': offset, 'vbmeta_size': size,
+            'structural_errors': errors, 'signature_verified': False}
+
+
+def template_trailer(data, info=None):
+    """Preserve only the exact Samsung trailer observed at the aligned image end.
+
+    The marker is a format artifact, not a signature or a bypass of verification.
+    Signed AVB data is never returned by this function.
+    """
+    info = info or inspect(data)
+    offset = info['aligned_image_end']
+    if data[offset:offset + len(SEANDROID_TRAILER)] == SEANDROID_TRAILER:
+        return SEANDROID_TRAILER
+    if data[offset:offset + len(SEANDROID_TRAILER) - 1] == SEANDROID_TRAILER[:-1]:
+        raise ValueError('unsupported Samsung trailer termination')
+    return b''
 
 
 def kernel_contract(data, info=None):

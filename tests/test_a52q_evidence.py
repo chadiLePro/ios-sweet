@@ -7,7 +7,7 @@ import gzip
 import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
-from android_boot_evidence import inspect, kernel_contract
+from android_boot_evidence import inspect, kernel_contract, template_trailer, SEANDROID_TRAILER
 from fdt_evidence import Fdt, describe, simplefb
 from a52q_ramoops import configuration
 from package_a52q_diag import verify_overlay
@@ -92,6 +92,29 @@ def boot(version=2, gap=False):
 
 
 class BootTests(unittest.TestCase):
+    def test_preserves_observed_samsung_trailer(self):
+        b = boot()
+        end = inspect(b)['aligned_image_end']
+        b[end:end + 16] = SEANDROID_TRAILER
+        self.assertTrue(inspect(b)['seandroid_trailer'])
+        self.assertEqual(template_trailer(b), SEANDROID_TRAILER)
+
+    def test_does_not_invent_samsung_trailer(self):
+        self.assertEqual(template_trailer(boot()), b'')
+
+    def test_rejects_unknown_trailer_termination(self):
+        b = boot()
+        end = inspect(b)['aligned_image_end']
+        b[end:end + 16] = SEANDROID_TRAILER[:-1] + b'X'
+        with self.assertRaises(ValueError):
+            template_trailer(b)
+
+    def test_reports_stale_avb_footer(self):
+        b = boot()
+        struct.pack_into('>4sIIQQQ', b, len(b) - 64, b'AVBf', 1, 0, 4096, 8192, 256)
+        errors = inspect(b)['avb_metadata']['structural_errors']
+        self.assertEqual(len(errors), 2)
+
     def test_v0(self):
         self.assertEqual(inspect(boot(0))['header_version'], 0)
 

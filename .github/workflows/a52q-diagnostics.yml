@@ -21,13 +21,19 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
+      - run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu qemu-system-arm
       - run: python3 tools/validate-repo.py
       - run: python3 -m unittest discover -s tests -v
       - run: gcc -std=c11 -Wall -Wextra -Werror tests/host_ramlog_test.c -o /tmp/host-ramlog && /tmp/host-ramlog
       # CI has no private phone evidence, so builds the no-output core only.
       - run: python3 tools/build_a52q_diag.py
+      - run: python3 tools/qemu_a52q_diag.py --build shim/out/a52q --out shim/out/qemu-a52q-ci-el1 --linux-entry
+      - run: python3 tools/qemu_a52q_diag.py --build shim/out/a52q --out shim/out/qemu-a52q-ci-el2 --linux-entry --entry-el2
+      - run: python3 tools/qemu_a52q_diag.py --build shim/out/a52q --out shim/out/qemu-a52q-ci-fault --fault-at-park
+      - run: python3 tools/qemu_a52q_diag.py --build shim/out/a52q --out shim/out/qemu-a52q-ci-fault-el2 --fault-at-park --entry-el2
       - uses: actions/upload-artifact@v4
         with:
           name: a52q-diagnostic-core-NOT-A-BOOT-IMAGE
-          path: shim/out/a52q/
+          path: |
+            shim/out/a52q/
+            shim/out/qemu-a52q-ci-*/

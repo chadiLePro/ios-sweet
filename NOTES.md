@@ -2,6 +2,59 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### CURRENT HARDWARE STATE — second turn, read before acting
+
+**r3 SECOND ATTEMPT SUCCEEDED TO DIAGNOSTIC STAGE 2 ON THE A52. Original BOOT
+has been restored and fully hash verified. RECOVERY/DTBO/VBMETA are unchanged.
+Phone is in TWRP with ORIGINAL BOOT installed, not the shim.** Restore receipt:
+`backup/a52q/automatic-test-r3-second-restored.json`. Private evidence directory:
+`backup/a52q/hardware-r3-second-20261111T110009Z/`.
+
+Pstore contains A52QDIAG v1, stage 2, image 0xa13f0000, DTB 0xa8f38000,
+MIDR 0x51df805e, MMFR0 0x101122, PFR0 0x11112222, CNTFRQ 0x124f800 (19.2 MHz).
+Some text is corrupted after the button reset: `currEnt_el` ends in `<` instead
+of a hex digit, and `sctlr` label became `qctlr`. Do NOT infer a reliable entry EL
+or exact SCTLR from this capture. No XNU has been built/booted for A52. Next work:
+redundant checksummed logging and extra CPU/cache feature registers, before XNU.
+
+Original-ROM control succeeded via TWRP System reboot; user unlocked and approved
+ADB. Actual ROM: UN1CA Carbon IX v1.0 (ZZI8), Android 17 SDK37, One UI 90000;
+vendor Android 11 A525FXXSCFYF1, both basebands A525FXXSCFYF1, kernel
+4.14.356-openela-rc1-valeryn-gf0f6778235ba-abA525FXXSCFYF1. KEXEC disabled.
+Confirmed properties: `backup/a52q/normal-rom-confirmed-properties.json`.
+The boot/DTBO/recovery hashes also match the independent October backup under
+`C:/Users/RyZe/Documents/Codex/2026-10-22/mak/outputs/A52-current-firmware-backup`.
+TWRP's own System reboot runs its installed rebootsystem.sh, which writes zeros
+to the first 256 bytes of MISC (verified already zero) and can update recovery
+logs/settings. No MISC data change or userdata format was requested. The generic
+ADB reboot path/control observations were not reliable proof of normal boot.
+
+User explicitly superseded the no-automatic-flash restriction with "nono flash
+automaticly" after the BOOT-only diagnostic scope and restoration were explained.
+Revision 3 was written to BOOT only and fully read back, then boot was attempted.
+User reported a direct return to TWRP. No A52QDIAG marker was found; shim execution
+is NOT demonstrated. **Original BOOT has already been restored and fully hash
+verified**, RECOVERY unchanged. An original-BOOT control reboot is now being
+observed. No userdata format, MISC write, DTBO/VBMETA write or bootloader write.
+
+Private hardware result: `backup/a52q/hardware-r3-20261111T103946Z/`; restore
+receipt: `backup/a52q/automatic-test-r3-restored.json`. BOOT original hash remains
+d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Candidate r3 (not currently installed):
+`shim/out/a52q-ramoops-r3/a52q-diag-UNTESTED-unsigned-full-r3.img`, hash
+c4aa86c551e1c580ecce1640046344662e447659783915d379f4e7d0dd028374.
+Original BOOT contains SEANDROIDENFORCE+NUL at aligned content end; r3 preserves
+it. The earlier candidate omitted this marker and is superseded. RECOVERY's AVB
+footer has stale offsets; do not claim its signature was verified or rewrite it.
+
+New QEMU runner exercises actual diagnostic code at EL1 and EL2, Linux Image/FDT
+handoff, relocation, RAM logger and injected exceptions. All performed QEMU cases
+passed. This is QEMU virt, not Samsung/XNU emulation. Revision 3 raw Image hash
+f681a361b7698ff1e177764a4f83268a376a6ced5388283c6c4a15b0bf887915.
+New code/notes still need final validation/commit after the control result.
+
+The paragraphs below describe the previous turn's state and are historical.
+
 The new user's device is SM-A525F/DS, reported unlocked, UN1CA Carbon/One UI 9,
 existing TWRP. The old Xiaomi userdata approval below is NOT A52 authorization.
 No phone partitions were written. Read-only ADB acquisition identified a52q/atoll,

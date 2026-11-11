@@ -14,7 +14,7 @@ import struct
 import subprocess
 import sys
 import tempfile
-from android_boot_evidence import inspect, kernel_contract
+from android_boot_evidence import inspect, kernel_contract, template_trailer
 from a52q_ramoops import configuration
 from fdt_evidence import Fdt
 
@@ -69,6 +69,7 @@ def main():
         overlay = verify_overlay((a.evidence / 'dtbo.img').read_bytes(), live)
         original = (a.evidence / 'boot.img').read_bytes()
         info = inspect(original)
+        trailer = template_trailer(original, info)
         if len(original) != 100663296:
             raise ValueError('need the complete observed 96 MiB BOOT partition dump')
         contract = kernel_contract(original, info)
@@ -107,6 +108,10 @@ def main():
             subprocess.run(args + ['-o', str(candidate)], check=True)
             packed = candidate.read_bytes()
             check = inspect(packed)
+            kernel_section = check['sections']['kernel']
+            packed_kernel = packed[kernel_section['offset']:kernel_section['offset'] + kernel_section['size']]
+            if gzip.decompress(packed_kernel) != raw:
+                raise ValueError('round-trip changed diagnostic kernel')
             packed_cmdline = packed[64:576].split(b'\0')[0] + packed[608:1632].split(b'\0')[0]
             if packed_cmdline != cmdline.encode('ascii'):
                 raise ValueError('round-trip changed embedded command line')
@@ -119,6 +124,9 @@ def main():
                     raise ValueError(f'round-trip changed {name}')
             if len(packed) > len(original) or check['avb_footer']:
                 raise ValueError('invalid candidate size or stale AVB footer')
+            packed += trailer
+            if template_trailer(packed) != trailer:
+                raise ValueError('round-trip changed Samsung trailer')
             # Full partition-sized output clears old AVB metadata at the tail
             # even when a recovery writer does not erase unwritten tail blocks.
             packed += bytes(len(original) - len(packed))
@@ -129,8 +137,9 @@ def main():
                   'intended_partition': 'BOOT only; no device-writing command implemented',
                   'bytes': len(packed), 'sha256': hashlib.sha256(packed).hexdigest(),
                   'template_boot_sha256': info['sha256'], 'dtbo_entry': overlay,
+                  'seandroid_trailer_preserved': bool(trailer),
                   'kernel_contract': contract, 'candidate_ramoops': log,
-                  'remaining': ['Samsung acceptance of unsigned boot image', 'EL1 entry',
+                  'remaining': ['Samsung acceptance of unsigned boot image', 'actual entry EL and CPU feature report',
                                 'ramoops retention across reset', 'readable A52QDIAG v1 record in TWRP']}
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:

@@ -93,7 +93,8 @@ void diag_main(uint64_t dtb)
     a52q_diagnostic.dtb = dtb; /* preserve, but do not dereference unvalidated x0 */
     publish(1);
     a52q_diagnostic.current_el = READ_REG("CurrentEL");
-    a52q_diagnostic.sctlr = READ_REG("sctlr_el1");
+    a52q_diagnostic.sctlr = a52q_diagnostic.current_el == 8 ?
+        READ_REG("sctlr_el2") : READ_REG("sctlr_el1");
     a52q_diagnostic.mpidr = READ_REG("mpidr_el1");
     a52q_diagnostic.midr = READ_REG("midr_el1");
     a52q_diagnostic.mmfr0 = READ_REG("id_aa64mmfr0_el1");
@@ -105,8 +106,14 @@ void diag_main(uint64_t dtb)
 void diag_exception(uint64_t slot)
 {
     a52q_diagnostic.exception_slot = slot;
-    a52q_diagnostic.esr = READ_REG("esr_el1");
-    a52q_diagnostic.elr = READ_REG("elr_el1");
-    a52q_diagnostic.far = READ_REG("far_el1");
+    if (READ_REG("CurrentEL") == 8) {
+        a52q_diagnostic.esr = READ_REG("esr_el2");
+        a52q_diagnostic.elr = READ_REG("elr_el2");
+        a52q_diagnostic.far = READ_REG("far_el2");
+    } else {
+        a52q_diagnostic.esr = READ_REG("esr_el1");
+        a52q_diagnostic.elr = READ_REG("elr_el1");
+        a52q_diagnostic.far = READ_REG("far_el1");
+    }
     publish(0xff);
 }

@@ -1,6 +1,6 @@
 {
   "target": "a52q",
-  "status": "diagnostic candidate packaged; no phone boot demonstrated",
+  "status": "diagnostic stage 2 observed on SM-A525F/DS; no XNU boot; log integrity needs improvement",
   "models": ["SM-A525F", "SM-A525F/DS", "SM-A525M", "SM-A525M/DS"],
   "soc": "Qualcomm SM7125 / Snapdragon 720G / atoll",
   "boot_transport": "Samsung Download Mode; no verified temporary RAM boot",
