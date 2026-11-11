@@ -82,6 +82,31 @@ def apply(root):
     replace('osfmk/arm64/sweet_early.c', '#if defined(SWEET)',
             '#if defined(A52Q)\n#include "a52q_early.c"\n#endif\n\n#if defined(SWEET)')
     changes['osfmk/arm64/a52q_early.c'] = (HERE / 'a52q_early.c').read_text()
+    # Keep independent implementations in the two existing build units, whose
+    # Redmi bodies remain guarded by SWEET. No change to the original patches.
+    for stem in ('A52PlatformExpert', 'A52CPU'):
+        legacy = {'A52PlatformExpert': 'SweetPlatformExpert', 'A52CPU': 'SweetCPU'}[stem]
+        replace(f'iokit/Kernel/arm/{legacy}.cpp', '#if defined(SWEET)',
+                f'#if defined(A52Q)\n#include "{stem}.cpp"\n#endif\n\n#if defined(SWEET)')
+        changes[f'iokit/Kernel/arm/{stem}.cpp'] = (HERE / f'{stem}.cpp').read_text()
+    replace('iokit/KernelConfigTables.cpp', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
+            '#if defined(ARM64_BOARD_CONFIG_A52Q)\n'
+            '    " { \'IOClass\' = A52PlatformExpert; \'IOProviderClass\' = IOPlatformExpertDevice;"\n'
+            '    "   \'IONameMatch\' = \'samsung,a52q\'; \'IOProbeScore\' = 10000:32; },"\n'
+            '    " { \'IOClass\' = A52CPU; \'IOProviderClass\' = IOPlatformDevice;"\n'
+            '    "   \'IONameMatch\' = \'ARM,v8\'; \'IOProbeScore\' = 10000:32; },"\n'
+            '#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
+    # Read-only software observation of CPU signal state, not SMP startup.
+    replace('osfmk/arm64/cpu.c', '#if defined(SWEET)\n/* Bring-up observer:',
+            '#if defined(SWEET) || defined(A52Q)\n/* Bring-up observer:')
+    changes['pexpert/arm/a52q_serial.inc'] = (HERE / 'a52q_serial.inc').read_text()
+    replace('pexpert/arm/pe_serial.c', 'int\nserial_init(void)',
+            '#if defined(A52Q)\n#include "a52q_serial.inc"\n#endif\n\nint\nserial_init(void)')
+    # RAM console has no SoC UART base and needs no ADT serial/device lookup.
+    replace('pexpert/arm/pe_serial.c', '\tsoc_base = pe_arm_get_soc_base_phys();',
+            '#if defined(A52Q)\n\tregister_serial_functions(&a52q_ram_functions);\n'
+            '\ta52q_ram_init();\n\tserial_do_transmit = 1;\n\tuart_initted = true;\n\treturn 1;\n#endif\n'
+            '\tsoc_base = pe_arm_get_soc_base_phys();')
     # Route serial output to RAM before any UART lookup, even without arm-io.
     replace('pexpert/arm/pe_serial.c', 'uart_putc(char c)\n{',
             'uart_putc(char c)\n{\n#if defined(A52Q)\n\tsweet_early_putc(c);\n\treturn;\n#endif')

@@ -91,9 +91,17 @@ five_sec:
 path:
 	.asciz	"/dev/console"
 hello:
+#if defined(A52Q_INIT)
+	.ascii	"\n*** A52Q bootstrap userspace: init running as PID "
+#else
 	.ascii	"\n*** SWEET userspace: init running as PID "
+#endif
 hello_tail:
 	.ascii	" ***\n"
 alive:
+#if defined(A52Q_INIT)
+	.ascii	"A52Q bootstrap init: still alive\n"
+#else
 	.ascii	"SWEET init: still alive\n"
+#endif
 alive_end:

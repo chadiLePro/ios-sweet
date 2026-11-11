@@ -53,6 +53,13 @@ jobs:
           echo 'DEVELOPER_DIR=/Applications/Xcode_16.0.app/Contents/Developer' >> "$GITHUB_ENV"
           sudo xcode-select -s /Applications/Xcode_16.0.app
           xcodebuild -version
+      - name: Build minimal static bootstrap init (not Apple launchd)
+        run: |
+          mkdir -p out
+          xcrun clang -target arm64-apple-ios16.0 -DA52Q_INIT=1 -c tools/sweet-init.S -o out/a52q-init.o
+          python3 tools/mkinit.py out/a52q-init.o out/a52q-init.macho
+          file out/a52q-init.macho
+          shasum -a 256 out/a52q-init.macho > out/INIT-SHA256SUMS
       - name: Build A52Q kernel
         working-directory: dxb
         env:
