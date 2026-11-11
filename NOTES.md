@@ -2,6 +2,56 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### One-block read trial prepared; no pending restore yet
+
+New mode --ufs-read-geometry/--ufs-read-nop-build/--ufs-read-nop-log builds after
+priorcheckedNOPproof and performs a freshNOP first. Capacity expected31077375lastLBA,
+4096byteblocks fromTWRPdisk127292932096B LUN0sysfs0:0:0:0. READ10 readsunchanged
+RECOVERY firstblock LBA123888, CRCexpected1080028829; SHA45203384e4043136a78a33809e7fc3c554d123d6d971031dab2f60f7dfe56745
+independentlymatchesoriginalRECOVERYbackup. DO NOT use BOOTfirstblockexpectedCRC:
+candidate install changesBOOT. OnlyREADCAPACITY25/READ1028 allowed, PRDT1length
+8or4096 only, data106002000. READgeometry JSON backup/a52q/ufs-read-geometry.json.
+Nativecompile+hostCpacket/endian/opcode/length/CRCtest+78Python tests passed.
+Image shim/out/a52q-ufs-read/a52q-ufs-read-UNTESTED.img prepared, NOT installedyet.
+Privatehelper requires explicit --ufs-nop --ufs-read, regeneratesconfig +checks
+currentdisk/recoverystart. ExistingBOOToriginalrestored. UserjustreturnedTWRP,
+explicitautoBOOTauthorizationpersists. Next explainBOOTwrite/RECOVERYread/noformat
+andrestorebuttons, install+watch10s+collect/restoreFIRST, decodeA52C1+stageb3.
+
+IMPORTANT root-copy diagnosis correction: actual root cause is APFS-FUSE SIGSEGV
+in readdir under CoreRealityIO.framework/usd/usd/aaplUsdPhysics/resources/aaplUsdPhysics.
+Not merely tool HUP. dmesg provesSIG11, free~1.9GiBswap. Root rsync thenfails23,
+wrapperexits andLinuxguest getsSIGHUP withuncleanfilesystem. Read fullsession45333
+onlywithsmalloutputbudget (it has94ktokens of repeatedENOTCONNerrors). All partial
+HFS images invalid. Detachedv3failed staleFuse; v4failedbecausemountpoint-q returns
+falseonstaleFuse. Fix by/proc/mounts exactmountpoint thenumount; investigateFUSE
+null deref addr2line0x2ee4f/0x1ee4f at pinnedapfs source before retryingfullcopy.
+KernelAPFSFuseprocessosdead, sysos/apposstillalive. Don't blindlyrebuildfullroot.
+NativeWHPXmetadata fixture-v2 kernelirqchipoff stillnetworknotready; lowerpriority.
+
+### NOP SUCCESS ON A52; ORIGINAL BOOT RESTORED
+
+20:08:56 UTC original BOOT/full96MiB hash restored; recovery/DTBO/vbmeta unchanged.
+backup/a52q/ufs-nop/receipt.json requires_restore=false; phone TWRP.
+checked-result.json: all9registersCRCvalid,stagea4,ESR0,4validstagecopies,
+3validNOPcopies,OCS0,responseheader20000000,doorbell0. This proves fresh NOP
+exchange using own list/UCD at106000000/106001000 and response106001400:
+CPU-to-controller descriptor fetch + controller-to-RAM response worked >4GiB.
+Original BASE/RSR restored by probe. Does NOT prove PRDT/data-sector I/O yet.
+Candidate2a23e1e41656ecb91db7525f610bb2957e82c1b39c0648e2cdb259ba519bec1a.
+Next: read-only READ CAPACITY(10) and one verified current BOOT block using a
+bounded data PRDT; match TWRP geometry/backup CRC before exposing disk to XNU.
+No SCSI write implementation/format authorized. User nearby and requesting iOS.
+
+Background sourcecopy again died SIGHUP; v2 image now incomplete/corrupt
+(Invalid key length). DO NOT USE any current full root artifact. Need detached
+Windows Start-Process -WindowStyle Hidden with redirected stdin/out to survive
+tool/session HUP. Native WHPX guest boots, rsync listen873 ready, but TCP transport
+did not respond to host probes; testing kernel-irqchip=off fixture-v2 running
+unified40922. Initialfixturefailedwithoutcopy; no physicaldevices. Ifslow, don't
+spend forever on acceleration: run detached Linux TCG rebuild and keepworking.
+Source roots stillreadonlyAPFSmounted. Newcopyv3 must finish+unmount+fsck beforeuse.
+
 ### UFS NOP trial prepared; user ready; no pending phone restore yet
 
 User confirmed near phone/able to return TWRP. Prepared shim/out/a52q-ufs-nop/

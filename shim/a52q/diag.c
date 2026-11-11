@@ -1,6 +1,7 @@
 /* A52 diagnostic core, with optional bounds-checked embedded XNU handoff.
  * No board MMIO by default; optional handoff mode reads an evidenced whitelist.
- * Explicit experiments can write splash pixels/CTL_START or issue a UFS NOP.
+ * Explicit experiments can write splash pixels/CTL_START, issue UFS NOP, or
+ * perform bounded read-only capacity/one-block SCSI commands.
  * Other modes have no MMIO writes, SMC, DMA, reset or storage commands. Default records into its own
  * image. Optional evidence-derived ramoops output uses reserved RAM only.
  * The default diagnostic build does not include the loader or a kernel.
@@ -29,6 +30,10 @@ static uint64_t handoff_active = UINT64_MAX;
 #endif
 #ifdef A52Q_UFS_NOP
 static uint32_t ufs_nop_ocs = 15, ufs_nop_response, ufs_nop_doorbell;
+#endif
+#ifdef A52Q_UFS_READ
+static uint32_t ufs_capacity_last = UINT32_MAX, ufs_capacity_block = UINT32_MAX;
+static uint32_t ufs_read_crc, ufs_read_failure, ufs_read_ocs = 15, ufs_read_response;
 #endif
 
 #ifdef A52Q_RAMOOPS_CONFIG
@@ -103,6 +108,17 @@ static void log_handoff(volatile struct ramlog *r)
         handoff_hex(r, ufs_nop_ocs, 32); log_char(r, '/');
         handoff_hex(r, ufs_nop_response, 32); log_char(r, '/');
         handoff_hex(r, ufs_nop_doorbell, 32);
+        handoff_end(r);
+#endif
+#ifdef A52Q_UFS_READ
+        handoff_begin(r, "A52C1 ");
+        handoff_hex(r, A52Q_CAPTURE_ID, 64); log_char(r, '/');
+        handoff_hex(r, ufs_capacity_last, 32); log_char(r, '/');
+        handoff_hex(r, ufs_capacity_block, 32); log_char(r, '/');
+        handoff_hex(r, ufs_read_crc, 32); log_char(r, '/');
+        handoff_hex(r, ufs_read_failure, 32); log_char(r, '/');
+        handoff_hex(r, ufs_read_ocs, 32); log_char(r, '/');
+        handoff_hex(r, ufs_read_response, 32);
         handoff_end(r);
 #endif
         handoff_begin(r, "A52M2 ");
@@ -194,6 +210,9 @@ static void publish(uint64_t stage)
 #ifdef A52Q_UFS_NOP
 #include "ufs_nop_probe.h"
 #endif
+#ifdef A52Q_UFS_READ
+#include "ufs_read_probe.h"
+#endif
 
 #ifdef A52Q_XNU_PAYLOAD
 int a52q_load_embedded(void);
@@ -240,6 +259,9 @@ void diag_main(uint64_t dtb)
 #endif
 #ifdef A52Q_UFS_NOP
     ufs_nop_probe();
+#endif
+#ifdef A52Q_UFS_READ
+    ufs_read_probe();
 #endif
 #endif
 #ifdef A52Q_XNU_PAYLOAD

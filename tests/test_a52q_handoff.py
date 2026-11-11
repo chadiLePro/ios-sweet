@@ -33,6 +33,19 @@ class HandoffTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'NOP records disagree'):
             decode(metadata + nop + frame('A52U1', '0000000000000051/0000000f/00000000/00000001'), config)
 
+    def test_read_result_record_integrity(self):
+        def frame(kind, body):
+            raw = body.encode()
+            return kind.encode() + b' ' + raw + f' {zlib.crc32(raw):08x}\n'.encode()
+        config = dict(self.config, capture_id=81)
+        metadata = frame('A52M2', '0000000000000051/000000000000000c/01/01/ffffffffffffffff')
+        record = frame('A52C1', '0000000000000051/12345678/00001000/abcdef12/00000000/00000000/21000000')
+        checked = decode(metadata + record, config)
+        self.assertEqual(checked['ufs_read']['block_bytes'], 4096)
+        self.assertEqual(checked['ufs_read']['data_crc32'], 0xabcdef12)
+        self.assertEqual(checked['valid_ufs_read_copies'], 1)
+        self.assertIsNone(decode(metadata + record.replace(b'abcdef12', b'abcdef13'), config)['ufs_read'])
+
     def test_checked_snapshot_and_corrupted_copy(self):
         result = decode(sample() + sample(copy=1).replace(b'12345678', b'12345679'), self.config)
         self.assertTrue(result['complete'])

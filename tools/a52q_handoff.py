@@ -163,6 +163,15 @@ def decode_records(data, config):
             nop.append((ocs, response, doorbell))
     if len(set(nop)) > 1:
         raise ValueError('CRC-valid UFS NOP records disagree')
+    reads = []
+    for m in re.finditer(rb'A52C1 ([0-9a-f]{16}(?:/[0-9a-f]{8}){6}) ([0-9a-f]{8})\n', data):
+        if zlib.crc32(m[1]) != int(m[2], 16):
+            continue
+        cap, *fields = [int(v, 16) for v in m[1].split(b'/')]
+        if cap == nonce:
+            reads.append(tuple(fields))
+    if len(set(reads)) > 1:
+        raise ValueError('CRC-valid UFS read records disagree')
     values = {}
     copies = {}
     for m in re.finditer(rb'A52R2 ([0-9a-f]{16}/[0-9a-f]{2}/[0-9a-f]{8}/[0-9a-f]{8}) ([0-9a-f]{8})\n', data):
@@ -184,5 +193,7 @@ def decode_records(data, config):
             'esr': stages[0][1] if stages else None, 'valid_stage_copies': len(stages),
             'ufs_nop': dict(zip(('ocs', 'response_header', 'doorbell'), nop[0])) if nop else None,
             'valid_ufs_nop_copies': len(nop),
+            'ufs_read': dict(zip(('last_lba', 'block_bytes', 'data_crc32', 'failure', 'ocs', 'response_header'), reads[0])) if reads else None,
+            'valid_ufs_read_copies': len(reads),
             'integrity': 'Only intact per-record CRCs accepted; no byte repair',
             'registers': [dict(config['registers'][i], value=values[i]) for i in sorted(values)]}
