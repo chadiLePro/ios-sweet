@@ -32,7 +32,9 @@ COMMON = [
     'dec32le', 'dec32be', 'dec64be')]
 
 
-def apply(root):
+def apply(root, filesystem='mockfs'):
+    if filesystem not in ('mockfs', 'hfs'):
+        raise ValueError('unsupported A52 filesystem configuration')
     changes = {}
     originals = {}
 
@@ -72,8 +74,14 @@ def apply(root):
     # SWEET-only. A52 does not expose the matching /dev/mem ioctl or need it.
     replace('bsd/conf/files', 'bsd/dev/sweet_sample.c\t\t\tstandard\n', '')
     changes['config/MASTER.arm64.a52q'] = read('config/MASTER.arm64.sweet').replace(
-        '# sweet (Redmi Note 10 Pro, SM7150):', '# a52q (Samsung SM-A525F/DS, SM7125):').replace(
-        ' mockfs sweet_hfs ', ' mockfs ')  # Root filesystem is a later milestone.
+        '# sweet (Redmi Note 10 Pro, SM7150):', '# a52q (Samsung SM-A525F/DS, SM7125):')
+    if filesystem == 'mockfs':
+        changes['config/MASTER.arm64.a52q'] = changes['config/MASTER.arm64.a52q'].replace(
+            ' mockfs sweet_hfs ', ' mockfs ')
+    # The optional hfs feature reuses Apple's staged OSS filesystem and its
+    # software-only VFS glue. SWEET_HFS is a filesystem option, not the SWEET
+    # board macro: it enables no UFS/USB/display/clock drivers. Content protection
+    # is disabled by the reviewed kext compatibility header; use plain test data.
     replace('pexpert/pexpert/arm64/board_config.h', '#ifdef ARM64_BOARD_CONFIG_SWEET',
             '#ifdef ARM64_BOARD_CONFIG_A52Q\n#include <pexpert/arm64/A52Q.h>\n'
             '#define MAX_L2_CLINE 6\n#define MAX_CPUS 1\n#define MAX_CPU_CLUSTERS 1\n'
@@ -205,6 +213,7 @@ static void a52q_early_map_final(void)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(text.encode('utf-8'))
     report = {'target': 'A52Q', 'status': 'source overlay applied, not a boot claim',
+              'filesystem': filesystem,
               'shared_software_guards': COMMON,
               'files_sha256': {n: hashlib.sha256(t.encode()).hexdigest() for n, t in changes.items()}}
     (root / 'a52q-overlay.json').write_text(json.dumps(report, indent=2) + '\n')
@@ -214,8 +223,9 @@ static void a52q_early_map_final(void)
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('source', type=Path)
+    p.add_argument('--filesystem', choices=('mockfs', 'hfs'), default='mockfs')
     a = p.parse_args()
     try:
-        apply(a.source)
+        apply(a.source, filesystem=a.filesystem)
     except (ValueError, OSError) as e:
         p.exit(1, f'A52Q overlay rejected: {e}\n')

@@ -1,6 +1,12 @@
 name: iOS 16 XNU A52Q bootstrap kernel
 on:
   workflow_dispatch:
+    inputs:
+      filesystem:
+        description: 'Optional OSS HFS+ support; no storage driver or Apple userland policy'
+        type: choice
+        options: [mockfs, hfs]
+        default: mockfs
   push:
     branches: [bringup/a52q-diagnostics]
     paths: ['xnu/a52q/**', '.github/workflows/xnu-a52q.yml']
@@ -16,6 +22,7 @@ env:
   # Stage portable providers using the existing helpers, then apply.py switches
   # the actual kernel machine to A52Q. No SWEET macro is defined on that machine.
   MACHINE_CONFIG: SWEET
+  A52Q_FILESYSTEM: ${{ inputs.filesystem || 'mockfs' }}
 jobs:
   kernel:
     runs-on: macos-15-intel
@@ -41,7 +48,7 @@ jobs:
           s = s.replace(old, 'ARCHS="x86_64 arm64e arm64" VALID_ARCHS="x86_64 arm64e arm64"')
           old = '    patches\n    venv'
           assert s.count(old) == 1
-          s = s.replace(old, '    patches\n    python3 "$WORK_DIR/../xnu/a52q/apply.py" "$WORK_DIR/xnu"\n'
+          s = s.replace(old, '    patches\n    python3 "$WORK_DIR/../xnu/a52q/apply.py" "$WORK_DIR/xnu" --filesystem "$A52Q_FILESYSTEM"\n'
               '    MACHINE_CONFIG=A52Q\n    KERNEL_TYPE="${KC_VARIANT}.a52q"\n    venv')
           p.write_text(s)
           PY

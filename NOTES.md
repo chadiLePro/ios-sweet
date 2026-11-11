@@ -2,6 +2,26 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### RGB trial collected; ORIGINAL BOOT RESTORED; visibility inconclusive
+
+16:42:23 UTC original BOOT restored/full96MiB readback, other partitions unchanged.
+backup/a52q/display-refresh/receipt.json requires_restore=false, phone TWRP.
+User: did not see RGB, may have missed.37/37 independently CRC-checked register
+records recovered for current nonce, but no full diagnostic CRC copy. Do not
+claim final display stage/refresh success. Add short CRC stage records before
+next display trial to distinguish guard abort/start timeout/start consumed.
+Candidate92ee6211d6c46200cd37cc32f2dbbd63454dde4dac08ac23c78a703345549ba0.
+Commit5e11b23.72 tests/default r4 bit-identical.
+
+Preparing optional filesystem=hfs kernel build. Default mockfs unchanged.
+Both overlays apply against actual81-patch control source tree; generated source
+differences only MASTER.arm64.a52q and provenance JSON. Optional HFS adds portable
+Apple OSS filesystem/VFS glue; no hardware guards/Apple AMFI policy enabled.
+Source check research/check_hfs_overlay.py. Full macOS build required.
+WSL899MiB budget nearly exhausted by APFS/QEMU: added2GiB Linux swap file
+/root/a52-ios16-host/appliance/build.swap on E-backed build VHD (not phone),
+swapon confirmed. No global .wslconfig change.
+
 ### Original BOOT restored; CRC display state recovered; iOS16 root copy running
 
 Second display snapshot restored original BOOT at16:28:49 UTC, full96MiB hash
