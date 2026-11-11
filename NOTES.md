@@ -15,6 +15,8 @@ checkout on C: because E:/Minecraft and Ubuntu's E:-hosted VHD were unavailable.
 Separate `devices/a52q.json`, `shim/a52q/`, read-only acquisition/evidence tools,
 guarded GNU diagnostic builder and AOSP packager were added. Redmi code, mkadt
 defaults, XNU patches and kernel workflow remain unchanged. No A52 XNU config yet.
+Implementation commit: `ac68599` on local branch `bringup/a52q-diagnostics`;
+not pushed. Final guarded repack reproduced the recorded full-image SHA256.
 
 Built no-output core and evidence-derived ramoops variant using Arm GNU 14.3.Rel1
 native Windows aarch64-none-elf tools. Candidate RAM console is derived at
