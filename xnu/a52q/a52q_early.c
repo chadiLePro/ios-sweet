@@ -19,8 +19,14 @@ static void byte(char c)
      * only until first output, then publish each appended byte in order. */
     volatile uint32_t *h = (volatile uint32_t *)console;
     if (!position) {
-        h[0] = 0;
-        h[1] = h[2] = 0;
+        /* Preserve the CRC-protected assembly entry copies when C starts.
+         * Only accept a bounded nonwrapping header, never arbitrary offsets. */
+        if (h[0] == 0x43474244 && h[1] == h[2] && h[2] > 0 && h[2] <= 4096) {
+            position = h[2];
+        } else {
+            h[0] = 0;
+            h[1] = h[2] = 0;
+        }
     }
     if (position >= A52Q_RAMLOG_SIZE - 12)
         return;

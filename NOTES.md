@@ -27,6 +27,12 @@ Update: 43018957069 failed compilation on portable-provider include paths
 (BearSSL inner.h, pthread TargetConditionals.h) and missing shared timer extern.
 The overlay now enables those software-only Makefile include flags for A52Q and
 shares the timer declaration in pexpert/arm/protos.h. No hardware guard enabled.
+Next run 43021377581 compiled all A52 sources successfully but FAILED final
+link on one remaining _sweet_sample_task reference. Upstream bsd/conf/files
+unconditionally listed sweet_sample.c while its task-side implementation and
+ioctl are SWEET-only. The A52 overlay now removes that unused diagnostic from
+its build. No fake symbol is supplied. C RAM logging also retains the assembly
+entry CRC copies instead of clearing them. Rebuild required; no XNU phone test.
 
 Embedded loader added under shim/a52q/loader.c, enabled only with --payload in
 build_a52q_diag.py. New a52q_payload.py derives minimal ADT and 32 MiB aligned

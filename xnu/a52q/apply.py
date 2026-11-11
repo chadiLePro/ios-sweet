@@ -62,6 +62,9 @@ def apply(root):
     for name in ('bsd/conf/Makefile.template', 'libkern/conf/Makefile.template'):
         replace(name, 'ifeq ($(CURRENT_MACHINE_CONFIG),SWEET)',
                 'ifneq ($(filter SWEET A52Q,$(CURRENT_MACHINE_CONFIG)),)')
+    # Upstream lists this diagnostic as standard, while its task-side half is
+    # SWEET-only. A52 does not expose the matching /dev/mem ioctl or need it.
+    replace('bsd/conf/files', 'bsd/dev/sweet_sample.c\t\t\tstandard\n', '')
     changes['config/MASTER.arm64.a52q'] = read('config/MASTER.arm64.sweet').replace(
         '# sweet (Redmi Note 10 Pro, SM7150):', '# a52q (Samsung SM-A525F/DS, SM7125):').replace(
         ' mockfs sweet_hfs ', ' mockfs ')  # Root filesystem is a later milestone.
