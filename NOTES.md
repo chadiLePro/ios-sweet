@@ -33,6 +33,18 @@ unconditionally listed sweet_sample.c while its task-side implementation and
 ioctl are SWEET-only. The A52 overlay now removes that unused diagnostic from
 its build. No fake symbol is supplied. C RAM logging also retains the assembly
 entry CRC copies instead of clearing them. Rebuild required; no XNU phone test.
+Run 43025097605 SUCCEEDED; kernel SHA256
+550dbc6a608421cf1e6b3770cc76f2cb543fdd3221922365b817e5166adee130.
+Actual QEMU loader reached stage 6 and XNU entry (3 CRC-valid ENTRY copies),
+then MMU enabled and C RAM-console access faulted at FAR 0xb4640000, ESR
+0x96000007 (L3 translation fault). Root cause: a52q_console_l3 linked at
+0xfffffe0007b5b000, not 16 KiB aligned: XNU forces __DATA,__bss section to 4 KiB.
+Fixed declaration to SECURITY_READ_ONLY_LATE like bootstrap_pagetables, in
+16 KiB aligned __DATA,__const. Added post-link and payload alignment checks.
+Keep A52 link archive/flags in future artifacts for targeted iterations.
+QEMU logs: shim/out/a52q-xnu-first-qemu/run-r2. OLD kernel must NOT be flashed.
+User confirmed they are at the phone for the button return to TWRP. Original
+BOOT remains restored; no new phone write. New build required for alignment fix.
 
 Embedded loader added under shim/a52q/loader.c, enabled only with --payload in
 build_a52q_diag.py. New a52q_payload.py derives minimal ADT and 32 MiB aligned

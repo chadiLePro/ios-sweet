@@ -62,6 +62,7 @@ class Qmp:
         while True:
             try:
                 self.sock = socket.create_connection(('127.0.0.1', port), timeout=2)
+                self.sock.settimeout(20)  # Full embedded kernels take longer to load/dump than the tiny core.
                 break
             except OSError:
                 if process.poll() is not None or time.monotonic() > deadline:

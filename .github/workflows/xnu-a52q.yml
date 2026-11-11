@@ -68,7 +68,18 @@ jobs:
             file out/kernel.development.a52q
             shasum -a 256 out/kernel.development.a52q > out/SHA256SUMS
             nm -n out/kernel.development.a52q > out/kernel.symbols.txt
+            python3 - <<'PY'
+          from pathlib import Path
+          lines = Path('out/kernel.symbols.txt').read_text().splitlines()
+          tables = [int(w[0], 16) for line in lines if len(w := line.split()) >= 3 and w[-1] == '_a52q_console_l3']
+          assert len(tables) == 1 and tables[0] % 16384 == 0, 'RAM-console L3 table must be 16 KiB aligned'
+          print('A52 L3 table alignment verified:', hex(tables[0]))
+          PY
           fi
+          # Keep actual A52 objects/link options for targeted rebuilds after
+          # boot diagnostics; never mix in the SWEET control archive.
+          cp -R dxb/fakeroot/System/Library/Kernels/kernel.development.a52q.link out/ 2>/dev/null || true
+          cp dxb/fakeroot/usr/local/lib/kernel/libfirehose_kernel.a out/ 2>/dev/null || true
           mkdir -p dxb/build/xnu.obj dxb/fakeroot/usr/local/include
           tar czf out/buildtree.tgz --exclude='*.o' --exclude='*.cpo' --exclude='*.a' \
             --exclude='*.dSYM' --exclude='*.unstripped' --exclude='kernel.development.*' --exclude='.git' \

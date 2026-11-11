@@ -12,6 +12,9 @@ SECTIONS {
     . += 0x8000;
     . = ALIGN(16);
     _stack_top = .;
+    /* Keep stack/BSS within ADR range of entry; a real XNU payload is >1 MiB. */
+    . = ALIGN(8);
+    .payload : { KEEP(*(.payload)) }
     _end = .;
     /DISCARD/ : { *(.comment) *(.note*) *(.eh_frame*) }
 }

@@ -65,7 +65,7 @@ def main():
                 f'#define A52Q_PAYLOAD_BASE {base}ULL\n#define A52Q_PAYLOAD_SIZE {size}ULL\n'
                 f'#define A52Q_PAYLOAD_END {base + size}ULL\n', encoding='ascii')
             asm = a.out / 'payload.S'
-            asm.write_text('.section .rodata.payload,"a"\n.balign 8\n.global _payload_start, _payload_end\n'
+            asm.write_text('.section .payload,"a"\n.balign 8\n.global _payload_start, _payload_end\n'
                            '_payload_start:\n.incbin "' + a.payload.resolve().as_posix() + '"\n_payload_end:\n',
                            encoding='utf-8')
             flags += ['-DA52Q_XNU_PAYLOAD', '-I', str(a.out.resolve())]

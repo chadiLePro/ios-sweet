@@ -58,6 +58,7 @@ def validate_kernel(data):
     if not 1 <= count <= 1024 or size > len(data) - 32:
         raise ValueError('invalid Mach-O command area')
     off = 32
+    symtab = None
     for _ in range(count):
         if off + 8 > 32 + size:
             raise ValueError('truncated Mach-O command')
@@ -68,13 +69,39 @@ def validate_kernel(data):
             if length < 72:
                 raise ValueError('truncated segment command')
             va, mem, pos, disk = struct.unpack_from('<4Q', data, off + 24)
-            if va + mem > 1 << 64 or disk > mem or pos > len(data) or disk > len(data) - pos:
+            name = data[off + 8:off + 24].split(b'\0')[0]
+            # XNU ctf_insert adds file-only __CTF metadata with vmsize=0.
+            # It is bounds checked here and intentionally not loaded by mkpayload.
+            file_only_ctf = name == b'__CTF' and mem == 0
+            if va + mem > 1 << 64 or (disk > mem and not file_only_ctf) or pos > len(data) or disk > len(data) - pos:
                 raise ValueError('segment exceeds file or address space')
+        elif cmd == 2:
+            if length != 24:
+                raise ValueError('invalid Mach-O symbol table command')
+            symtab = struct.unpack_from('<4I', data, off + 8)
         off += length
     if off != 32 + size:
         raise ValueError('Mach-O commands do not fill declared area')
-    if b'DEVELOPMENT_ARM64_A52Q' not in data or b'A52QXNU stage=0x' not in data:
-        raise ValueError('kernel does not identify the A52Q build and RAM console')
+    # blacktop pins the version banner to the XNU commit, omitting the board.
+    # Check the A52-only exported table and console instead of inventing a banner.
+    if any(marker not in data for marker in (b'_a52q_console_l3\0',
+            b'A52QXNU stage=0x', b'kernel RAM-console VA live\0')):
+        raise ValueError('kernel lacks the A52Q page table and RAM console identity')
+    if not symtab:
+        raise ValueError('kernel has no symbols to verify page-table alignment')
+    symoff, count, stroff, strsize = symtab
+    if (count > 1000000 or symoff + count * 16 > len(data) or stroff + strsize > len(data)):
+        raise ValueError('Mach-O symbol table exceeds file')
+    tables = []
+    table_name = b'_a52q_console_l3\0'
+    for i in range(count):
+        strx, _, _, _, value = struct.unpack_from('<IBBHQ', data, symoff + 16 * i)
+        if strx >= strsize:
+            raise ValueError('symbol string index exceeds table')
+        if data[stroff + strx:stroff + strx + len(table_name)] == table_name:
+            tables.append(value)
+    if len(tables) != 1 or tables[0] % PAGE:
+        raise ValueError('A52 RAM-console L3 table is not uniquely 16 KiB aligned')
 
 
 def validate_payload(data, manifest):

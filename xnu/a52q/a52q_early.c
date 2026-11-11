@@ -6,9 +6,12 @@
 #include <arm64/sweet_early.h>
 #include <kern/misc_protos.h>
 #include <stdint.h>
+#include <libkern/section_keywords.h>
 
 #if defined(A52Q)
-uint64_t a52q_console_l3[2048] __attribute__((aligned(16384)));
+/* Match bootstrap_pagetables: __DATA,__bss is forcibly aligned to 4 KiB by
+ * XNU's linker flags. The late-read-only data section preserves 16 KiB. */
+SECURITY_READ_ONLY_LATE(uint64_t) a52q_console_l3[2048] __attribute__((aligned(16384)));
 static volatile uint8_t *console = (volatile uint8_t *)(uintptr_t)A52Q_RAMLOG_BASE;
 static int busy, panicking;
 static uint32_t position;

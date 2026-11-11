@@ -31,7 +31,34 @@ def fixture():
     return data, manifest
 
 
+def kernel_header_fixture(table_va=0xfffffe0007004000, ctf=False):
+    """Parser fixture only; contains no runnable kernel code."""
+    data = bytearray(0x4000)
+    text = struct.pack('<II16s4Q4I', 0x19, 72, b'__TEXT',
+        0xfffffe0007004000, 0x4000, 0, 0x4000, 5, 5, 0, 0)
+    names = b'\0_a52q_console_l3\0'
+    sym = struct.pack('<6I', 2, 24, 0x200, 1, 0x300, len(names))
+    commands = text + sym
+    if ctf:
+        commands += struct.pack('<II16s4Q4I', 0x19, 72, b'__CTF',
+            0xfffffe0007008000, 0, 0x3ff0, 16, 1, 1, 0, 0)
+    struct.pack_into('<8I', data, 0, 0xfeedfacf, 0x100000c, 0, 2, 3 if ctf else 2,
+                     len(commands), 0, 0)
+    data[32:32 + len(commands)] = commands
+    struct.pack_into('<IBBHQ', data, 0x200, 1, 0xf, 1, 0, table_va)
+    data[0x300:0x300 + len(names)] = names
+    markers = b'A52QXNU stage=0x\0kernel RAM-console VA live\0'
+    data[0x500:0x500 + len(markers)] = markers
+    return data
+
+
 class PayloadTests(unittest.TestCase):
+    def test_kernel_table_alignment_and_file_only_ctf(self):
+        validate_kernel(kernel_header_fixture())
+        validate_kernel(kernel_header_fixture(ctf=True))
+        with self.assertRaisesRegex(ValueError, '16 KiB aligned'):
+            validate_kernel(kernel_header_fixture(table_va=0xfffffe0007005000))
+
     def test_bus_translation_mixed_cells_and_missing_ranges(self):
         cell = lambda *v: struct.pack('>' + 'I' * len(v), *v)
         root = Node('', props={'#address-cells': cell(2), '#size-cells': cell(2)})

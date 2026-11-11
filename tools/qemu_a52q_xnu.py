@@ -71,6 +71,9 @@ def run(build, out, qemu, seconds=25, expected_loader_stage=None):
                     break
                 if record['stage'] >= 0xe0:
                     break
+                trace = out / 'qemu.log'
+                if trace.exists() and trace.stat().st_size > 8 << 20:
+                    break  # Capture the first fault, not hundreds of MiB of recursive exceptions.
                 qmp.call('cont')
             qmp.call('stop')
             log = metadata['output']
