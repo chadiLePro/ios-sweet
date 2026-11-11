@@ -4,6 +4,26 @@
 
 ### CURRENT HARDWARE STATE — second turn, read before acting
 
+**LATEST r4: CRC-VERIFIED STAGE 2 ON THE A52. ORIGINAL BOOT IS RESTORED and fully
+hash verified; RECOVERY/DTBO/VBMETA unchanged. Phone remains in TWRP.** Receipt:
+`backup/a52q/automatic-test-r4-restored.json`, evidence
+`backup/a52q/hardware-r4-20261111T111242Z/checked-diagnostic.json`.
+One of three replicas (copy 0) passed CRC32; damaged copies were not repaired or
+used. Trusted fields: EL1 (CurrentEL=4), SCTLR=0xc00808, image=0xa12e8000,
+DTB=0xa8f38000, MPIDR=0x81000000, MIDR=0x51df805e, MMFR0=0x101122,
+PFR0=0x11112222, CNTFRQ=19200000, CTR=0x84448004, ISAR0=0x100010211120,
+ISAR1=0x100001, no exception. R4 full BOOT hash:
+f9ac11a5c0bf2b758ed2470994a355c5961ab7a3c0d9f80943bf8ee33d91196c.
+Host tests 41/41 and four QEMU modes passed before installation. No XNU boot yet.
+R4 source/log decoder changes need final commit. Next work is evidence-derived
+memory planning and interrupt/timer validation. Target remains iOS 16 / XNU 8796,
+eventually upstream iOS 16.7 userland. macOS 15 / Xcode 16 are build-host tooling
+only. GitHub retired macos-14 on 2026-11-02. A separate macos-15-intel probe pins
+xnu-8796.141.3 at 1b191cb58250d0705d8a51287127505aa4bc0789 and uses SWEET only
+as a toolchain control; NEVER flash that control kernel on the A52.
+User completed GitHub CLI browser authorization. Dedicated fork created at
+https://github.com/chadiLePro/ios-sweet; local branch bringup/a52q-diagnostics.
+
 **r3 SECOND ATTEMPT SUCCEEDED TO DIAGNOSTIC STAGE 2 ON THE A52. Original BOOT
 has been restored and fully hash verified. RECOVERY/DTBO/VBMETA are unchanged.
 Phone is in TWRP with ORIGINAL BOOT installed, not the shim.** Restore receipt:

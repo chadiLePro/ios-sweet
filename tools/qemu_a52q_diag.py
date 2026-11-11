@@ -16,9 +16,11 @@ import struct
 import subprocess
 import time
 from android_boot_evidence import inspect as inspect_boot
+from a52q_diag_log import decode_checked_console
 
 FIELDS = ('magic version stage image image_end dtb current_el sctlr mpidr midr '
           'mmfr0 pfr0 cntfrq exception_slot esr elr far').split()
+FIELDS_V2 = FIELDS[:13] + ['ctr', 'isar0', 'isar1'] + FIELDS[13:]
 MAGIC = 0x4741494451323541
 RAM_BASE, RAM_END = 0x40000000, 0xc0000000  # QEMU virt, 2 GiB; not an A52 map
 
@@ -32,11 +34,15 @@ def linux_load_address(image):
 
 
 def decode_record(data):
-    if len(data) != len(FIELDS) * 8:
-        raise ValueError('wrong diagnostic record size')
-    record = dict(zip(FIELDS, struct.unpack('<' + 'Q' * len(FIELDS), data)))
-    if record['magic'] != MAGIC or record['version'] != 1:
+    if len(data) < 16:
+        raise ValueError('truncated diagnostic record')
+    magic, version = struct.unpack_from('<QQ', data)
+    fields = {1: FIELDS, 2: FIELDS_V2}.get(version)
+    if magic != MAGIC or fields is None:
         raise ValueError('no supported A52Q diagnostic record')
+    if len(data) != len(fields) * 8:
+        raise ValueError('wrong diagnostic record size')
+    record = dict(zip(fields, struct.unpack('<' + 'Q' * len(fields), data)))
     return record
 
 
@@ -178,7 +184,7 @@ def run(build_dir, out, qemu, cpu, load_address, fault_at_park=False, linux_entr
             while True:
                 time.sleep(0.1)
                 qmp.call('stop')
-                data = qmp.dump(record_address, len(FIELDS) * 8, out / 'record.bin')
+                data = qmp.dump(record_address, metadata.get('diagnostic_record_bytes', len(FIELDS) * 8), out / 'record.bin')
                 try:
                     record = decode_record(data)
                     if record['stage'] == 0xff and not fault_at_park:
@@ -194,7 +200,15 @@ def run(build_dir, out, qemu, cpu, load_address, fault_at_park=False, linux_entr
                         raise RuntimeError('unexpected image base, exception level or timer frequency')
                     if log:
                         text = decode_ramlog(qmp.dump(log['base'], log['size'], out / 'ramoops.bin'))
-                        if 'A52QDIAG v1' not in text or f'stage=0x{expected:016x}\n' not in text:
+                        if record['version'] == 2:
+                            checked = decode_checked_console(text.encode('ascii'))
+                            if checked['fields']['stage'] != expected:
+                                raise ValueError('checked console stage disagrees with expected stage')
+                            for key, value in checked['fields'].items():
+                                if record[key] != value:
+                                    raise RuntimeError(f'RAM console disagrees with in-image record: {key}')
+                            result['console_integrity'] = checked
+                        elif 'A52QDIAG v1' not in text or f'stage=0x{expected:016x}\n' not in text:
                             raise ValueError('RAM console has not completed')
                         (out / 'console.txt').write_text(text)
                     break

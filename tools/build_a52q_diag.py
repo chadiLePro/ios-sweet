@@ -64,6 +64,10 @@ def main():
         image = a.out / 'diag-core.Image'
         run('objcopy', '-O', 'binary', elf, image)
         symbols = run('nm', '-n', elf)
+        sizes = [int(words[2]) for line in run('readelf', '-sW', elf).splitlines()
+                 if len(words := line.split()) >= 8 and words[-1] == 'a52q_diagnostic']
+        if len(sizes) != 1:
+            raise ValueError('cannot determine diagnostic record size from ELF')
         end = next(int(line.split()[0], 16) for line in symbols.splitlines()
                    if line.split()[-1] == '_end')
         raw = image.read_bytes()
@@ -75,6 +79,7 @@ def main():
         (a.out / 'symbols.txt').write_text(symbols, encoding='utf-8')
         (a.out / 'disassembly.txt').write_text(run('objdump', '-d', elf), encoding='utf-8')
         report = {'target': 'a52q', 'compiler': compiler, 'bytes': end,
+                  'diagnostic_record_bytes': sizes[0],
                   'status': 'compiled diagnostic core; not packaged, emulated or phone-tested',
                   'output': output or 'own-image RAM record only; no persistent or external output',
                   'template_kernel_contract': contract,

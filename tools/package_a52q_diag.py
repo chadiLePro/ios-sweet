@@ -140,7 +140,7 @@ def main():
                   'seandroid_trailer_preserved': bool(trailer),
                   'kernel_contract': contract, 'candidate_ramoops': log,
                   'remaining': ['Samsung acceptance of unsigned boot image', 'actual entry EL and CPU feature report',
-                                'ramoops retention across reset', 'readable A52QDIAG v1 record in TWRP']}
+                                'ramoops retention across reset', 'integrity-checked diagnostic record in TWRP']}
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
         p.exit(1, f'packaging refused: {exc}\n')

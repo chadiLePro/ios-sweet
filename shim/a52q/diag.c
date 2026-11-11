@@ -10,6 +10,7 @@ struct diagnostic {
     uint64_t magic, version, stage;
     uint64_t image, image_end, dtb;
     uint64_t current_el, sctlr, mpidr, midr, mmfr0, pfr0, cntfrq;
+    uint64_t ctr, isar0, isar1;
     uint64_t exception_slot, esr, elr, far;
 };
 
@@ -21,10 +22,23 @@ extern char _head[], _end[];
 #include "ramoops-config.h"
 #include "ramlog.h"
 
+static uint32_t log_crc;
+static int checksum_enabled;
+
+static void log_char(volatile struct ramlog *r, char c)
+{
+    ramlog_char(r, A52Q_RAMOOPS_SIZE, c);
+    if (checksum_enabled) {
+        log_crc ^= (uint8_t)c;
+        for (int bit = 0; bit < 8; bit++)
+            log_crc = (log_crc >> 1) ^ (0xedb88320U & (0U - (log_crc & 1)));
+    }
+}
+
 static void log_string(volatile struct ramlog *r, const char *s)
 {
     while (*s)
-        ramlog_char(r, A52Q_RAMOOPS_SIZE, *s++);
+        log_char(r, *s++);
 }
 
 static void log_hex(volatile struct ramlog *r, const char *key, uint64_t value)
@@ -33,8 +47,8 @@ static void log_hex(volatile struct ramlog *r, const char *key, uint64_t value)
     log_string(r, key);
     log_string(r, "=0x");
     for (int shift = 60; shift >= 0; shift -= 4)
-        ramlog_char(r, A52Q_RAMOOPS_SIZE, hex[(value >> shift) & 15]);
-    ramlog_char(r, A52Q_RAMOOPS_SIZE, '\n');
+        log_char(r, hex[(value >> shift) & 15]);
+    log_char(r, '\n');
 }
 
 static void log_snapshot(void)
@@ -52,21 +66,35 @@ static void log_snapshot(void)
     volatile struct ramlog *r = (volatile struct ramlog *)base;
     ramlog_begin(r);
     __asm__ volatile("dsb sy" ::: "memory");
-    log_string(r, "A52QDIAG v1 - experimental shim; no XNU\n");
-    log_hex(r, "stage", a52q_diagnostic.stage);
-    log_hex(r, "image", a52q_diagnostic.image);
-    log_hex(r, "dtb", a52q_diagnostic.dtb);
-    log_hex(r, "current_el", a52q_diagnostic.current_el);
-    log_hex(r, "sctlr", a52q_diagnostic.sctlr);
-    log_hex(r, "mpidr", a52q_diagnostic.mpidr);
-    log_hex(r, "midr", a52q_diagnostic.midr);
-    log_hex(r, "mmfr0", a52q_diagnostic.mmfr0);
-    log_hex(r, "pfr0", a52q_diagnostic.pfr0);
-    log_hex(r, "cntfrq", a52q_diagnostic.cntfrq);
-    log_hex(r, "exception_slot", a52q_diagnostic.exception_slot);
-    log_hex(r, "esr", a52q_diagnostic.esr);
-    log_hex(r, "elr", a52q_diagnostic.elr);
-    log_hex(r, "far", a52q_diagnostic.far);
+    for (unsigned copy = 0; copy < 3; copy++) {
+        checksum_enabled = 0;
+        log_string(r, "A52QDIAG v2 copy=");
+        log_char(r, '0' + copy);
+        log_char(r, '\n');
+        log_crc = 0xffffffffU;
+        checksum_enabled = 1;
+        log_hex(r, "stage", a52q_diagnostic.stage);
+        log_hex(r, "image", a52q_diagnostic.image);
+        log_hex(r, "image_end", a52q_diagnostic.image_end);
+        log_hex(r, "dtb", a52q_diagnostic.dtb);
+        log_hex(r, "current_el", a52q_diagnostic.current_el);
+        log_hex(r, "sctlr", a52q_diagnostic.sctlr);
+        log_hex(r, "mpidr", a52q_diagnostic.mpidr);
+        log_hex(r, "midr", a52q_diagnostic.midr);
+        log_hex(r, "mmfr0", a52q_diagnostic.mmfr0);
+        log_hex(r, "pfr0", a52q_diagnostic.pfr0);
+        log_hex(r, "cntfrq", a52q_diagnostic.cntfrq);
+        log_hex(r, "ctr", a52q_diagnostic.ctr);
+        log_hex(r, "isar0", a52q_diagnostic.isar0);
+        log_hex(r, "isar1", a52q_diagnostic.isar1);
+        log_hex(r, "exception_slot", a52q_diagnostic.exception_slot);
+        log_hex(r, "esr", a52q_diagnostic.esr);
+        log_hex(r, "elr", a52q_diagnostic.elr);
+        log_hex(r, "far", a52q_diagnostic.far);
+        checksum_enabled = 0;
+        log_hex(r, "crc32", log_crc ^ 0xffffffffU);
+        log_string(r, "A52QDIAG END\n");
+    }
     __asm__ volatile("dsb sy" ::: "memory");
     ramlog_commit(r);
     __asm__ volatile("dsb sy" ::: "memory");
@@ -87,7 +115,7 @@ static void publish(uint64_t stage)
 void diag_main(uint64_t dtb)
 {
     a52q_diagnostic.magic = 0x4741494451323541ULL; /* LE "A52QDIAG" */
-    a52q_diagnostic.version = 1;
+    a52q_diagnostic.version = 2;
     a52q_diagnostic.image = (uintptr_t)_head;
     a52q_diagnostic.image_end = (uintptr_t)_end;
     a52q_diagnostic.dtb = dtb; /* preserve, but do not dereference unvalidated x0 */
@@ -100,6 +128,9 @@ void diag_main(uint64_t dtb)
     a52q_diagnostic.mmfr0 = READ_REG("id_aa64mmfr0_el1");
     a52q_diagnostic.pfr0 = READ_REG("id_aa64pfr0_el1");
     a52q_diagnostic.cntfrq = READ_REG("cntfrq_el0");
+    a52q_diagnostic.ctr = READ_REG("ctr_el0");
+    a52q_diagnostic.isar0 = READ_REG("id_aa64isar0_el1");
+    a52q_diagnostic.isar1 = READ_REG("id_aa64isar1_el1");
     publish(2);
 }
 

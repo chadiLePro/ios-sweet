@@ -86,4 +86,6 @@ exception:
     adr x9, _stack_top
     mov sp, x9
     bl diag_exception
-    b park
+fatal_halt:
+    wfe
+    b fatal_halt
