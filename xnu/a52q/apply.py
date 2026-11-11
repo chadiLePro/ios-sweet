@@ -21,7 +21,7 @@ COMMON = [
     'bsd/pthread/sweet_pthread_synch.c', 'bsd/pthread/sweet_pthread_support.c',
     'bsd/pthread/sweet_pthread_init.c',
     'osfmk/prng/prng_random.c', 'osfmk/prng/entropy.c', 'osfmk/vm/vm_kern.c',
-    'osfmk/kern/debug.c', 'pexpert/arm/pe_fiq.c', 'osfmk/arm64/sleh.c',
+    'osfmk/kern/debug.c', 'pexpert/arm/pe_fiq.c', 'pexpert/pexpert/arm/protos.h', 'osfmk/arm64/sleh.c',
     'libkern/crypto/corecrypto_aes.c', 'libkern/crypto/corecrypto_md5.c',
     'libkern/crypto/corecrypto_sha1.c', 'libkern/crypto/corecrypto_sha2.c',
 ] + ['libkern/crypto/sweet_' + name + '.c' for name in (
@@ -59,6 +59,9 @@ def apply(root):
             'ifeq ($(filter SWEET A52Q,$(CURRENT_MACHINE_CONFIG)),)')
     replace('makedefs/MakeInc.def', 'MACHINE_FLAGS_ARM64_SWEET =',
             'MACHINE_FLAGS_ARM64_A52Q = -DARM64_BOARD_CONFIG_A52Q -march=armv8.2-a+crypto\nMACHINE_FLAGS_ARM64_SWEET =')
+    for name in ('bsd/conf/Makefile.template', 'libkern/conf/Makefile.template'):
+        replace(name, 'ifeq ($(CURRENT_MACHINE_CONFIG),SWEET)',
+                'ifneq ($(filter SWEET A52Q,$(CURRENT_MACHINE_CONFIG)),)')
     changes['config/MASTER.arm64.a52q'] = read('config/MASTER.arm64.sweet').replace(
         '# sweet (Redmi Note 10 Pro, SM7150):', '# a52q (Samsung SM-A525F/DS, SM7125):').replace(
         ' mockfs sweet_hfs ', ' mockfs ')  # Root filesystem is a later milestone.

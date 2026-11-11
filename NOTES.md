@@ -23,6 +23,10 @@ Path.write_text(newline=...). Fixed to write_bytes; common provider conditions
 use ARM64_BOARD_CONFIG_A52Q directly, so they also work before board.h inclusion.
 Current A52Q run 43018957069 (4abdc23) is building. Run 43018731225 was superseded
 by entry CRC logging and unknown-clock handling. No kernel boot is claimed yet.
+Update: 43018957069 failed compilation on portable-provider include paths
+(BearSSL inner.h, pthread TargetConditionals.h) and missing shared timer extern.
+The overlay now enables those software-only Makefile include flags for A52Q and
+shares the timer declaration in pexpert/arm/protos.h. No hardware guard enabled.
 
 Embedded loader added under shim/a52q/loader.c, enabled only with --payload in
 build_a52q_diag.py. New a52q_payload.py derives minimal ADT and 32 MiB aligned
