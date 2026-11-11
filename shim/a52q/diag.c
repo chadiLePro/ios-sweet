@@ -1,5 +1,6 @@
 /* A52 diagnostic core, with optional bounds-checked embedded XNU handoff.
- * No board MMIO, SMC, DMA, reset or storage. The default records into its own
+ * No board MMIO by default; optional handoff mode reads an evidenced whitelist.
+ * No MMIO writes, SMC, DMA, reset or storage commands. Default records into its own
  * image. Optional evidence-derived ramoops output uses reserved RAM only.
  * The default diagnostic build does not include the loader or a kernel.
  */
@@ -18,6 +19,13 @@ struct diagnostic {
 /* Exported symbol for a debugger / a later verified output transport. */
 volatile struct diagnostic a52q_diagnostic;
 extern char _head[], _end[];
+
+#ifdef A52Q_HANDOFF
+#include "handoff-config.h"
+static uint32_t handoff_values[A52Q_HANDOFF_COUNT];
+static unsigned handoff_done;
+static uint64_t handoff_active = UINT64_MAX;
+#endif
 
 #ifdef A52Q_RAMOOPS_CONFIG
 #include "ramoops-config.h"
@@ -51,6 +59,38 @@ static void log_hex(volatile struct ramlog *r, const char *key, uint64_t value)
         log_char(r, hex[(value >> shift) & 15]);
     log_char(r, '\n');
 }
+
+#ifdef A52Q_HANDOFF
+static void log_handoff(volatile struct ramlog *r)
+{
+    for (unsigned copy = 0; copy < 3; copy++) {
+        checksum_enabled = 0;
+        log_string(r, "A52QHANDOFF v1 copy=");
+        log_char(r, '0' + copy);
+        log_char(r, '\n');
+        log_crc = 0xffffffffU;
+        checksum_enabled = 1;
+        log_hex(r, "tag", A52Q_HANDOFF_TAG);
+        log_hex(r, "count", A52Q_HANDOFF_COUNT);
+        log_hex(r, "completed", handoff_done);
+        log_hex(r, "active", handoff_active);
+        for (unsigned i = 0; i < handoff_done; i++) {
+            for (unsigned field = 0; field < 2; field++) {
+                log_char(r, 'r');
+                log_char(r, '0' + i / 100);
+                log_char(r, '0' + (i / 10) % 10);
+                log_char(r, '0' + i % 10);
+                log_char(r, '.');
+                log_hex(r, field ? "value" : "address",
+                        field ? handoff_values[i] : handoff_addresses[i]);
+            }
+        }
+        checksum_enabled = 0;
+        log_hex(r, "crc32", log_crc ^ 0xffffffffU);
+        log_string(r, "A52QHANDOFF END\n");
+    }
+}
+#endif
 
 static void log_snapshot(void)
 {
@@ -96,6 +136,9 @@ static void log_snapshot(void)
         log_hex(r, "crc32", log_crc ^ 0xffffffffU);
         log_string(r, "A52QDIAG END\n");
     }
+#ifdef A52Q_HANDOFF
+    log_handoff(r);
+#endif
     __asm__ volatile("dsb sy" ::: "memory");
     ramlog_commit(r);
     __asm__ volatile("dsb sy" ::: "memory");
@@ -138,6 +181,22 @@ void diag_main(uint64_t dtb)
     a52q_diagnostic.isar0 = READ_REG("id_aa64isar0_el1");
     a52q_diagnostic.isar1 = READ_REG("id_aa64isar1_el1");
     publish(2);
+#ifdef A52Q_HANDOFF
+    if (a52q_diagnostic.current_el != 4 || (a52q_diagnostic.sctlr & 5)) {
+        publish(0xec);
+        return;
+    }
+    for (unsigned i = 0; i < A52Q_HANDOFF_COUNT; i++) {
+        handoff_active = i;
+        __asm__ volatile("dsb sy" ::: "memory");
+        handoff_values[i] = *(volatile const uint32_t *)handoff_addresses[i];
+        __asm__ volatile("dsb sy" ::: "memory");
+        handoff_done = i + 1;
+        publish(0x20 + i);
+    }
+    handoff_active = UINT64_MAX;
+    publish(0x80);
+#endif
 #ifdef A52Q_XNU_PAYLOAD
     int error = a52q_load_embedded();
     publish(0xe0 + (uint64_t)error);

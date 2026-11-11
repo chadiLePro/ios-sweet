@@ -23,6 +23,8 @@ def main():
     p.add_argument('--out', type=Path, default=ROOT / 'shim/out/a52q')
     p.add_argument('--evidence', type=Path, help='enable candidate ramoops output from verified live DT/runtime parameters')
     p.add_argument('--payload', type=Path, help='validated embedded A52 XNU payload (requires adjacent .json manifest)')
+    p.add_argument('--handoff', choices=('display', 'ufs'), help='read-only MMIO snapshot, no kernel/controller initialization')
+    p.add_argument('--register-sources', type=Path, help='four pinned Samsung register source files')
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     # A failed rebuild must not leave an earlier success manifest usable.
@@ -38,6 +40,14 @@ def main():
     try:
         output = None
         contract = None
+        handoff = None
+        if a.handoff:
+            if not a.evidence or not a.register_sources or a.payload:
+                raise ValueError('handoff needs evidence/register sources and cannot include XNU')
+            from a52q_handoff import layout, header
+            handoff = layout(a.evidence, a.register_sources, a.handoff)
+            (a.out / 'handoff-config.h').write_text(header(handoff))
+            flags += ['-DA52Q_HANDOFF', '-I', str(a.out.resolve())]
         if a.evidence:
             output = configuration(a.evidence)
             contract = kernel_contract((a.evidence / 'boot.img').read_bytes())
@@ -115,6 +125,8 @@ def main():
                   'image_sha256': hashlib.sha256(image.read_bytes()).hexdigest()}
         if payload_manifest:
             report['embedded_payload'] = payload_manifest
+        if handoff:
+            report['handoff_probe'] = handoff
         (a.out / 'build.json').write_text(json.dumps(report, indent=2) + '\n')
     except (OSError, subprocess.SubprocessError, ValueError, StopIteration, KeyError) as exc:
         p.exit(1, f'diagnostic build failed: {exc}\n')

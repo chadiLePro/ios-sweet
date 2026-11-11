@@ -2,6 +2,37 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### Active interface work - E reconnected; display handoff probe prepared
+
+User requests actual iOS interface, faster. E is now present, D is absent.
+Existing A52-HakiOS-Build-20261107 WSL works (Ubuntu24.04.5, kernel6.18.58.1),
+root user, ~900MiB RAM budget. No new distro created. Installed host build tools;
+built apfs-fuse at66b86bd525e8cb90f9012543be89b1f092b75cf3, lzfse submodule
+at e634ca58b4821d9f3d560cdc6df5dec02ffc93fd. Downloaded and ZIP-CRC/SHA256-checked
+all three Apple images under E:/A52-iOS16/images; read-only APFS mounts under
+/root/a52-ios16-host/mounts/{os,sysos,appos}. Real launchd/SpringBoard accessible.
+WSL kernel has no HFS+ module. Old libdmg-hfsplus addall is unsuitable (follows
+symlinks, overrides modes, mishandles Unicode); do not use it to import root.
+A filesystem appliance's matching Ubuntu generic kernel/modules are staged in
+/root/a52-ios16-host/appliance/kernel (hfsplus+9p present), not installed as WSL
+kernel. A prior attempted Python appliance generator had a JS syntax error and
+was NOT created. Complete this small guest to build a faithful HFS+ root.
+
+Pinned maintained Samsung source at f6bbda4... checked out via Linux sparse Git
+under /root/a52-ios16-host/kernel-reference (Windows git rejects aux filenames).
+Register source copies E:/A52-iOS16/register-sources. Live DT: MDP0xae00000,
+DSI0xae94000; never use the guessed 0x5e... addresses. CTL and SSPP offsets come
+from live DT properties, individual read offsets from SHA-pinned source files.
+New optional --handoff display|ufs build emits read-only snapshots with 3 CRC
+copies. No MMIO writes, clocks/reset/DMA/commands. Default diagnostic image is
+BIT IDENTICAL to previously tested r4 (ee37e8f...). 67 tests pass.
+Prepared display candidate shim/out/a52q-display-handoff/a52q-display-readonly-UNTESTED.img
+SHA256 1f8379fbaac59147f6bb72f1b92a68622c22b3075a383951cb1bd41f6aedd6ae.
+Private test helper now accepts --handoff with exact regenerated layout checks.
+No new phone write yet. Original BOOT remains restored. Next: BOOT-only snapshot
+trial, then immediate log collection/restoration; current fresh baseline from
+post-PID1 Android control has no XNU markers. Candidate does NOT boot iOS/UI.
+
 ### CURRENT PHONE STATE - ORIGINAL BOOT RESTORED; REAL DIAGNOSTIC PID1 VERIFIED
 
 15:29:50 UTC: original BOOT restored and full 96 MiB partition hash verified.
