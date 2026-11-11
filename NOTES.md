@@ -2,6 +2,32 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### Latest continuation — iOS 16 target retained, conservative memory planner
+
+User reiterated "nono ios 16". Target remains iOS 16 / XNU 8796; macOS 15 /
+Xcode 16 describe host tooling only. Branch bringup/a52q-diagnostics was pushed
+to https://github.com/chadiLePro/ios-sweet at 37c47ee. Diagnostic CI
+43012318162 PASSED (cross-compile, host/unit checks, four QEMU modes).
+XNU toolchain control 43012318206 was in progress at 11:35 UTC; use gh logs on
+completion, do not infer a successful kernel build or flash its SWEET output.
+
+New host-only tools/a52q_memory.py reconciles live FDT, Linux iomem, memreserve,
+static reservations, ENTIRE dynamic alloc-ranges windows and explicit runtime
+exclusions. It refuses unbounded dynamic pools, address translation needing
+review, redacted/malformed iomem, overlapping banks and invalid placement.
+For capture 20261111T100325Z the only aligned snapshot candidate is
+[0x105900000,0x200000000); default Redmi placement 0x100000000 is rejected.
+This is NOT a hardware-validated access window or selected XNU placement.
+Firmware/XPU permissions, actual live allocations and 16 KiB MMU still need
+validation. No device writes were made during this continuation. Original BOOT
+remains restored (r4 receipt below); phone last observed in TWRP.
+
+52 unit tests pass; validator passes all 81 patches / 25 Python / 7 shell tools.
+New private report: backup/a52q/20261111T100325Z/memory-plan.json. Pending memory
+planner/docs changes need commit/push and their diagnostic CI result recorded.
+Historical paragraphs below may say not pushed or need commit: 37c47ee already
+committed and pushed the r4 source/log decoder and toolchain control.
+
 ### CURRENT HARDWARE STATE — second turn, read before acting
 
 **LATEST r4: CRC-VERIFIED STAGE 2 ON THE A52. ORIGINAL BOOT IS RESTORED and fully
