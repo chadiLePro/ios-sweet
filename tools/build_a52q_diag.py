@@ -26,6 +26,8 @@ def main():
     p.add_argument('--payload', type=Path, help='validated embedded A52 XNU payload (requires adjacent .json manifest)')
     p.add_argument('--handoff', choices=('display', 'ufs'), help='read-only MMIO snapshot, no kernel/controller initialization')
     p.add_argument('--register-sources', type=Path, help='four pinned Samsung register source files')
+    p.add_argument('--display-test-log', type=Path, help='explicit splash refresh experiment: CRC capture console')
+    p.add_argument('--display-test-build', type=Path, help='original capture build.json for the refresh experiment')
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     # A failed rebuild must not leave an earlier success manifest usable.
@@ -42,6 +44,9 @@ def main():
         output = None
         contract = None
         handoff = None
+        display_test = None
+        if bool(a.display_test_log) != bool(a.display_test_build):
+            raise ValueError('display experiment needs both capture log and build manifest')
         if a.handoff:
             if not a.evidence or not a.register_sources or a.payload:
                 raise ValueError('handoff needs evidence/register sources and cannot include XNU')
@@ -50,6 +55,14 @@ def main():
             handoff['capture_id'] = secrets.randbits(64)
             (a.out / 'handoff-config.h').write_text(header(handoff))
             flags += ['-DA52Q_HANDOFF', '-I', str(a.out.resolve())]
+        if a.display_test_log:
+            if a.handoff != 'display':
+                raise ValueError('display experiment requires the read-only display snapshot mode')
+            from a52q_display_probe import configuration as display_configuration, header as display_header
+            display_test = display_configuration(a.evidence, a.register_sources,
+                json.loads(a.display_test_build.read_text()), a.display_test_log.read_bytes())
+            (a.out / 'display-config.h').write_text(display_header(display_test))
+            flags += ['-DA52Q_DISPLAY_TEST']
         if a.evidence:
             output = configuration(a.evidence)
             contract = kernel_contract((a.evidence / 'boot.img').read_bytes())
@@ -129,6 +142,8 @@ def main():
             report['embedded_payload'] = payload_manifest
         if handoff:
             report['handoff_probe'] = handoff
+        if display_test:
+            report['display_test'] = display_test
         (a.out / 'build.json').write_text(json.dumps(report, indent=2) + '\n')
     except (OSError, subprocess.SubprocessError, ValueError, StopIteration, KeyError) as exc:
         p.exit(1, f'diagnostic build failed: {exc}\n')

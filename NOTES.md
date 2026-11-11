@@ -2,6 +2,34 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### Original BOOT restored; CRC display state recovered; iOS16 root copy running
+
+Second display snapshot restored original BOOT at16:28:49 UTC, full96MiB hash
+verified, RECOVERY/DTBO/VBMETA unchanged. Phone TWRP, no pending restoration.
+Receipt backup/a52q/display-handoff-v2/receipt.json requires_restore=false.
+Checked snapshot:36/37 rows recovered,2 intact metadata copies. Missing only
+inactive sspp2.src_size; no value inferred. Active sspp0:1080x2400,base9c000000,
+stride4320,format237ff,unpack03020001,op80000000. CTL0_TOP20000,INTF_ACTIVE2,
+START0; DSI_CTRL1f5,STATUS5. Read-only state does not prove panel refresh.
+
+New explicit display experiment derives guards/configuration from raw CRC
+capture and pinned Samsung sources. Writes160x96 BGRA RGB bars in DT splash
+reservation and CTL0_START=1 once (source sde_hw_ctl_trigger_start); no other
+controller/clock/DSI programming. Runtime rejects changed captured state, bounds
+start polling100ms. Not yet phone tested.72 host tests pass; native cross-build
+passes. Default diagnostic path remains separate. Prepared under
+shim/out/a52q-display-refresh/. No phone install yet.
+
+Linux filesystem appliance now works with matching6.8.0-149 kernel/modules,
+decompressed modules (guest busybox cannot load zstd modules). Fixture passed
+uid501/gid20/mode0640,hardlinks,symlinks,Unicode filename; HFS read-only fsck OK.
+Private scripts research/{build_rootfs_appliance,run_hfs_fixture,build_ios16_hfs_appliance}.py.
+Real Apple16.7.16 root copy RUNNING in guest via read-only APFS/9p sources to
+E:/A52-iOS16/ios16-20H392-a52q-pristine.hfs.img (16GiB host image ONLY).
+Unified exec session97266; log E:/A52-iOS16/ios16-root-copy.log. No phone storage
+write/format. Copy/fsck must complete before using artifact; no tweaks applied.
+This is not a bootable A52 iOS image: UFS/HFS/Apple entitlement support pending.
+
 ### Phone safe: display snapshot completed, BOOT restored; short-record retry prepared
 
 16:22:33 UTC: display-only read snapshot completed stage0x80, no exception (one

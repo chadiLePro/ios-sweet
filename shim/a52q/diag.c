@@ -1,6 +1,7 @@
 /* A52 diagnostic core, with optional bounds-checked embedded XNU handoff.
  * No board MMIO by default; optional handoff mode reads an evidenced whitelist.
- * No MMIO writes, SMC, DMA, reset or storage commands. Default records into its own
+ * The explicit display experiment can write splash pixels and one CTL_START.
+ * Other modes have no MMIO writes, SMC, DMA, reset or storage commands. Default records into its own
  * image. Optional evidence-derived ramoops output uses reserved RAM only.
  * The default diagnostic build does not include the loader or a kernel.
  */
@@ -171,6 +172,10 @@ static void publish(uint64_t stage)
 #endif
 }
 
+#ifdef A52Q_DISPLAY_TEST
+#include "display_probe.h"
+#endif
+
 #ifdef A52Q_XNU_PAYLOAD
 int a52q_load_embedded(void);
 void a52q_loader_stage(uint64_t stage) { publish(stage); }
@@ -211,6 +216,9 @@ void diag_main(uint64_t dtb)
     }
     handoff_active = UINT64_MAX;
     publish(0x80);
+#ifdef A52Q_DISPLAY_TEST
+    display_probe();
+#endif
 #endif
 #ifdef A52Q_XNU_PAYLOAD
     int error = a52q_load_embedded();
