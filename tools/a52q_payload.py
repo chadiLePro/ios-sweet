@@ -21,6 +21,52 @@ from mkadt import node, u32, u64, cstr
 BLOCK, PAGE, PANIC = 0x2000000, 0x4000, 0x100000
 
 
+def validate_bootstrap_init(data):
+    """Accept a small static arm64 Mach-O, not a disk image or Apple dyld app.
+
+    This checks container geometry only; XNU still validates execution/signing.
+    Our supported producer is tools/mkinit.py with the syscall-only init source.
+    """
+    if not PAGE <= len(data) <= 1 << 20:
+        raise ValueError('bootstrap init must be a small static executable')
+    magic, cpu, sub, kind, count, size, _, _ = struct.unpack_from('<8I', data)
+    if (magic != 0xfeedfacf or cpu != 0x100000c or sub & 0xffffff or kind != 2 or
+            not 1 <= count <= 64 or size > len(data) - 32):
+        raise ValueError('bootstrap init must be thin plain arm64 MH_EXECUTE')
+    off, entry, executable, signature = 32, None, [], False
+    for _ in range(count):
+        if off + 8 > 32 + size:
+            raise ValueError('truncated bootstrap init command')
+        cmd, length = struct.unpack_from('<II', data, off)
+        if length < 8 or length % 8 or off + length > 32 + size:
+            raise ValueError('invalid bootstrap init command')
+        if cmd == 0x19:
+            if length < 72:
+                raise ValueError('truncated bootstrap init segment')
+            va, mem, pos, disk, maximum, prot, sections, _ = struct.unpack_from('<4Q4I', data, off + 24)
+            if (length != 72 + sections * 80 or va + mem >= 1 << 64 or disk > mem or
+                    pos > len(data) or disk > len(data) - pos or prot & ~maximum or prot & 2):
+                raise ValueError('unsupported bootstrap init segment')
+            if prot & 4:
+                executable.append((va, va + disk))
+        elif cmd == 5:
+            if length != 288 or entry is not None or struct.unpack_from('<2I', data, off + 8) != (6, 68):
+                raise ValueError('unsupported bootstrap init thread state')
+            entry, = struct.unpack_from('<Q', data, off + 16 + 32 * 8)
+        elif cmd == 0x1d:
+            if length != 16 or signature:
+                raise ValueError('invalid bootstrap init code signature')
+            pos, disk = struct.unpack_from('<2I', data, off + 8)
+            if disk < 12 or pos > len(data) or disk > len(data) - pos:
+                raise ValueError('bootstrap init signature exceeds file')
+            signature = True
+        else:
+            raise ValueError('bootstrap init has unsupported/dynamic load commands')
+        off += length
+    if off != 32 + size or not signature or entry is None or not any(a <= entry < b for a, b in executable):
+        raise ValueError('bootstrap init lacks a static entry or signature')
+
+
 def make_adt(base, total, gic, frequency, intid, mpidr, seed=None):
     if base % BLOCK or total < 4 * BLOCK or total % BLOCK or not 16 <= intid < 32:
         raise ValueError('unsupported bootstrap memory/timer geometry')
@@ -134,6 +180,27 @@ def validate_payload(data, manifest):
     tree, used = adt.parse(data[adt_off:adt_off + adt_size])
     if used != adt_size or tree.name != 'device-tree':
         raise ValueError('invalid ADT')
+    chosen = next(c for c in tree.children if c.name == 'chosen')
+    if chosen.prop('dram-base') != u64(phys) or chosen.prop('dram-size') != u64(memory):
+        raise ValueError('ADT RAM differs from loader RAM')
+    mmap = next(c for c in chosen.children if c.name == 'memory-map')
+    ramdisk = mmap.prop('RAMDisk')
+    if ramdisk is not None:
+        if len(ramdisk) != 16:
+            raise ValueError('invalid RAMDisk property')
+        rd_phys, rd_size = struct.unpack('<2Q', ramdisk)
+        if (rd_size <= 0 or rd_phys % PAGE or rd_size % PAGE or
+                rd_phys < phys or rd_phys + rd_size > phys + memory or
+                intervals[-1] != (rd_phys - phys + virt, rd_phys - phys + virt + rd_size) or
+                intervals[-1][1] != end):
+            raise ValueError('RAMDisk does not match the final protected loader segment')
+        init = manifest.get('bootstrap_init')
+        _, _, pos, disk = struct.unpack_from('<4Q', data, 0x2a8 + (count - 1) * 32)
+        if not init or init['sha256'] != hashlib.sha256(data[pos:pos + disk]).hexdigest() or init['bytes'] != disk:
+            raise ValueError('bootstrap init manifest mismatch')
+        validate_bootstrap_init(data[pos:pos + disk])
+    elif manifest.get('bootstrap_init'):
+        raise ValueError('bootstrap init manifest has no RAMDisk')
 
 
 def hardware(evidence, console, total):
@@ -176,6 +243,8 @@ def main():
     p.add_argument('--cpu-log', required=True, type=Path)
     p.add_argument('--out', required=True, type=Path)
     p.add_argument('--memory-mib', type=int, default=256)
+    p.add_argument('--bootstrap-init', type=Path,
+                   help='static diagnostic PID1 from mkinit.py, served by mockfs; not Apple launchd')
     p.add_argument('--qemu-dtb', type=Path, help='QEMU-generated virt DTB; makes a payload that phone packaging rejects')
     p.add_argument('--qemu-diagnostic', type=Path, help='matching QEMU loader diagnostic result with measured CNTFRQ')
     a = p.parse_args()
@@ -184,6 +253,12 @@ def main():
             raise ValueError('output exists or invalid memory budget (128..1024 MiB, multiple of 32)')
         kernel = a.kernel.read_bytes()
         validate_kernel(kernel)
+        init = None
+        if a.bootstrap_init:
+            init_data = a.bootstrap_init.read_bytes()
+            validate_bootstrap_init(init_data)
+            init = {'sha256': hashlib.sha256(init_data).hexdigest(), 'bytes': len(init_data),
+                    'scope': 'static diagnostic PID1 via mockfs; not Apple launchd'}
         total = a.memory_mib << 20
         base, gic, hz, intid, mpidr, dt_hash = hardware(a.evidence, a.cpu_log, total)
         environment = 'SM-A525F/DS hardware candidate'
@@ -216,7 +291,8 @@ def main():
         tree_path = a.out.with_suffix('.adt')
         tree_path.write_bytes(adt.serialize(make_adt(base, total, gic, hz, intid, mpidr)))
         payload, info = mkpayload.build(str(a.kernel), str(tree_path),
-                                       'debug=0xc serial=3 cpus=1 keepsyms=1 -v -noprogress rd=md0')
+                                       'debug=0xc serial=3 cpus=1 keepsyms=1 -v -noprogress rd=md0',
+                                       ramdisk_path=str(a.bootstrap_init) if init else None)
         report = {'target': 'A52Q', 'status': 'bootstrap payload; physical RAM access not yet verified',
                   'environment': environment,
                   'phys_base': hex(base), 'mem_size': hex(total - PANIC), 'panic_log_size': hex(PANIC),
@@ -224,7 +300,10 @@ def main():
                   'cpu_log_sha256': hashlib.sha256(a.cpu_log.read_bytes()).hexdigest(),
                   'payload_sha256': hashlib.sha256(payload).hexdigest(), 'macho': info,
                   'timer_hz': hz, 'virtual_timer_intid': intid, 'gic_reg': gic,
-                  'root_filesystem': 'none yet; rd=md0 is intentional next-stage boot target'}
+                  'root_filesystem': 'mockfs RAM disk with static diagnostic init' if init else
+                                     'none yet; rd=md0 is intentional next-stage boot target'}
+        if init:
+            report['bootstrap_init'] = init
         validate_payload(payload, report)
         a.out.write_bytes(payload)
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')

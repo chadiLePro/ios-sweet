@@ -4,9 +4,11 @@ import sys
 import struct
 import hashlib
 import unittest
+import mkinit
+import mkpayload
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import adt
-from a52q_payload import make_adt, validate_payload, validate_kernel, PAGE, PANIC
+from a52q_payload import make_adt, validate_payload, validate_kernel, validate_bootstrap_init, PAGE, PANIC
 from qemu_a52q_xnu import entry_copies
 import zlib
 from fdt_evidence import Node, physical_regs
@@ -52,7 +54,76 @@ def kernel_header_fixture(table_va=0xfffffe0007004000, ctf=False):
     return data
 
 
+def init_fixture():
+    """Synthetic RET-only object to test container checks, not a runnable PID1."""
+    data = bytearray(0x200)
+    section = struct.pack('<16s16sQQIIIIIIII', b'__text', b'__TEXT', 0, 4,
+                          0x180, 2, 0, 0, 0x80000400, 0, 0, 0)
+    segment = mkinit.segment('', 0, 4, 0x180, 4, 5, [section])
+    names = b'\0_start\0'
+    commands = segment + struct.pack('<6I', 2, 24, 0x190, 1, 0x1a0, len(names))
+    struct.pack_into('<8I', data, 0, 0xfeedfacf, 0x100000c, 0, 1, 2, len(commands), 0, 0)
+    data[32:32 + len(commands)] = commands
+    struct.pack_into('<I', data, 0x180, 0xd65f03c0)
+    struct.pack_into('<IBBHQ', data, 0x190, 1, 0xf, 1, 0, 0)
+    data[0x1a0:0x1a0 + len(names)] = names
+    return mkinit.build(data)
+
+
+def ramdisk_fixture():
+    data, manifest = fixture()
+    virt, entry, adt_off, adt_size, end, phys, memory = struct.unpack_from('<7Q', data, 16)
+    init = init_fixture()
+    rd_size = (len(init) + PAGE - 1) & ~(PAGE - 1)
+    tree = mkpayload.add_ramdisk_to_adt(data[adt_off:adt_off + adt_size], phys + end - virt, rd_size)
+    result = bytearray(0x2a8 + 64)
+    pos = len(result)
+    result += struct.pack('<2I', 0xd65f03c0, 0xd503201f)
+    init_pos = len(result)
+    result += init
+    result += bytes(-len(result) % 16)
+    tree_pos = len(result)
+    result += tree
+    struct.pack_into('<8sII7Q', result, 0, b'SWEETXNU', 1, 2,
+                     virt, entry, tree_pos, len(tree), end + rd_size, phys, memory)
+    struct.pack_into('<4Q', result, 0x2a8, entry, PAGE, pos, 8)
+    struct.pack_into('<4Q', result, 0x2a8 + 32, end, rd_size, init_pos, len(init))
+    manifest['bootstrap_init'] = {'sha256': hashlib.sha256(init).hexdigest(), 'bytes': len(init)}
+    manifest['payload_sha256'] = hashlib.sha256(result).hexdigest()
+    return result, manifest
+
+
 class PayloadTests(unittest.TestCase):
+    def test_static_init_geometry_and_architecture(self):
+        data = init_fixture()
+        validate_bootstrap_init(data)
+        for off, value in ((4, 7), (8, 2), (12, 1), (20, 0xffffffff)):
+            bad = bytearray(data)
+            struct.pack_into('<I', bad, off, value)
+            with self.assertRaises(ValueError):
+                validate_bootstrap_init(bad)
+        with self.assertRaises(ValueError):
+            validate_bootstrap_init(b'not a filesystem')
+
+    def test_ramdisk_is_a_protected_loader_segment(self):
+        data, manifest = ramdisk_fixture()
+        validate_payload(data, manifest)
+        manifest['bootstrap_init']['sha256'] = '0' * 64
+        with self.assertRaisesRegex(ValueError, 'manifest mismatch'):
+            validate_payload(data, manifest)
+        data, manifest = ramdisk_fixture()
+        # Move the RAMDisk mapping onto the kernel: must reject even after
+        # recomputing the container hash, rather than trusting its ADT property.
+        off, size = struct.unpack_from('<2Q', data, 0x20)
+        tree, _ = adt.parse(data[off:off + size])
+        mmap = next(c for c in tree.children if c.name == 'chosen').children[0]
+        mmap.props = [(n, f, struct.pack('<2Q', 0x106004000, 2 * PAGE) if n == 'RAMDisk' else v)
+                      for n, f, v in mmap.props]
+        data[off:off + size] = adt.serialize(tree)
+        manifest['payload_sha256'] = hashlib.sha256(data).hexdigest()
+        with self.assertRaisesRegex(ValueError, 'final protected loader segment'):
+            validate_payload(data, manifest)
+
     def test_kernel_table_alignment_and_file_only_ctf(self):
         validate_kernel(kernel_header_fixture())
         validate_kernel(kernel_header_fixture(ctf=True))
