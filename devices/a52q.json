@@ -1,0 +1,24 @@
+{
+  "target": "a52q",
+  "status": "diagnostic candidate packaged; no phone boot demonstrated",
+  "models": ["SM-A525F", "SM-A525F/DS", "SM-A525M", "SM-A525M/DS"],
+  "soc": "Qualcomm SM7125 / Snapdragon 720G / atoll",
+  "boot_transport": "Samsung Download Mode; no verified temporary RAM boot",
+  "source_boot_expectations": {"header_version": 2, "page_size": 4096},
+  "runtime": {
+    "firmware": null,
+    "kernel_ram": null,
+    "framebuffer": null,
+    "storage_luns": null,
+    "timer_frequency": null,
+    "entry_exception_level": null
+  },
+  "diagnostic_sources": ["shim/a52q/start.S", "shim/a52q/diag.c"],
+  "excluded": ["XNU handoff", "UFS", "USB MMIO", "SMP", "GIC programming", "reset MMIO"],
+  "sources": {
+    "kernel": "https://github.com/LineageOS/android_kernel_samsung_sm7125/tree/f6bbda4e5986f09e4d51ceffd1b645b2d5aa75b4",
+    "board_config": "https://github.com/LineageOS/android_device_samsung_sm7125-common/blob/lineage-24.0/BoardConfigCommon.mk",
+    "device": "https://lineageos.github.io/lineage_wiki/devices/a52q/",
+    "boot_protocol": "https://docs.kernel.org/arch/arm64/booting.html"
+  }
+}

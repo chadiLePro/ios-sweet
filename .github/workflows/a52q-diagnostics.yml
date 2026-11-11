@@ -1,0 +1,33 @@
+name: a52q diagnostic host checks
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'devices/a52q.json'
+      - 'shim/a52q/**'
+      - 'tools/*a52q*.py'
+      - 'tools/*evidence.py'
+      - 'tests/**'
+      - '.github/workflows/a52q-diagnostics.yml'
+  pull_request:
+    paths:
+      - 'devices/a52q.json'
+      - 'shim/a52q/**'
+      - 'tools/*a52q*.py'
+      - 'tools/*evidence.py'
+      - 'tests/**'
+jobs:
+  diagnostic-core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
+      - run: python3 tools/validate-repo.py
+      - run: python3 -m unittest discover -s tests -v
+      - run: gcc -std=c11 -Wall -Wextra -Werror tests/host_ramlog_test.c -o /tmp/host-ramlog && /tmp/host-ramlog
+      # CI has no private phone evidence, so builds the no-output core only.
+      - run: python3 tools/build_a52q_diag.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: a52q-diagnostic-core-NOT-A-BOOT-IMAGE
+          path: shim/out/a52q/

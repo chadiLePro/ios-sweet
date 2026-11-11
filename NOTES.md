@@ -1,5 +1,44 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## A52Q handoff — 2026-11-11 (separate device/session)
+
+The new user's device is SM-A525F/DS, reported unlocked, UN1CA Carbon/One UI 9,
+existing TWRP. The old Xiaomi userdata approval below is NOT A52 authorization.
+No phone partitions were written. Read-only ADB acquisition identified a52q/atoll,
+A525FXXSCFYF1, orange AVB state, recovery 4.14.190-perf+. Current BOOT/DTBO/RECOVERY/
+VBMETA and live DT/config/log evidence are in ignored
+`backup/a52q/20261111T100325Z/`. See `docs/A52Q.md` for source references, hashes,
+full audit, build reproduction, data-loss scope, recovery plan and open inputs.
+
+Upstream base: 45263bee51df4a0f55cdf9c649af886399488ddb. Work uses the chat artifact
+checkout on C: because E:/Minecraft and Ubuntu's E:-hosted VHD were unavailable.
+Separate `devices/a52q.json`, `shim/a52q/`, read-only acquisition/evidence tools,
+guarded GNU diagnostic builder and AOSP packager were added. Redmi code, mkadt
+defaults, XNU patches and kernel workflow remain unchanged. No A52 XNU config yet.
+
+Built no-output core and evidence-derived ramoops variant using Arm GNU 14.3.Rel1
+native Windows aarch64-none-elf tools. Candidate RAM console is derived at
+0xb4640000/0x40000, checked against live DT/runtime parameters and board-06 DTBO;
+retention through reset is UNTESTED. Command-mode panel has no live simplefb/fb0.
+TWRP config has KEXEC and DEBUG_FS disabled. No known temporary Samsung RAM boot.
+
+Reviewable full BOOT candidate:
+`shim/out/a52q-ramoops/a52q-diag-UNTESTED-unsigned-full.img` (96 MiB), SHA256
+71f80715822974ab1722e06786a9c8bad518218e8cccaf49eab7652c83e54b17.
+Retains current ramdisk/DTB/header metadata, gzip wrapper and text_offset; strips
+stale AVB metadata and clears tail. It is unsigned and NOT PHONE-TESTED. Adjacent
+JSON/ELF/symbols/disassembly retained. No emulation, XNU build, cloud CI dispatch
+or Apple userland artifact produced. No compatibility claims.
+
+Validation: repository validator passes; 24 Python tests pass; host C ramoops
+layout/bounds/reconstruction test passes; AArch64 relocation and Image-header
+checks pass. Added CI workflow was not run remotely. Next hardware milestone is
+an explicitly authorized BOOT-only diagnostic test and retrieval of A52QDIAG v1
+from TWRP pstore, with original BOOT accessible for restoration. Off-host backup
+readiness and exact installed vendor firmware still need confirmation. Do not
+apply sweet fastboot/userdata commands. The first XNU RAM choice must exclude
+Samsung's live 0x100000000..0x105900000 carveout and resolve dynamic reservations.
+
 ## Agent handoff / active work (2026-10-15, latest)
 
 ### >>> UPDATE 2026-10-18 (read first, then the 10-17 handoff below) <<<

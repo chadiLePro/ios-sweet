@@ -1,5 +1,10 @@
 # ios-sweet
 
+Experimental Galaxy A52 **4G** (`a52q`, SM-A525) bring-up is documented separately
+in [docs/A52Q.md](docs/A52Q.md). It currently provides a compiled diagnostic shim
+and an **untested unsigned** image candidate, not an A52 XNU/iOS boot. The Redmi
+instructions below do not apply to Samsung Download Mode or partition layouts.
+
 **Apple's iOS 16 running on a Redmi Note 10 Pro.**
 
 This project ports Apple's open-source XNU kernel (xnu-8796, the iOS 16 generation) to the Xiaomi Redmi Note 10 Pro (`sweet`, Qualcomm SM7150 / Snapdragon 732G). On top of it runs the **unmodified iOS 16.7.16 (20H392) userland of the iPhone X**: launchd, the system daemons, backboardd, SpringBoard and the stock apps.
