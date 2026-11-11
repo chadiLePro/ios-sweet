@@ -2,35 +2,33 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
-### CURRENT PHONE STATE — ORIGINAL BOOT RESTORED AFTER REAL XNU STARTUP
+### CURRENT PHONE STATE - ORIGINAL BOOT RESTORED; REAL DIAGNOSTIC PID1 VERIFIED
 
-13:58 UTC: original BOOT restored, full 96 MiB partition SHA256 verified;
+15:29:50 UTC: original BOOT restored and full 96 MiB partition hash verified.
 RECOVERY/DTBO/VBMETA unchanged. No restoration pending. Phone remains in TWRP.
-Receipt: backup/a52q/xnu-first-hardware/receipt.json, requires_restore=false.
-First real A52 XNU kernel SHA256:
-de8f43d1b5c3644ecae1f07856699f27fe238ddbdcb3f77cba4fb1474d1e70b5
-Build 43029834033 succeeded. Hardware image SHA256:
-9e32a6f7332966987d46da69d3118ab39f9789dc6942597920e683167079cf7f
-Three CRC-valid entry copies were absent from baseline and present after test.
-The replicated C stream shows arm_init, topology, pmap_bootstrap, final TTBR1,
-arm_vm_init, serial init and stage 0x14 kprintf startup. Then panic:
-Unable to find driver for this platform: "samsung,a52q".
-Some C characters suffer retention corruption; exact C register values are not
-trusted. This demonstrates early XNU startup on SM-A525F/DS, NOT iOS userland.
-Real-phone timer IRQ/CPU-service readiness still needs a specific test.
+Receipt backup/a52q/pid1-hardware/receipt.json requires_restore=false.
+Result backup/a52q/pid1-hardware/boot-result.json: baseline zero XNU markers;
+trial THREE CRC-valid entry frames; exact PID1 banner; FIFTEEN exact heartbeats;
+md0 selected; no observed panic. C/user stream has visible reset-retention
+corruption, so exact register values are not trusted. Repeated intact user-mode
+heartbeats demonstrate exec/syscalls/devfs/console/timer-driven user execution
+on this SM-A525F/DS. This is OUR STATIC DIAGNOSTIC, NOT Apple iOS userland/UI.
+Kernel d3a45619eb3e2428aefed62cbe5170c01e72d28cb285ad1c95f3a2a524796ac8,
+BOOT candidate 259874268307861009ad704bde9f9492be7c92eb6f6f2a9c2b70f79f0bb03fc1.
+Only BOOT was written/restored; no userdata format or storage driver enabled.
+Successful image shim/out/a52q-pid1-hardware/build/a52q-pid1-UNTESTED.img (name
+records packaging-time status; test receipt now records the actual outcome).
 
-Next: independent CPU-only A52PlatformExpert and single boot-CPU IOCPU service,
-plus RAM serial backend for normal console output. Then static RAM-disk PID1,
-first in QEMU, before another BOOT-only hardware trial. No userdata filesystem.
-Fresh control boot or a distinct CRC-protected build identifier is needed before
-another trial: current pstore contains the old XNU entry marker, and the private
-hardware helper correctly rejects stale markers as proof of a new attempt.
-
-Private helper research/a52q_xnu_device_test.py has check/install/collect-restore
-phases. Candidate artifacts under shim/out/a52q-xnu-first-hardware/. User has
-explicitly authorized automatic BOOT-only trials and confirmed availability for
-physical button return. Explain BOOT scope, no format and restore before each
-write. Always collect pstore and restore original BOOT immediately on TWRP return.
+Next stage: inspect real iOS16 rootfs requirements, read-only A52 UFS evidence,
+and independent portable HFS/entitlements dependencies. Do not flash a complete
+Redmi image or enable its hardware guards. Diagnostic AMFI explicitly rejects
+Apple userland until a separately reviewed provider/policy is implemented.
+Fresh Android control boot is needed before another phone trial because pstore
+currently retains this PID1 test. Original Android is preserved and last control
+boot succeeded. Automatic BOOT-only authorization persists, not userdata format.
+Host C has ~2GiB free; D has ~80GiB free, E:\Minecraft is unavailable. No IPSW
+found in repo research or user's Downloads. Sources may go in a new D task dir;
+do not move/delete unrelated user files. Original phone backups remain on C.
 
 ### Current AMFI diagnostic interface build (latest work)
 

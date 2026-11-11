@@ -1,6 +1,6 @@
 {
   "target": "a52q",
-  "status": "early XNU startup demonstrated on SM-A525F/DS; stops at missing platform service; no iOS userland",
+  "status": "XNU and static diagnostic PID1 verified on SM-A525F/DS (15 intact heartbeats); no Apple iOS userland or UI",
   "models": [
     "SM-A525F/DS"
   ],
@@ -45,5 +45,13 @@
     "SM-A525F",
     "SM-A525M",
     "SM-A525M/DS"
-  ]
+  ],
+  "hardware_milestone": {
+    "kernel_sha256": "d3a45619eb3e2428aefed62cbe5170c01e72d28cb285ad1c95f3a2a524796ac8",
+    "crc_valid_entry_frames": 3,
+    "exact_user_mode_heartbeats": 15,
+    "root": "RAM disk / mockfs / own diagnostic init",
+    "original_boot_restored": true,
+    "c_stream": "unprotected, retention corruption present; no exact register values inferred"
+  }
 }

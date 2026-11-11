@@ -1,10 +1,10 @@
 # ios-sweet
 
-Experimental Galaxy A52 **4G** (`a52q`, SM-A525) bring-up is documented separately
-in [docs/A52Q.md](docs/A52Q.md). Its diagnostic shim reached stage 2 on the A52;
-the separate A52Q XNU kernel reaches early startup in QEMU, but has not been
-tested on the phone. No A52 iOS userland boot is claimed. The Redmi
-instructions below do not apply to Samsung Download Mode or partition layouts.
+Experimental Galaxy A52 **4G** bring-up is documented separately in
+[docs/A52Q.md](docs/A52Q.md). On the verified SM-A525F/DS, XNU boots a RAM-disk
+diagnostic as PID 1 with repeated user-mode heartbeats. Original BOOT is restored.
+**Apple's iOS userland/UI has not booted on the A52.** The Redmi instructions
+below do not apply to Samsung Download Mode, hardware drivers or partition layouts.
 
 **Apple's iOS 16 running on a Redmi Note 10 Pro.**
 

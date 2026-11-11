@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run the A52 loader with an explicitly QEMU-only payload; capture XNU RAM logs.
 
-QEMU virt, 4 GiB emulated RAM, TCG, no disks/network/USB passthrough. This does
+QEMU virt, 2 or 4 GiB emulated RAM, TCG, no disks/network/USB passthrough. This does
 not emulate Samsung hardware. Entry, panic and userland are distinct results.
 """
 import argparse
