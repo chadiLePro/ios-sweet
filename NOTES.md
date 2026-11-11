@@ -2,6 +2,42 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### Resumed: verified HFS build and HFS RAM root in QEMU; phone original BOOT
+
+Current device recovery, live BOOT sha d6bf... matches backup (read again).
+No new phone writes. HFS full build43061413864 SUCCESS at16cf668234b1d8fe558176ff5c5cc6222abe3f56.
+GH CLI auth disappeared after host restart; GitHub connector works. Used plugin
+jobs/artifacts/download endpoints: artifact13874728136, archiveSHA3d57ec8a177057eb1785bbb7709cddf7e3f19d84f74d6276a44b83d57a52cea8.
+Downloaded/extracted E:/A52-iOS16/builds/43061413864/artifact; verified overlay
+filesystem=hfs and kernelSHA9cf02e607738966cf461718333505617816ca86ac32c4703001bec213593c151.
+Verified-build.json records provenance. Native mockfs QEMU: PID1+7heartbeats.
+New tools/a52q_hfs_root.py plus --hfs-test-root in payload support ONLY QEMU,
+reject physical packaging. Checks bounds/clean flags/header/fork geometry;
+not a substitute for fsck.76 tests pass. Real fixture32MiB made from mkfs.hfsplus
+and ASCII-only single-file libdmg-hfsplus add/chmod (NOT real-root importer).
+Extracted init SHA matches pin, fsck read-only passes. FileE:/A52-iOS16/a52q-hfs-init-fixture.img.
+QEMU actual HFS mount `hfs: mounted A52Diagnostic on device b(1,0)` thenPID1+
+7heartbeats, no panic. shim/out/a52q-hfs-ramroot-qemu/run/result.json and console.
+This is NOT Apple launchd or phone HFS verification. Kernel retains pin AMFI.
+
+Original9p filesystem copy died SIGHUP when session/host ended; image incomplete
+and repair failed (Keys out of order), preserved E:/A52-iOS16/ios16-...pristine.hfs.img.
+Never use it. Replaced9p source transfer with native Linux rsync through localhost
+to small Linux guest's HFS mount. Fixture uid/gid/modes/links/Unicode +fsck passed.
+New copy active unifiedsession45333, WSLPython research/resume_ios16_hfs_tcp.py,
+LinuxqemuPID115/rsync119. Fresh16GiB sparse image now on E-backed Linux ext4:
+/root/a52-ios16-host/images/ios16-20H392-a52q-pristine-v2.hfs.img. SourceAPFS
+readonly mounts reestablished. 899MiB WSL budget +2GiB swap enabled. Still copyingOS.
+Native rsync avoids9p reads but QEMU TCG filesystem writes still CPU bound.
+IMPORTANT discovery: native Windows QEMU x86 supports working WHPX! Read-only
+Linux boot test completed in2s E:/A52-iOS16/appliance-windows/whpx-test.log.
+Kernel/initramfs copies there. Next optimize filesystem guest to Windows WHPX,
+embed job/config in initramfs (Windows QEMU9p may unavailable). WSL defaultgateway
+from /proc/net/route is172.22.160.1; hostfwd bind this virtual-adapter IP only,
+not LAN. Then native WSL rsync -> Windows guest. Test metadata fixture first.
+Never attach host block devices. Preserve incomplete old images. No new phone
+trial needed for filesystem copy optimization. Actual userland/UI still pending.
+
 ### PHONE SAFE: ORIGINAL BOOT RESTORED; UFS HANDOFF VERIFIED
 
 16:47:55 UTC original BOOT restored with full96MiB hash; recovery/DTBO/vbmeta

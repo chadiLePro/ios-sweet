@@ -72,10 +72,10 @@ def init_fixture():
     return mkinit.build(data)
 
 
-def ramdisk_fixture():
+def ramdisk_fixture(root_data=None):
     data, manifest = fixture()
     virt, entry, adt_off, adt_size, end, phys, memory = struct.unpack_from('<7Q', data, 16)
-    init = init_fixture()
+    init = init_fixture() if root_data is None else root_data
     rd_size = (len(init) + PAGE - 1) & ~(PAGE - 1)
     tree = mkpayload.add_ramdisk_to_adt(data[adt_off:adt_off + adt_size], phys + end - virt, rd_size)
     result = bytearray(0x2a8 + 64)
@@ -96,6 +96,21 @@ def ramdisk_fixture():
 
 
 class PayloadTests(unittest.TestCase):
+    def test_hfs_root_is_qemu_only_and_hash_bound(self):
+        from test_a52q_hfs_root import fixture as hfs_fixture
+        from a52q_hfs_root import validate_hfs_test_root
+        root = hfs_fixture()
+        data, manifest = ramdisk_fixture(root)
+        manifest['hfs_test_root'] = dict(manifest.pop('bootstrap_init'), volume=validate_hfs_test_root(root))
+        validate_payload(data, manifest)
+        manifest['environment'] = 'SM-A525F/DS hardware candidate'
+        with self.assertRaisesRegex(ValueError, 'QEMU-only'):
+            validate_payload(data, manifest)
+        manifest['environment'] = 'QEMU virt ONLY; never flash'
+        manifest['hfs_test_root']['sha256'] = '0' * 64
+        with self.assertRaisesRegex(ValueError, 'manifest mismatch'):
+            validate_payload(data, manifest)
+
     def test_emulator_allocation_excludes_boot_data_and_console(self):
         banks = [(0x40000000, 0x80000000)]
         excluded = [(0x40000000, 0x44000000), (0x48000000, 0x4a000000),

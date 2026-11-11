@@ -221,12 +221,21 @@ def validate_payload(data, manifest):
                 intervals[-1][1] != end):
             raise ValueError('RAMDisk does not match the final protected loader segment')
         init = manifest.get('bootstrap_init')
+        hfs = manifest.get('hfs_test_root')
         _, _, pos, disk = struct.unpack_from('<4Q', data, 0x2a8 + (count - 1) * 32)
-        if not init or init['sha256'] != hashlib.sha256(data[pos:pos + disk]).hexdigest() or init['bytes'] != disk:
-            raise ValueError('bootstrap init manifest mismatch')
-        validate_bootstrap_init(data[pos:pos + disk])
-    elif manifest.get('bootstrap_init'):
-        raise ValueError('bootstrap init manifest has no RAMDisk')
+        root = hfs or init
+        if not root or (hfs and init) or root['sha256'] != hashlib.sha256(data[pos:pos + disk]).hexdigest() or root['bytes'] != disk:
+            raise ValueError('bootstrap init/root manifest mismatch')
+        if hfs:
+            if manifest.get('environment') != 'QEMU virt ONLY; never flash':
+                raise ValueError('HFS root experiments are QEMU-only; physical packaging is prohibited')
+            from a52q_hfs_root import validate_hfs_test_root
+            if hfs.get('volume') != validate_hfs_test_root(data[pos:pos + disk]):
+                raise ValueError('HFS volume manifest mismatch')
+        else:
+            validate_bootstrap_init(data[pos:pos + disk])
+    elif manifest.get('bootstrap_init') or manifest.get('hfs_test_root'):
+        raise ValueError('bootstrap init/root manifest has no RAMDisk')
 
 
 def hardware(evidence, console, total):
@@ -271,6 +280,8 @@ def main():
     p.add_argument('--memory-mib', type=int, default=256)
     p.add_argument('--bootstrap-init', type=Path,
                    help='static diagnostic PID1 from mkinit.py, served by mockfs; not Apple launchd')
+    p.add_argument('--hfs-test-root', type=Path,
+                   help='small fsck-checked HFS+ diagnostic RAM root; QEMU ONLY, never phone packaged')
     p.add_argument('--qemu-dtb', type=Path, help='QEMU-generated virt DTB; makes a payload that phone packaging rejects')
     p.add_argument('--qemu-diagnostic', type=Path, help='matching QEMU loader diagnostic result with measured CNTFRQ')
     p.add_argument('--qemu-lowmem', action='store_true',
@@ -282,6 +293,15 @@ def main():
         kernel = a.kernel.read_bytes()
         validate_kernel(kernel)
         init = None
+        hfs_root = None
+        root_path = a.bootstrap_init or a.hfs_test_root
+        if a.hfs_test_root:
+            if a.bootstrap_init or not a.qemu_dtb:
+                raise ValueError('HFS test root is QEMU-only and excludes mockfs bootstrap-init')
+            from a52q_hfs_root import validate_hfs_test_root
+            init_data = a.hfs_test_root.read_bytes()
+            hfs_root = {'sha256': hashlib.sha256(init_data).hexdigest(), 'bytes': len(init_data),
+                        'volume': validate_hfs_test_root(init_data)}
         if a.bootstrap_init:
             init_data = a.bootstrap_init.read_bytes()
             validate_bootstrap_init(init_data)
@@ -322,7 +342,7 @@ def main():
                 # Reserve generous whole software blocks around the Linux Image
                 # and QEMU boot DTB; the loader independently checks actual spans.
                 excluded = [(cpu['image'] & ~(BLOCK - 1),
-                    (cpu['image'] + len(kernel) + (len(init_data) if init else 0) + 2 * BLOCK - 1) & ~(BLOCK - 1)),
+                    (cpu['image'] + len(kernel) + (len(init_data) if root_path else 0) + 2 * BLOCK - 1) & ~(BLOCK - 1)),
                     (cpu['dtb'] & ~(BLOCK - 1), (cpu['dtb'] & ~(BLOCK - 1)) + BLOCK),
                     (log['base'], log['base'] + log['size'])]
                 base = qemu_placement(banks, total, excluded)
@@ -334,7 +354,7 @@ def main():
         tree_path.write_bytes(adt.serialize(make_adt(base, total, gic, hz, intid, mpidr)))
         payload, info = mkpayload.build(str(a.kernel), str(tree_path),
                                        'debug=0xc serial=3 cpus=1 keepsyms=1 -v -noprogress rd=md0',
-                                       ramdisk_path=str(a.bootstrap_init) if init else None)
+                                       ramdisk_path=str(root_path) if root_path else None)
         report = {'target': 'A52Q', 'status': 'bootstrap payload; physical RAM access not yet verified',
                   'environment': environment,
                   'phys_base': hex(base), 'mem_size': hex(total - PANIC), 'panic_log_size': hex(PANIC),
@@ -342,10 +362,13 @@ def main():
                   'cpu_log_sha256': hashlib.sha256(a.cpu_log.read_bytes()).hexdigest(),
                   'payload_sha256': hashlib.sha256(payload).hexdigest(), 'macho': info,
                   'timer_hz': hz, 'virtual_timer_intid': intid, 'gic_reg': gic,
-                  'root_filesystem': 'mockfs RAM disk with static diagnostic init' if init else
+                  'root_filesystem': 'QEMU-only HFS+ diagnostic RAM root' if hfs_root else
+                                     'mockfs RAM disk with static diagnostic init' if init else
                                      'none yet; rd=md0 is intentional next-stage boot target'}
         if init:
             report['bootstrap_init'] = init
+        if hfs_root:
+            report['hfs_test_root'] = hfs_root
         validate_payload(payload, report)
         a.out.write_bytes(payload)
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')
