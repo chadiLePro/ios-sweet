@@ -105,6 +105,7 @@ def validate_kernel(data):
         raise ValueError('invalid Mach-O command area')
     off = 32
     symtab = None
+    segments = []
     for _ in range(count):
         if off + 8 > 32 + size:
             raise ValueError('truncated Mach-O command')
@@ -121,6 +122,8 @@ def validate_kernel(data):
             file_only_ctf = name == b'__CTF' and mem == 0
             if va + mem > 1 << 64 or (disk > mem and not file_only_ctf) or pos > len(data) or disk > len(data) - pos:
                 raise ValueError('segment exceeds file or address space')
+            if mem:
+                segments.append((va, va + mem))
         elif cmd == 2:
             if length != 24:
                 raise ValueError('invalid Mach-O symbol table command')
@@ -141,12 +144,20 @@ def validate_kernel(data):
     tables = []
     table_name = b'_a52q_console_l3\0'
     for i in range(count):
-        strx, _, _, _, value = struct.unpack_from('<IBBHQ', data, symoff + 16 * i)
+        strx, kind, section, _, value = struct.unpack_from('<IBBHQ', data, symoff + 16 * i)
         if strx >= strsize:
             raise ValueError('symbol string index exceeds table')
         if data[stroff + strx:stroff + strx + len(table_name)] == table_name:
+            # A raw relink retains N_GSYM/STABS debug entries with value zero.
+            # XNU's full build strips these after dsymutil. They are not symbol
+            # definitions (mach-o/nlist.h: N_STAB=0xe0, N_TYPE=0x0e, N_SECT=0x0e).
+            if kind & 0xe0:
+                continue
+            if kind & 0x0e != 0x0e or section == 0:
+                raise ValueError('A52 RAM-console L3 table is not a defined section symbol')
             tables.append(value)
-    if len(tables) != 1 or tables[0] % PAGE:
+    if (len(tables) != 1 or tables[0] % PAGE or
+            not any(lo <= tables[0] and tables[0] + PAGE <= hi for lo, hi in segments)):
         raise ValueError('A52 RAM-console L3 table is not uniquely 16 KiB aligned')
 
 

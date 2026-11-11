@@ -32,6 +32,27 @@ explicitly authorized automatic BOOT-only trials and confirmed availability for
 physical button return. Explain BOOT scope, no format and restore before each
 write. Always collect pstore and restore original BOOT immediately on TWRP return.
 
+### NEW BUILD SUCCEEDED; QEMU advanced to RAM root, then missing IOStorageFamily
+
+Run 43038919058 SUCCEEDED (55fe10f). Kernel SHA256:
+2415ffbcfed9da11ac4af2ff76aaf1de566c34e43ad43a7869c2ea7c2aef97b6.
+Artifacts research/a52q-build-43038919058/. QEMU with static init in
+shim/out/a52q-platform-qemu/run-long: Samsung platform registered, boot CPU
+self-SGI delivered, BSD initialized, RAM device md0 created and selected root.
+Then panic IOService.cpp:5200 assert(ioblockstoragedriverClass). No PID1 yet.
+First 25s run was too short: absent Apple RTC causes an ordinary 30s wait, and
+IOBSD matcher another 30s. Use >=90s QEMU/hardware startup allowance, not 15s.
+No extra phone image installed; original BOOT remains safe in TWRP.
+
+863cff7 shares only IOService.cpp's three software guards for absence of
+IOStorageFamily. The exact source base hash matches the successful A52 build
+and patched source: 3e97419a2ce90729537e65cd5de200887e7eaddebd01e90502f05a485efbe7a3.
+No storage driver enabled. Targeted ram-root relink dispatched: 43042056836.
+Its guarded exception permits ONLY that exact COMMON list addition in apply.py,
+checks the pinned base IOService hash and replaces the three guards identically
+to full overlay. All board headers, other implementation leaves and 81 patches
+must still match. This targeted compile/relink has not yet succeeded.
+
 ### Guarded implementation relink workflow (prepared, not yet exercised)
 
 Extended tools/relink_a52q_console.py to --leaf console|cpu|platform|serial,
