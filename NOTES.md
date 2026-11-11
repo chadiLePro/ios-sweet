@@ -44,6 +44,11 @@ phys_base was rejected at 0xe4 before the copy/probe. These are loader tests,
 NOT XNU boots. Private reports under shim/out/a52q-loader-fixture/{qemu,qemu-rejected}.
 QEMU-generated DTB research/qemu-a52q-4g.dtb and measured frequency from positive
 fixture support explicit emulator-only payload generation when kernel is ready.
+Loader now also reads back every copied segment and BSS zero tail, ADT and
+boot_args fields before the branch; 0xea reports mismatch. Updated positive
+QEMU RET test passed at shim/out/a52q-loader-fixture/qemu-r2. Latest read-only
+phone check backup/a52q/xnu-preflight-readonly.json confirms original BOOT and
+unchanged recovery/DTBO/vbmeta at 12:36 UTC. No new phone writes.
 Next: actual A52Q compiler results, evidence-bound payload/ADT/loader and QEMU
 early-kernel validation, then BOOT-only hardware attempt with restoration.
 

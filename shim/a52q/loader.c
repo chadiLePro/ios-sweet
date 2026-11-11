@@ -54,6 +54,21 @@ static void zero(uintptr_t dst, uint64_t n)
     while (n--) *(volatile uint8_t *)dst++ = 0;
 }
 
+static int verify(uintptr_t dst, uintptr_t src, uint64_t n, int zeros)
+{
+    while (n >= 8 && !(dst & 7) && (zeros || !(src & 7))) {
+        uint64_t expected = zeros ? 0 : *(volatile const uint64_t *)src;
+        if (*(volatile const uint64_t *)dst != expected) return 0;
+        dst += 8; src += 8; n -= 8;
+    }
+    while (n--) {
+        uint8_t expected = zeros ? 0 : *(volatile const uint8_t *)src;
+        if (*(volatile const uint8_t *)dst++ != expected) return 0;
+        src++;
+    }
+    return 1;
+}
+
 int a52q_load_embedded(void)
 {
     uint64_t el, sctlr;
@@ -110,9 +125,14 @@ int a52q_load_embedded(void)
         uintptr_t dst = p->phys + s->va - p->virt;
         copy(dst, (uintptr_t)_payload_start + s->off, s->bytes);
         zero(dst + s->bytes, s->size - s->bytes);
+        __asm__ volatile("dsb sy" ::: "memory");
+        if (!verify(dst, (uintptr_t)_payload_start + s->off, s->bytes, 0) ||
+            !verify(dst + s->bytes, 0, s->size - s->bytes, 1)) return 10;
     }
     a52q_loader_stage(5);
     copy(adt, (uintptr_t)_payload_start + p->adt_off, p->adt_size);
+    __asm__ volatile("dsb sy" ::: "memory");
+    if (!verify(adt, (uintptr_t)_payload_start + p->adt_off, p->adt_size, 0)) return 10;
     zero(ba_pa, PAGE);
     volatile struct boot_args *ba = (volatile struct boot_args *)(uintptr_t)ba_pa;
     ba->revision = ba->version = 2;
@@ -123,6 +143,10 @@ int a52q_load_embedded(void)
     ba->adt_size = (uint32_t)p->adt_size;
     for (unsigned i = 0; i < LINE; i++) ba->cmdline[i] = p->cmdline[i];
     ba->actual_mem = p->mem;
+    __asm__ volatile("dsb sy" ::: "memory");
+    if (ba->virt != p->virt || ba->phys != p->phys || ba->mem != p->mem ||
+        ba->top != ba_pa + PAGE || ba->adt != adt - p->phys + p->virt ||
+        ba->adt_size != p->adt_size || ba->actual_mem != p->mem) return 10;
     a52q_loader_stage(6);
     __asm__ volatile("dsb sy; ic iallu; dsb sy; isb" ::: "memory");
     ((void (*)(uint64_t))(uintptr_t)(p->phys + p->entry - p->virt))(ba_pa);
