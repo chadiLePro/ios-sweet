@@ -2,6 +2,25 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### Active kernel bring-up — user requests focus on booting iOS
+
+Control 43012318206 SUCCEEDED: Xcode 16.0 built xnu-8796.141.3, plain arm64,
+kernel.development.sweet (17,188,640 bytes). No iig ABI workaround was needed.
+Downloaded source/build artifacts are private under research/control-43012318206
+and research/control-buildtree-43012318206. NEVER install that SWEET kernel.
+
+New xnu/a52q/ overlay adds independent A52Q machine config (SWEET undefined),
+single-core build, explicitly shared portable crypto/PRNG/pthread providers,
+RAM serial/early panic logging, and exact 16 KiB Device console pages before
+and after final TTBR0 removal. SWEET UFS/persistent log/USB/SPMI/RPMh/display/
+touch/key/SMP guards remain disabled. Original 81 patches remain unchanged.
+Applied successfully to the actual control build's patched source (43 files).
+New .github/workflows/xnu-a52q.yml builds the A52Q kernel after staging original
+software providers; compilation is not yet demonstrated. Original BOOT remains
+restored and phone is connected in TWRP. No new device write during this turn.
+Next: actual A52Q compiler results, evidence-bound payload/ADT/loader and QEMU
+early-kernel validation, then BOOT-only hardware attempt with restoration.
+
 ### Latest continuation — iOS 16 target retained, conservative memory planner
 
 User reiterated "nono ios 16". Target remains iOS 16 / XNU 8796; macOS 15 /

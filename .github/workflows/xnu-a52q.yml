@@ -1,0 +1,80 @@
+name: iOS 16 XNU A52Q bootstrap kernel
+on:
+  workflow_dispatch:
+  push:
+    branches: [bringup/a52q-diagnostics]
+    paths: ['xnu/a52q/**', '.github/workflows/xnu-a52q.yml']
+concurrency:
+  group: xnu-a52q-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  DXB_SHA: 663906528d1cd5ea8fde7de6f16de73db9511549
+  XNU_SHA: 1b191cb58250d0705d8a51287127505aa4bc0789
+  XNU_VERSION: xnu-8796.141.3
+  MACOS_VERSION: '13.5'
+  KERNEL_CONFIG: DEVELOPMENT
+  # Stage portable providers using the existing helpers, then apply.py switches
+  # the actual kernel machine to A52Q. No SWEET macro is defined on that machine.
+  MACHINE_CONFIG: SWEET
+jobs:
+  kernel:
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare pinned iOS 16 sources and A52 overlay hook
+        run: |
+          git init -q dxb
+          git -C dxb fetch -q --depth 1 https://github.com/blacktop/darwin-xnu-build "$DXB_SHA"
+          git -C dxb checkout -q FETCH_HEAD
+          git init -q dxb/xnu
+          git -C dxb/xnu fetch -q --depth 1 https://github.com/apple-oss-distributions/xnu "$XNU_SHA"
+          git -C dxb/xnu checkout -q FETCH_HEAD
+          test "$(git -C dxb/xnu rev-parse HEAD)" = "$XNU_SHA"
+          cp xnu/patches/*.patch xnu/patches/*.sh dxb/patches/
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('dxb/build.sh')
+          s = p.read_text()
+          old = 'ARCHS="x86_64 arm64e" VALID_ARCHS="x86_64 arm64e"'
+          assert s.count(old) == 1
+          s = s.replace(old, 'ARCHS="x86_64 arm64e arm64" VALID_ARCHS="x86_64 arm64e arm64"')
+          old = '    patches\n    venv'
+          assert s.count(old) == 1
+          s = s.replace(old, '    patches\n    python3 "$WORK_DIR/../xnu/a52q/apply.py" "$WORK_DIR/xnu"\n'
+              '    MACHINE_CONFIG=A52Q\n    KERNEL_TYPE="${KC_VARIANT}.a52q"\n    venv')
+          p.write_text(s)
+          PY
+      - name: Select compiler host
+        run: |
+          brew install jq gum bash cmake ninja
+          printf '#!/bin/sh\nexit 0\n' | sudo tee /usr/local/bin/xcodes >/dev/null
+          sudo chmod +x /usr/local/bin/xcodes
+          echo 'DEVELOPER_DIR=/Applications/Xcode_16.0.app/Contents/Developer' >> "$GITHUB_ENV"
+          sudo xcode-select -s /Applications/Xcode_16.0.app
+          xcodebuild -version
+      - name: Build A52Q kernel
+        working-directory: dxb
+        env:
+          MAKEFLAGS: '-k'
+        run: bash build.sh
+      - name: Collect kernel and patched build tree
+        if: always()
+        run: |
+          mkdir -p out
+          cp dxb/fakeroot/System/Library/Kernels/kernel.development.a52q out/ 2>/dev/null || true
+          cp dxb/xnu/a52q-overlay.json out/ 2>/dev/null || true
+          if test -f out/kernel.development.a52q; then
+            file out/kernel.development.a52q
+            shasum -a 256 out/kernel.development.a52q > out/SHA256SUMS
+            nm -n out/kernel.development.a52q > out/kernel.symbols.txt
+          fi
+          tar czf out/buildtree.tgz --exclude='*.o' --exclude='*.cpo' --exclude='*.a' \
+            --exclude='*.dSYM' --exclude='*.unstripped' --exclude='kernel.development.*' --exclude='.git' \
+            -C dxb build/xnu.obj fakeroot/usr/local/include xnu
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: a52q-xnu-bootstrap-NOT-A-BOOT-IMAGE
+          path: out/
+          retention-days: 7
