@@ -32,6 +32,20 @@ explicitly authorized automatic BOOT-only trials and confirmed availability for
 physical button return. Explain BOOT scope, no format and restore before each
 write. Always collect pstore and restore original BOOT immediately on TWRP return.
 
+### Guarded implementation relink workflow (prepared, not yet exercised)
+
+Extended tools/relink_a52q_console.py to --leaf console|cpu|platform|serial,
+using each full A52 build's real compiler command and existing unique archive
+member (.cpo for C++), preserving archive order. Board header, apply.py, full
+workflow, original patches and every unselected implementation must match the
+successful base commit exactly. Changed ABI/config still needs a full build.
+Workflow xnu-a52q-console-relink.yml dispatch has optional leaf input.
+No claim of relink execution yet. This is ready for the next isolated CPU or
+platform fix after the current full build succeeds.
+Linux host CI's repository/Python/C checks passed on 43039887668; toolchain
+installation is separately blocked by Ubuntu mirror DNS failure. Added bounds
+and fail-on-update-error rather than marking those emulator checks successful.
+
 ### Current replacement kernel run
 
 55fe10f fixes the two barrier-constant errors. Run 43038919058, job 130585664813,

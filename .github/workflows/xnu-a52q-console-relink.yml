@@ -1,4 +1,4 @@
-name: A52Q XNU console leaf rebuild
+name: A52Q XNU isolated implementation rebuild
 on:
   push:
     branches: [bringup/a52q-diagnostics]
@@ -8,6 +8,11 @@ on:
       base_run:
         description: Successful full A52Q build run containing its link archive
         required: true
+      leaf:
+        description: One implementation; board/overlay/other implementations must match base
+        type: choice
+        default: console
+        options: [console, cpu, platform, serial]
 permissions:
   contents: read
   actions: read
@@ -32,8 +37,10 @@ jobs:
           echo "BASE_SHA=$SHA" >> "$GITHUB_ENV"
           echo 'DEVELOPER_DIR=/Applications/Xcode_16.0.app/Contents/Developer' >> "$GITHUB_ENV"
           sudo xcode-select -s /Applications/Xcode_16.0.app
-      - name: Recompile and relink console only
-        run: python3 tools/relink_a52q_console.py --artifact base --log base.log --base-sha "$BASE_SHA" --out out
+      - name: Recompile and relink selected implementation
+        env:
+          LEAF: ${{ inputs.leaf }}
+        run: python3 tools/relink_a52q_console.py --artifact base --log base.log --base-sha "$BASE_SHA" --leaf "$LEAF" --out out
       - uses: actions/upload-artifact@v4
         if: always()
         with:
