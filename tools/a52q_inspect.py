@@ -36,7 +36,7 @@ def main():
         result['blockers'] += [
             'No kernel RAM interval selected; live reservations and firmware-owned ranges need review',
             'No Samsung temporary boot transport verified; no boot image is produced',
-            'No diagnostic shim or XNU execution demonstrated on A52',
+            'This snapshot report alone does not demonstrate diagnostic shim or XNU execution',
         ]
         text = json.dumps(result, indent=2) + '\n'
         if a.out:

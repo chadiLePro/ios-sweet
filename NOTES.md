@@ -23,8 +23,11 @@ validation. No device writes were made during this continuation. Original BOOT
 remains restored (r4 receipt below); phone last observed in TWRP.
 
 52 unit tests pass; validator passes all 81 patches / 25 Python / 7 shell tools.
-New private report: backup/a52q/20261111T100325Z/memory-plan.json. Pending memory
-planner/docs changes need commit/push and their diagnostic CI result recorded.
+Memory planner committed/pushed as a317b56. Diagnostic CI 43013452142 PASSED:
+52 unit tests, host RAM logger, cross-compilation, four QEMU cases. New private
+report: backup/a52q/20261111T100325Z/memory-plan.json. Source-only changes exclude
+all phone dumps and images. Snapshot inspector wording now distinguishes its
+own evidence scope from the separately proven hardware diagnostic milestone.
 Historical paragraphs below may say not pushed or need commit: 37c47ee already
 committed and pushed the r4 source/log decoder and toolchain control.
 
