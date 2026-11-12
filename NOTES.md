@@ -4,6 +4,15 @@
 
 ### New read-only BSD disk implementation — source/host checked, build next
 
+Full HFS kernel build ACTIVE43264401092 atremote112ea38697e3eeb92568b152023bd949ad6f6b4a.
+Push-defaultmockfs43264398986 canceledbyexplicitHFSdispatch (expected).
+HostCI43264398995 SUCCESS (includes Cbounds/responsechecks and QEMUcore).
+Local sourcecommita6a308b, API snapshot112ea38 identicaltreedad49f4937acc47f813b79cc83c4677297df32cb,
+localmergea5a8643 preservesbothhistories. OAuthCLIcan'tupdateworkflow lacking
+workflow scope; published via already-authorized GitHub connector instead,
+verifiedexacttreeSHA and expectedparent7963465 beforefastforward. No auth/settings
+change requested. Nextcheckfullbuild/compilerdiagnostics thenQEMUbaseline beforephone.
+
 Phone SAFE originalBOOTrestored; no new trial pending. Added a52q_ufs_disk.c
 and a52q_ufs_bounds.h, staged byapply.py onlyforA52. Runs only after existing
 hardware-only selftest passes; defaultnoADTnode remains noUFSaccess. Fixed512
@@ -20,7 +29,12 @@ againstactual81-patchtreePASS. Fullkernelbuild andQEMU/hardware stillrequired.
 
 Readertrace: metadata enumeration ALONE exit0, targetstillreads213bytes. Earlier
 assumption that scanalone triggers failure not proven; fullDATAcopy triggersit.
-Need sanitizers/trace at firstdatareadfailure. No further blindcopy/reliableHFSroot.
+ASan-onlybuild/readrepro ACTIVE hiddenWindowsPID14088, research/apfs_asan_read.py,
+E:/A52-iOS16/apfs-asan*.log and apfs-asan-read-paths.log. No diskimagecopy/phoneaccess.
+InitialUBSan halted on legacyunalignedmetadatareinterpretcasts beforeenumeration;
+ASan-only used for actualheapmemorydiagnosis (no claim that UBSan passed).
+Read-onlyreader nowpropagates ReadFile failure to EIO instead of silentlyreturning
+zero-filledbytes. Earlierfullcopiesunusable. Needdiagnose firstdatareadfailure.
 
 ### November12 16:46:38 UTC: XNU UFS READ VERIFIED ON A52; ORIGINAL BOOT RESTORED
 
