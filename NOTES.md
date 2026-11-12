@@ -2,6 +2,39 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### November12 16:44 UTC: kernel UFS trial active — restore BOOT on TWRP return
+
+Full HFS kernel build43257186934 SUCCESS, remotehead39d484bbfdfd78ef2502c9a2e0efe8bfdcf8566e.
+GitHub Actions was reenabled by user; CLI authenticated. Local mergeca6a72c
+preserves both histories, same source tree as remote snapshot. Download verified
+E:/A52-iOS16/builds/43257186934/artifact. KernelSHA256
+0e9feaf6cced793ff712f7222415421176ff3585d805e71db4b01f6463471bc6;
+HFS selection, pinned diagnostic init and all three UFS source/header hashes
+match local source. QEMU baseline (NO UFS node) PASS: diagnosticPID1,7heartbeats,
+3CRC entrycopies. shim/out/a52q-kernel-ufs-baseline-qemu/run/result.json.
+
+User confirmed beside phone. BOOT-only disclosure given, existing automatic
+BOOT-trial authorization applies. Candidatef5f48050caa746b6d3c4cdefd999594b57b8a903e171b7fb809d9577e8ec5a78
+installed/fullreadback 16:43:49 UTC, TWRP System reboot sent. Pending original
+BOOT restoration! Receipt backup/a52q/kernel-ufs-selftest/receipt.json.
+Hidden watcherPID13596 research/watch_kernel_ufs_restore.py waits600s for TWRP,
+collects then restores original before decoding. Logs E:/A52-iOS16/kernel-ufs-watcher*.log.
+User asked returnTWRP after90s. No userdata format, no other partition writes.
+After return confirm requires_restore=false + original_boot_restored=true,
+then inspect kernel-ufs-result.json. Do not claim kernel disk I/O before proof.
+
+Host APFS reader investigation: upstream PR224 iterator guards +PR218 lookup
+fallback applied to pinned66b86bd, own additional keyed-iterator/error propagation
+guards; CTest1/1pass. Fullcopy STILL failed23. Added zero-initialized FUSE entry,
+stable generation1 and stat-error propagation; focused CarrierBundles copy now
+exit0. No claim whole-reader fixed. Foreground -d1 required for actual error logs
+(debug0 daemon closes stderr). Fresh native staging ACTIVE hiddenWSLPID14280,
+research/stage_ios16_foreground.py; E:/A52-iOS16/stage-v3*.log, destination
+/root/a52-ios16-host/staged-foreground-v3. Success marker ONLY if all3rsync exit0.
+rsync-aH preserves owners/modes/links, NOT xattrs/ACLs; document this limitation.
+All previous full HFS images INVALID; no Apple launchd/UI yet. No phone root
+image is ready. Source-reader changes still private/unpromoted until validated.
+
 ### November12 continuation: kernel UFS selftest ready for compiler validation
 
 Phone TWRP; reread BOOT hash d6bf... matches original. No pending restoration.
