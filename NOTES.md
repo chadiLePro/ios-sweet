@@ -2,6 +2,40 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### PHONE SAFE: BSD+HFS trial inconclusive; isolate small-root variant next
+
+backup/a52q/readonly-disk/receipt.json original_boot_restored=true,
+requires_restore=false; protectedpartitionhashesunchanged. Watcherfinished.
+UserreportedSamsungSplash. Kernel18d998... produced3CRCentryrecords andCstartup
+through CPUinitialization, butZEROvalidA52K1 records for newnonce; no diskproof.
+DoNOT sayitneverenteredkernel. LastintactCbootmessages arebeforekernelUFSreports;
+doNOT infer exacthangsite fromunprotected/partlydamagedCstream. Candidate697fc74...
+combinednewBSDkernel+32MiBHFSRAMroot+UFSnode. QEMUretrydidpassHFS+7heartbeats after
+freeinghostRAM. Need isolateRAMroot footprint fromUFSselftest beforechangingcode.
+
+Preparedsame18d998kernel+UFSnodewithsmallpinnedmockfsroot, matchingprevious
+successfulUFSphone setup. Candidatea20965fbd95d4dcba516b52020f29c30e7bb33f7f8890630b6785b686090ac38
+atshim/out/a52q-readonly-disk-mockfs-hardware/build/a52q-readonly-disk-mockfs-UNTESTED.img.
+PACKAGED ONLY. OriginalAndroidcontrol+recoveryreturn ACTIVE unified87954,
+research/a52q_original_boot_control.py backup/a52q/control-before-readonly-disk-mockfs.
+No newexperimentalimageinstalledyet. Usernearphonebutaskreadinessfornext90sreset.
+Ifsmallrootstillhasnostages, addnonce-bound earlycheckpointsbeforemap/alloc/pmap
+andconsiderhardwarebaselineWITHOUTnode. ExistingA52K1 beginsafteralloc, cannot
+localize earlierfailure. Potentialfastrelinkleaf UFSwouldneedguarded source/header
+dependencies andsamebase43264401092; no suchleafsupportadded yet. Avoidspeculativefixes.
+
+Source-reader first-I/O instrumentmetadata/readlinkLIST-ONLYtest PASSED exit0.
+NoDMGfailure there. ExactnativeCOPY diagnostic ACTIVE hiddenPID13132,
+research/apfs_first_copy_failure.py; logsE:/A52-iOS16/apfs-first-copy*.log,
+destination/root/a52-ios16-host/staged-first-copy-v5/os. InstrumentedASanreader
+stops on FIRSTshortifstreamread withoff/size/state/errno, parentstopsrsync ifreader
+dies. No masking/retry. Need seeDMG_FIRST_SHORT_READ orotherfirsterror. Script
+outputJSONexit0wouldbeOS-onlycopysuccess, notall3sources/root-imageproof.
+PossibleEOFreadhandling bug: apfs_read doesn'tclampUNCOMPRESSEDreads toino.ds_size;
+ReadFile doesn'trejectoffsetpastselectedextent andignoresReadBlocksfailures.
+Theseareverifiedsourceissues, relationshiptorsyncfault stillunproven; no such
+fixapplied yet. Avoid runningWSL+2GiBQEMUconcurrently onthis6GiBhost.
+
 ### PHONE SAFE: HFS RAM root boot observed; original BOOT restored
 
 backup/a52q/hfs-hardware-ramroot/receipt.json requires_restore=false and
