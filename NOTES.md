@@ -2,6 +2,49 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### SOURCE STAGING COMPLETE; HFS image preparation active; PHONE SAFE
+
+All3nativecopies nowexit0. OSv5:179359regularfiles,2324symlinks,
+8291487156bytes; SystemOSv6:3360034133bytes; AppOSv6:7936372bytes.
+E:/A52-iOS16/staged-final-v6-sources.json isSUCCESSmarker, stagedroot
+/root/a52-ios16-host/staged-final-v6 (osrelative-symlinkto validatedv5OS).
+v5SystemOS FAILEDreaderonlarge42.dyldlinkedit, noheapreport. FreshWSLhadNOswap;
+v6 explicitlyenabled task4GiBswap/appliance/source-staging-4g.swap +ASan16MiB
+quarantine andALLcopiesPASS. Don't assume swap persistsacrossWSLidle-restarts.
+No exactOOMcauseclaim withoutdmesg; nooriginalstream shortread observedinv5OS.
+Readerpatches/instrumentationstillprivate. Nativecopy preservesPOSIXowners/modes/
+links, NOTApple xattrs/ACLs/BSDfileflags. NoApplelaunchd/UI bootyet.
+
+DirectWHPX Linuxfile-copyfixturePASSED uid501/gid20/mode640,hardlink,symlink,
+Unicode +cleanHFSfsck. LogE:/A52-iOS16/appliance-windows/direct-fixture-raw-v2.log.
+Read-onlyWSLVHDX routeREFUSEDdirtyVHDXlog; NEVERrepair originalWSLVHDX for this.
+Insteadregularrawext4transferfile createdwithmkfs.ext4-d, mountedreadonly inguest.
+Fixture sourcepathfixedto/sources/; earlierfixtureNoSuchFilefailure NOTasuccess.
+Privatebuild_rootfs_appliance.py nowincludesext4andfsck.hfsplus modules/tools.
+
+FULL imageprep ACTIVE hiddenWindowsPID11208, research/prepare_pristine_hfs_direct.py.
+LogE:/A52-iOS16/prepare-pristine-v7*.log. Copiesstagedfiles byhardlinks into
+/root/a52-ios16-host/transfer-tree-v7 thenpopulatesregular16GiB ext4transferfile
+E:/A52-iOS16/ios16-source-transfer-v7.ext4; creates16GiBHFSdestination
+E:/A52-iOS16/ios16-20H392-pristine-v7.hfs.img andembeddedjobinitrd
+E:/A52-iOS16/appliance-windows/pristine-direct-v7.cpio.gz. NOTcopied/fscked yet.
+Needprepare finish, addoriginal47core/cachefileSHAmanifest+guestsha256sum-c,
+thenSYNC+terminateonlyourWSLdistro andrunWindowsQEMU384MiB WHPXwithrawsourceRO,
+HFSdestRW,NO network/USB/hostblockdevices. Require A52_PRISTINE_HFS_IMAGE_PASSED
+andA52_APPLIANCE_RESULT=0, fsckclean, andfullimageSHA beforecallingartifactvalid.
+ImagecontainsbaseOS+SystemOS/AppOSinprivate/preboot/Cryptexes+44dyldcachehardlinks;
+nootherflattening/tweaks/providerchanges. ItwillNOTbootAppleuserlandwithcurrentAMFI.
+
+Added tools/a52q_gpt.py +7tests: primary+backupCRC/arrays matchall31sysfsranges;
+BOOTfirst99312/count24576,RECOVERY123888/19968,userdata3165696/27911647,
+block4096. Privatecapturebackup/a52q/gpt. HostproposalBOOTtail32MiBat64MiBoffset
+=>LBA115696/count8192 fitsbeforeRECOVERY; no image/partitionmodified.
+PotentialNEXT minimaldiskrootexperiment: embedOWNHFSfixtureinBOOTpadding,
+addboundedread-onlypartition/minor/rootlookup+packagervalidation. Preserves
+userdataandGPT; stillONLYfutureproposal, notimplemented/installed. CurrentBSD
+driverexposeswholeLUN0only, noGPT/rootselection. Needactualcode+build+reviewbeforetest.
+90Python tests pass. OriginalBOOTrestored, allwatchersfinished, nohardwaretestpending.
+
 ### VERIFIED BSD STORAGE ON A52 — PHONE SAFE, ORIGINAL BOOT RESTORED
 
 backup/a52q/readonly-disk-mockfs/receipt.json requires_restore=false,
