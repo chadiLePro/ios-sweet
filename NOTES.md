@@ -2,6 +2,32 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### VERIFIED BSD STORAGE ON A52 — PHONE SAFE, ORIGINAL BOOT RESTORED
+
+backup/a52q/readonly-disk-mockfs/receipt.json requires_restore=false,
+original_boot_restored=true; recovery/DTBO/vbmeta hashes unchanged. Watcherfinished.
+Same18d998kernel withsmallmockfs diagnosticroot PASSED: phase10 fiveCRCcopies,
+phase11 five, phase20 four andphase30 FIVEvalidcopies. OCS0,lastLBA31077375,
+4096byteblocks,dataCRC1080028829,response21000000. kernel-ufs-result.json
+success=true,readonly_disk_verified=true. This verifies knownblock READ through
+BSDbufferstrategy+CRC andsuccessfulread-onlydevicepublication. No userspace
+raw-read test ormountedUFSroot yet. Candidatea20965f... (fullSHAbelow).
+No Applelaunchd/UI, GPU/input/cellular/services. No diskwriteCDB orformat.
+
+The combinedlargeHFSRAMroot+UFSnode trial remainsunresolved; doNOT claimits
+causeismemorypressure: footprint, addresses andboot timing changed together.
+HFSRAMroot andBSDdisk paths EACHworkindependently onphone. Tinyroot variant
+matchesearlierUFSsuccesssetup. No needforspeculativekernelchanges/earlymarker
+rebuildnow. Nextkernelstep isexplicitpartitionmapping/root selection, derived
+from CRC-checked actualGPT andcurrentpartitionbounds, stillreadonly. RealApple
+root filesystem, reviewedAppleexecutables/entitlements provider, displayrefresh
+andinput remainbeforeUI. No furtherphonewritepending.
+
+Host sourcecopyv5stillACTIVE; had925MiBcopied withoutI/Oexception whenchecked.
+DoNOT claimcomplete; readE:/A52-iOS16/apfs-first-copy.log JSONexitstatus then
+verifyallstats/bytecounts. CurrentprivateASanDiskImageFileinstrumentation throws
+on firstshortread; no retry/masking. WSLavailable, noQEMUrunning. KeepEattached.
+
 ### PHONE SAFE: BSD+HFS trial inconclusive; isolate small-root variant next
 
 backup/a52q/readonly-disk/receipt.json original_boot_restored=true,
