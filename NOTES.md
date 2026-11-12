@@ -2,6 +2,37 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### PHONE SAFE: HFS RAM root boot observed; original BOOT restored
+
+backup/a52q/hfs-hardware-ramroot/receipt.json requires_restore=false and
+original_boot_restored=true; other protected partition hashes unchanged.
+checked-result.json:3CRCentrycopies, intact'hfs: mounted 'text, intact'init running
+as PID 1 ***'suffix and10exact diagnosticheartbeats. Some Ctext/volume name damaged
+acrossreset, NOT repaired/reconstructed. Kernel0e9fea... onrealA52 nowmounted
+smallHFSRAMroot+ranownpinnedinit. NotApplelaunchd/UI orUFSdiskroot. Watcherfinished.
+
+NewBSDkernel43264401092artifactverified E:/A52-iOS16/builds/43264401092/artifact.
+Kernel18d9982197069dc28bbc1c40315f82874cafba4382cad3c78b2b0bdabbc68a93,
+HFSselection/allfive UFSsource+headerhashesmatch. FirstQEMUattempt failedBEFORE
+gueststartup: cannotallocateguestmemory'virt.flash0', notakernelpanic. Hosthas
+6GiBvisibleRAM; Windowscommitheadroom~2.2GiB. StoppedfailedASanrsync, syncedand
+terminatedONLY ourA52-HakiOS-Build-20261107distro tofreeRAM. DoNOT runlargeWSL+
+2GiBQEMUconcurrently here. Samekernel/HFS QEMUretry ACTIVE unified87547,
+shim/out/a52q-readonly-disk-hfs-qemu/run-retry. NeedPID1>=3heartbeats+HFSmount
+beforepreparingnewBSDphonecandidate. No diskinterfacehardwareproofyet.
+HostCI43267262374 SUCCESS (83Python+Ctests/coreQEMU).
+
+Exact rsyncunderASan FAILED metadataI/O after~218kentries. NoASanheapreport:
+GetNode VerifyBlock failed withZERO block, thencascadingmissinginodes. All-file
+Pythonread previously8291487156bytesclean. Newhypothesis: DiskImageFile::Read
+usesuncheckedifstreamread; a short/failed read poisons streamstate permanently,
+causinglaterzerometadata. NOT proven yet. SourceinstrumentedFIRSTshortreadwith
+offset/requested/actual/state/errno andthrowsimmediately (no masking/retry).
+research/instrument_dmg_read.py appliedonlyignoredhostsource. RecompileASan
+DiskImageFile.cpp thenretryfocused metadata/readlink or exactrsync AFTERQEMUends.
+Look forDMG_FIRST_SHORT_READ inlog. Currentstage-asan-v4scratchFAILED/stopped,
+no successmarker. Source-rootcopy andallfullHFSimages stillUNUSABLE. WSLnotrunning.
+
 ### 17:16:39 UTC: HFS RAM-root PHONE TRIAL ACTIVE — restore BOOT on TWRP return
 
 Candidate1a0bf3a467e31a513b6cd4e29eed895cc7d3932205f3862fed2a383cd982caf3
