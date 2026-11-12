@@ -1,4 +1,4 @@
-/* A52 UFS kernel selftest: no disk registration, write CDB, clocks or reset.
+/* A52 UFS kernel selftest and read-only disk: no write CDB, clocks or reset.
  * Enabled ONLY by the evidence-bound /a52q-ufs-selftest ADT node. Uses the exact
  * packet helpers validated by the independent physical shim experiment.
  * The shim's DMA address contains the loaded kernel now: allocate NEW wired,
@@ -19,6 +19,7 @@
 
 #include "a52q_ufs_nop_protocol.h"
 #include "a52q_ufs_read_protocol.h"
+#include "a52q_ufs_bounds.h"
 
 extern ppnum_t pmap_find_phys(pmap_t pmap, addr64_t va);
 extern vm_offset_t ml_io_map(vm_offset_t phys_addr, vm_size_t size);
@@ -31,6 +32,7 @@ static struct {
     vm_offset_t regs, dma;
     uint64_t pa, nonce;
     uint32_t last, block, crc, ocs, response;
+    int failed;
 } a52u;
 
 static uint32_t a52u_read(unsigned offset)
@@ -68,7 +70,7 @@ static void a52u_report(unsigned phase)
     uint32_t crc = ufs_data_crc32((const uint8_t *)body, (unsigned)length);
     for (unsigned i = 0; i < 5; i++) printf("A52K1 %s %08x\n", body, crc);
 }
-static int a52u_transfer(unsigned opcode, uint32_t lba, unsigned bytes)
+static int a52u_transfer_inner(unsigned opcode, uint32_t lba, unsigned bytes)
 {
     if (a52u_read(A52_UFS_DBR) || a52u_read(A52_UFS_RSR) != 1 ||
         a52u_read(A52_UFS_HCE) != 1 || (a52u_read(A52_UFS_HCS) & 15) != 15) return EBUSY;
@@ -107,8 +109,7 @@ static int a52u_transfer(unsigned opcode, uint32_t lba, unsigned bytes)
     volatile const uint8_t *rsp = request + 1024;
     a52u.ocs = list[2] & 15;
     a52u.response = ufs_be32(rsp);
-    int valid = (rsp[0] & 0x3f) == (opcode ? 0x21 : 0x20) && rsp[3] == 0 &&
-        rsp[6] == 0 && rsp[7] == 0;
+    int valid = a52q_ufs_response_ok(rsp, opcode != 0);
     a52u_write(A52_UFS_RSR, 0);
     if (a52u_wait(A52_UFS_RSR, 1, 0)) return ETIMEDOUT;
     a52u_write(A52_UFS_BA, old_lo);
@@ -118,6 +119,18 @@ static int a52u_transfer(unsigned opcode, uint32_t lba, unsigned bytes)
         a52u_wait(A52_UFS_RSR, 1, 1)) return EIO;
     return a52u.ocs || !valid ? EIO : 0;
 }
+
+static int a52u_transfer(unsigned opcode, uint32_t lba, unsigned bytes)
+{
+    /* A timed-out device may still own the permanent DMA buffer. Never submit
+     * another command or touch its contents after any transfer failure. */
+    if (a52u.failed) return EIO;
+    int error = a52u_transfer_inner(opcode, lba, bytes);
+    if (error) a52u.failed = 1;
+    return error;
+}
+
+#include "a52q_ufs_disk.c"
 
 void a52q_ufs_selftest(void);
 void a52q_ufs_selftest(void)
@@ -161,4 +174,6 @@ void a52q_ufs_selftest(void)
     if (a52u_transfer(0x28, lba, 4096)) { a52u_report(0xe6); return; }
     a52u.crc = ufs_data_crc32(data, 4096);
     a52u_report(a52u.crc == expected_crc ? 0x20 : 0xe7);
+    if (a52u.crc != expected_crc) return;
+    a52u_report(a52u_disk_publish(lba, expected_crc) ? 0xe8 : 0x30);
 }

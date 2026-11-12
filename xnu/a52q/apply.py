@@ -64,6 +64,8 @@ def apply(root, filesystem='mockfs'):
     replace('bsd/dev/sweet_ufs.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
             '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_ufs.c"\n#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
     changes['bsd/dev/a52q_ufs.c'] = (HERE / 'a52q_ufs.c').read_text()
+    for name in ('a52q_ufs_disk.c', 'a52q_ufs_bounds.h'):
+        changes['bsd/dev/' + name] = (HERE / name).read_text()
     for name in ('ufs_nop_protocol.h', 'ufs_read_protocol.h'):
         changes['bsd/dev/a52q_' + name] = (HERE.parents[1] / 'shim/a52q' / name).read_text()
     replace('bsd/kern/bsd_init.c', '\tvfsinit();\n',

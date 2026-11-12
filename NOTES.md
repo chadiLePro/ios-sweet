@@ -2,6 +2,26 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### New read-only BSD disk implementation — source/host checked, build next
+
+Phone SAFE originalBOOTrestored; no new trial pending. Added a52q_ufs_disk.c
+and a52q_ufs_bounds.h, staged byapply.py onlyforA52. Runs only after existing
+hardware-only selftest passes; defaultnoADTnode remains noUFSaccess. Fixed512
+logicalsectors over proven4KiBREAD10, overflow-safe bounds/partialblock copies,
+serializedpermanentDMApool, writesrejected inopen/raw/strategy. Anytransfer
+failure poisons DMApool for restofboot, no retries/reuse. Strictresponsechecks
+reject flags/LUN/tag/status/residual/sense to prevent reporting shortDMAasfullread.
+Beforepublishing /dev/a52ufs0 and /dev/ra52ufs0 mode0440, testknownRECOVERYblock
+through BSDbufstrategy+CRC. Newphase30 means verifiedstrategy+devicepublication,
+phasee8 meansfailure; decoderseparates readonly_disk_verified fromphase20success.
+NoGPT/partitionmapping/rootselection/diskwrites/format. OriginalRedmiunchanged.
+NativeC bounds/response test,82Python tests,repo validator,andboth66-fileoverlays
+againstactual81-patchtreePASS. Fullkernelbuild andQEMU/hardware stillrequired.
+
+Readertrace: metadata enumeration ALONE exit0, targetstillreads213bytes. Earlier
+assumption that scanalone triggers failure not proven; fullDATAcopy triggersit.
+Need sanitizers/trace at firstdatareadfailure. No further blindcopy/reliableHFSroot.
+
 ### November12 16:46:38 UTC: XNU UFS READ VERIFIED ON A52; ORIGINAL BOOT RESTORED
 
 backup/a52q/kernel-ufs-selftest/receipt.json requires_restore=false,
