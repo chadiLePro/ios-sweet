@@ -2,6 +2,31 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### November12 16:46:38 UTC: XNU UFS READ VERIFIED ON A52; ORIGINAL BOOT RESTORED
+
+backup/a52q/kernel-ufs-selftest/receipt.json requires_restore=false,
+original_boot_restored=true, other protected partition hashes unchanged.
+Watcher finished. Physical kernel0e9fea... (build43257186934) generated5valid
+pool/start records,5validNOP records and4validcompletion records phase0x20:
+OCS0,lastLBA31077375,4096byteblocks,CRC1080028829,response21000000.
+kernel-ufs-result.json success=true. This verifies NEW kernel-owned wired/DMA
+buffer + explicit cache maintenance, NOP/capacity/one known RECOVERY block.
+3CRC entry records and diagnosticPID1 plus heartbeats also present.
+The ordinary C stream's printed pooladdress is unprotected: do not treat its
+exact PA as independently CRC-proven. No BSD disk registered/mounted yet.
+Next storage step: reviewed serialized read-only BSD block/raw interface with
+bounds/512-byte sector translation and geometry ioctls; no writes/format.
+
+Full native APFS staging v3 FAILED (I/O errors), deliberately stopped exact
+failed rsync with SIGTERM to avoid another wasted copy. Exit20 is our stop,
+underlying failures are reader GetInode errors. No success marker/root artifact.
+Same failing file reads213bytes SHAeb4963e5fdc37fc85a580c6eea8f1ef22cd723e21bf953cd984d0d45f2a48aef
+on FRESH reader; stale full-enumeration reader returnsEIO. Real inode
+0xfffffff00011013; no inode truncation evidence. Foreground trace one exact
+inode before/after metadata enumeration is running unified40627, script
+research/apfs_trace_lookup.py, log E:/A52-iOS16/apfs-trace.log. Temporary trace
+edits only ignored host reader. Need isolate cache/lookup bug, not blind retries.
+
 ### November12 16:44 UTC: kernel UFS trial active — restore BOOT on TWRP return
 
 Full HFS kernel build43257186934 SUCCESS, remotehead39d484bbfdfd78ef2502c9a2e0efe8bfdcf8566e.
