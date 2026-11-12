@@ -61,6 +61,14 @@ def apply(root, filesystem='mockfs'):
     replace('bsd/kern/sweet_amfi.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
             '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_amfi.c"\n#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
     changes['bsd/kern/a52q_amfi.c'] = (HERE / 'a52q_amfi.c').read_text()
+    replace('bsd/dev/sweet_ufs.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
+            '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_ufs.c"\n#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
+    changes['bsd/dev/a52q_ufs.c'] = (HERE / 'a52q_ufs.c').read_text()
+    for name in ('ufs_nop_protocol.h', 'ufs_read_protocol.h'):
+        changes['bsd/dev/a52q_' + name] = (HERE.parents[1] / 'shim/a52q' / name).read_text()
+    replace('bsd/kern/bsd_init.c', '\tvfsinit();\n',
+            '\tvfsinit();\n#if defined(ARM64_BOARD_CONFIG_A52Q)\n'
+            '\textern void a52q_ufs_selftest(void);\n\ta52q_ufs_selftest();\n#endif\n')
 
     replace('makedefs/MakeInc.def', 'VMAPPLE SWEET\n', 'VMAPPLE SWEET A52Q\n')
     replace('makedefs/MakeInc.def', 'ifneq ($(CURRENT_MACHINE_CONFIG),SWEET)',

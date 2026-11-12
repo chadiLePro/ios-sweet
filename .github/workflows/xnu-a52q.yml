@@ -9,7 +9,7 @@ on:
         default: mockfs
   push:
     branches: [bringup/a52q-diagnostics]
-    paths: ['xnu/a52q/**', '.github/workflows/xnu-a52q.yml']
+    paths: ['xnu/a52q/**', 'shim/a52q/ufs_*_protocol.h', '.github/workflows/xnu-a52q.yml']
 concurrency:
   group: xnu-a52q-${{ github.ref }}
   cancel-in-progress: true

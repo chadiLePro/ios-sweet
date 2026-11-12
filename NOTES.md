@@ -2,6 +2,51 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### November12 continuation: kernel UFS selftest ready for compiler validation
+
+Phone TWRP; reread BOOT hash d6bf... matches original. No pending restoration.
+Latest physical result is shim READ10 success documented below, not XNU disk I/O.
+Added xnu/a52q/a52q_ufs.c: opt-in /a52q-ufs-selftest ADT node, dynamic wired
+contiguous16KiB kernel allocation, physicaladdress via pmap, explicitcacheflush
+before/after DMA, boundedNOP+capacity+one RECOVERYblock. No BSDdiskregistration,
+writeCDB, IRQ, SMMU, clock or reset operations. Uses exact shim packet headers
+staged byapply.py; originalSWEETbranch remainsguarded/disabled. Callsaftervfsinit,
+returns immediately when nodeabsent. Source64-file overlays pass againstactual
+81-patch tree;81Python tests pass. NOT COMPILED in XNU yet; full CI build next.
+tools/a52q_ufs_selftest.py validates physicalreadproof, emits nonce-bound ADT node
+and decodes shortA52K1 kernelCRC stages; successphase20. Payloadarguments
+--ufs-selftest-build/--ufs-selftest-log hardwareONLY; emulator rejects node.
+Originalkernel9cf... lacksimplementation, payloadtoolrejectsit forselftest.
+Kernel buildworkflow nowtriggers on sharedpacketheaderchanges too; hostCI runs
+both new portable UFS C packettests before optionaltoolchaininstallation.
+
+GHCLI auth stillmissing. GitHubconnector supports gitcreate_tree/create_commit/
+update_ref with expectedsha. Publish reviewedsource snapshot (no privateartifacts)
+to existingfork branch fastforward from verifiedremotehead, triggerfullmacOSbuild.
+Keep local commits/history; API snapshotSHA maydiffer, recordboth withoutresetting.
+
+Native source staging alsoFAILED23, immutableAPFS reader listedfiles but then
+lookupsaid'filevanished'. No staged-sources.json success marker. All fullHFSroot
+images remain INVALID/incomplete. source-staginglog E:/A52-iOS16/*.log. Fullreadonly
+findwalk succeeded. Next isolate freshmount single knownCarrierBundle lookup,
+then audit APFS BTree cache/iterator (pinned66b86bd...). No codepatch/apfs rebuild
+made yet. Avoid blind copy retries. FailedWHPXoptimization lowerpriority.
+
+### READ CAPACITY + ONE SECTOR VERIFIED ON A52; ORIGINAL BOOT RESTORED
+
+20:22:39 UTC originalBOOTrestored/full96MiBhash, otherpartitionsunchanged.
+backup/a52q/ufs-read/receipt.json requires_restore=false, phoneTWRP.
+checked-result.json: all9MMIOrecords,stageb3/ESR0 with4validstagecopies;
+NOPocs0/header20000000/DBR0;2validA52C1 records: lastLBA31077375,block4096,
+dataCRC1080028829 matchesindependentTWRP+originalRECOVERYbackup,OCS0,
+responseheader21000000,failure0. REAL shim PRDT data-sector read worked!
+No writeCDB/format. Candidateee708fce0d0d6120fef4bab9633e9477cab3cb1b7ce966423183da7474ecdd2f.
+Code13b8e54. Need separate readonlyA52 XNU diskdriver using provenprotocol;
+cannotreuse shim106000000 DMApool afterkernel loads there: allocate wired
+contiguouskernelRAM+explicitDMAcachemaintenance, deriveMMIO/geometryfromADT.
+OriginalSWEET driver stilldisabled. Currentphysicalprototype DOES NOT expose
+disktoXNU yet. No Applelaunchd/UI. No further phonewritepending.
+
 ### One-block read trial prepared; no pending restore yet
 
 New mode --ufs-read-geometry/--ufs-read-nop-build/--ufs-read-nop-log builds after
