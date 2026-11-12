@@ -2,6 +2,153 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### November12 continuation: kernel UFS selftest ready for compiler validation
+
+Phone TWRP; reread BOOT hash d6bf... matches original. No pending restoration.
+Latest physical result is shim READ10 success documented below, not XNU disk I/O.
+Added xnu/a52q/a52q_ufs.c: opt-in /a52q-ufs-selftest ADT node, dynamic wired
+contiguous16KiB kernel allocation, physicaladdress via pmap, explicitcacheflush
+before/after DMA, boundedNOP+capacity+one RECOVERYblock. No BSDdiskregistration,
+writeCDB, IRQ, SMMU, clock or reset operations. Uses exact shim packet headers
+staged byapply.py; originalSWEETbranch remainsguarded/disabled. Callsaftervfsinit,
+returns immediately when nodeabsent. Source64-file overlays pass againstactual
+81-patch tree;81Python tests pass. NOT COMPILED in XNU yet; full CI build next.
+tools/a52q_ufs_selftest.py validates physicalreadproof, emits nonce-bound ADT node
+and decodes shortA52K1 kernelCRC stages; successphase20. Payloadarguments
+--ufs-selftest-build/--ufs-selftest-log hardwareONLY; emulator rejects node.
+Originalkernel9cf... lacksimplementation, payloadtoolrejectsit forselftest.
+Kernel buildworkflow nowtriggers on sharedpacketheaderchanges too; hostCI runs
+both new portable UFS C packettests before optionaltoolchaininstallation.
+
+GHCLI auth stillmissing. GitHubconnector supports gitcreate_tree/create_commit/
+update_ref with expectedsha. Publish reviewedsource snapshot (no privateartifacts)
+to existingfork branch fastforward from verifiedremotehead, triggerfullmacOSbuild.
+Keep local commits/history; API snapshotSHA maydiffer, recordboth withoutresetting.
+
+Native source staging alsoFAILED23, immutableAPFS reader listedfiles but then
+lookupsaid'filevanished'. No staged-sources.json success marker. All fullHFSroot
+images remain INVALID/incomplete. source-staginglog E:/A52-iOS16/*.log. Fullreadonly
+findwalk succeeded. Next isolate freshmount single knownCarrierBundle lookup,
+then audit APFS BTree cache/iterator (pinned66b86bd...). No codepatch/apfs rebuild
+made yet. Avoid blind copy retries. FailedWHPXoptimization lowerpriority.
+
+### READ CAPACITY + ONE SECTOR VERIFIED ON A52; ORIGINAL BOOT RESTORED
+
+20:22:39 UTC originalBOOTrestored/full96MiBhash, otherpartitionsunchanged.
+backup/a52q/ufs-read/receipt.json requires_restore=false, phoneTWRP.
+checked-result.json: all9MMIOrecords,stageb3/ESR0 with4validstagecopies;
+NOPocs0/header20000000/DBR0;2validA52C1 records: lastLBA31077375,block4096,
+dataCRC1080028829 matchesindependentTWRP+originalRECOVERYbackup,OCS0,
+responseheader21000000,failure0. REAL shim PRDT data-sector read worked!
+No writeCDB/format. Candidateee708fce0d0d6120fef4bab9633e9477cab3cb1b7ce966423183da7474ecdd2f.
+Code13b8e54. Need separate readonlyA52 XNU diskdriver using provenprotocol;
+cannotreuse shim106000000 DMApool afterkernel loads there: allocate wired
+contiguouskernelRAM+explicitDMAcachemaintenance, deriveMMIO/geometryfromADT.
+OriginalSWEET driver stilldisabled. Currentphysicalprototype DOES NOT expose
+disktoXNU yet. No Applelaunchd/UI. No further phonewritepending.
+
+### One-block read trial prepared; no pending restore yet
+
+New mode --ufs-read-geometry/--ufs-read-nop-build/--ufs-read-nop-log builds after
+priorcheckedNOPproof and performs a freshNOP first. Capacity expected31077375lastLBA,
+4096byteblocks fromTWRPdisk127292932096B LUN0sysfs0:0:0:0. READ10 readsunchanged
+RECOVERY firstblock LBA123888, CRCexpected1080028829; SHA45203384e4043136a78a33809e7fc3c554d123d6d971031dab2f60f7dfe56745
+independentlymatchesoriginalRECOVERYbackup. DO NOT use BOOTfirstblockexpectedCRC:
+candidate install changesBOOT. OnlyREADCAPACITY25/READ1028 allowed, PRDT1length
+8or4096 only, data106002000. READgeometry JSON backup/a52q/ufs-read-geometry.json.
+Nativecompile+hostCpacket/endian/opcode/length/CRCtest+78Python tests passed.
+Image shim/out/a52q-ufs-read/a52q-ufs-read-UNTESTED.img prepared, NOT installedyet.
+Privatehelper requires explicit --ufs-nop --ufs-read, regeneratesconfig +checks
+currentdisk/recoverystart. ExistingBOOToriginalrestored. UserjustreturnedTWRP,
+explicitautoBOOTauthorizationpersists. Next explainBOOTwrite/RECOVERYread/noformat
+andrestorebuttons, install+watch10s+collect/restoreFIRST, decodeA52C1+stageb3.
+
+IMPORTANT root-copy diagnosis correction: actual root cause is APFS-FUSE SIGSEGV
+in readdir under CoreRealityIO.framework/usd/usd/aaplUsdPhysics/resources/aaplUsdPhysics.
+Not merely tool HUP. dmesg provesSIG11, free~1.9GiBswap. Root rsync thenfails23,
+wrapperexits andLinuxguest getsSIGHUP withuncleanfilesystem. Read fullsession45333
+onlywithsmalloutputbudget (it has94ktokens of repeatedENOTCONNerrors). All partial
+HFS images invalid. Detachedv3failed staleFuse; v4failedbecausemountpoint-q returns
+falseonstaleFuse. Fix by/proc/mounts exactmountpoint thenumount; investigateFUSE
+null deref addr2line0x2ee4f/0x1ee4f at pinnedapfs source before retryingfullcopy.
+KernelAPFSFuseprocessosdead, sysos/apposstillalive. Don't blindlyrebuildfullroot.
+NativeWHPXmetadata fixture-v2 kernelirqchipoff stillnetworknotready; lowerpriority.
+
+### NOP SUCCESS ON A52; ORIGINAL BOOT RESTORED
+
+20:08:56 UTC original BOOT/full96MiB hash restored; recovery/DTBO/vbmeta unchanged.
+backup/a52q/ufs-nop/receipt.json requires_restore=false; phone TWRP.
+checked-result.json: all9registersCRCvalid,stagea4,ESR0,4validstagecopies,
+3validNOPcopies,OCS0,responseheader20000000,doorbell0. This proves fresh NOP
+exchange using own list/UCD at106000000/106001000 and response106001400:
+CPU-to-controller descriptor fetch + controller-to-RAM response worked >4GiB.
+Original BASE/RSR restored by probe. Does NOT prove PRDT/data-sector I/O yet.
+Candidate2a23e1e41656ecb91db7525f610bb2957e82c1b39c0648e2cdb259ba519bec1a.
+Next: read-only READ CAPACITY(10) and one verified current BOOT block using a
+bounded data PRDT; match TWRP geometry/backup CRC before exposing disk to XNU.
+No SCSI write implementation/format authorized. User nearby and requesting iOS.
+
+Background sourcecopy again died SIGHUP; v2 image now incomplete/corrupt
+(Invalid key length). DO NOT USE any current full root artifact. Need detached
+Windows Start-Process -WindowStyle Hidden with redirected stdin/out to survive
+tool/session HUP. Native WHPX guest boots, rsync listen873 ready, but TCP transport
+did not respond to host probes; testing kernel-irqchip=off fixture-v2 running
+unified40922. Initialfixturefailedwithoutcopy; no physicaldevices. Ifslow, don't
+spend forever on acceleration: run detached Linux TCG rebuild and keepworking.
+Source roots stillreadonlyAPFSmounted. Newcopyv3 must finish+unmount+fsck beforeuse.
+
+### UFS NOP trial prepared; user ready; no pending phone restore yet
+
+User confirmed near phone/able to return TWRP. Prepared shim/out/a52q-ufs-nop/
+a52q-ufs-nop-UNTESTED.img; source tools/a52q_ufs_nop.py +shim/a52q/ufs_nop*.
+Uses actual pinned Samsung1024-byte UPIU layout (NOT assumed512). New16KiB pool
+derived0x106000000 from old CPUCRC+RAM planner; no XNU loaded in this diagnostic.
+One NOP only, noSCSI/PRDT/flashwrite; identityDMA hypothesis explicitly unproven
+(liveUFS node has NO iommu bindings). Guard idle/64bit/HCE/AHIT/timebase; stopempty
+list, programownBASE, NOPdoorbell, 1svirtualcountertimeout; completedrequest restores
+BASE/RSR, timeout holdsRAMuntil physicalreset. ShortA52U1 response/OCS CRC5copies.
+NativeGNUbuild +hostCpacketlayouttest +77Python tests pass. Default r4 bit-identical.
+Private installhelper updated --ufs-nop, validates configuration against exact
+capture/sources/memory proof; refuses accidentalNOP under ordinary --handoff.
+Next: explain BOOT-only/noformat/recovery, install, startwatcher, user10s+TWRP,
+collect/restore FIRST. No claim of XNU storage/Apple UI yet.
+
+### Resumed: verified HFS build and HFS RAM root in QEMU; phone original BOOT
+
+Current device recovery, live BOOT sha d6bf... matches backup (read again).
+No new phone writes. HFS full build43061413864 SUCCESS at16cf668234b1d8fe558176ff5c5cc6222abe3f56.
+GH CLI auth disappeared after host restart; GitHub connector works. Used plugin
+jobs/artifacts/download endpoints: artifact13874728136, archiveSHA3d57ec8a177057eb1785bbb7709cddf7e3f19d84f74d6276a44b83d57a52cea8.
+Downloaded/extracted E:/A52-iOS16/builds/43061413864/artifact; verified overlay
+filesystem=hfs and kernelSHA9cf02e607738966cf461718333505617816ca86ac32c4703001bec213593c151.
+Verified-build.json records provenance. Native mockfs QEMU: PID1+7heartbeats.
+New tools/a52q_hfs_root.py plus --hfs-test-root in payload support ONLY QEMU,
+reject physical packaging. Checks bounds/clean flags/header/fork geometry;
+not a substitute for fsck.76 tests pass. Real fixture32MiB made from mkfs.hfsplus
+and ASCII-only single-file libdmg-hfsplus add/chmod (NOT real-root importer).
+Extracted init SHA matches pin, fsck read-only passes. FileE:/A52-iOS16/a52q-hfs-init-fixture.img.
+QEMU actual HFS mount `hfs: mounted A52Diagnostic on device b(1,0)` thenPID1+
+7heartbeats, no panic. shim/out/a52q-hfs-ramroot-qemu/run/result.json and console.
+This is NOT Apple launchd or phone HFS verification. Kernel retains pin AMFI.
+
+Original9p filesystem copy died SIGHUP when session/host ended; image incomplete
+and repair failed (Keys out of order), preserved E:/A52-iOS16/ios16-...pristine.hfs.img.
+Never use it. Replaced9p source transfer with native Linux rsync through localhost
+to small Linux guest's HFS mount. Fixture uid/gid/modes/links/Unicode +fsck passed.
+New copy active unifiedsession45333, WSLPython research/resume_ios16_hfs_tcp.py,
+LinuxqemuPID115/rsync119. Fresh16GiB sparse image now on E-backed Linux ext4:
+/root/a52-ios16-host/images/ios16-20H392-a52q-pristine-v2.hfs.img. SourceAPFS
+readonly mounts reestablished. 899MiB WSL budget +2GiB swap enabled. Still copyingOS.
+Native rsync avoids9p reads but QEMU TCG filesystem writes still CPU bound.
+IMPORTANT discovery: native Windows QEMU x86 supports working WHPX! Read-only
+Linux boot test completed in2s E:/A52-iOS16/appliance-windows/whpx-test.log.
+Kernel/initramfs copies there. Next optimize filesystem guest to Windows WHPX,
+embed job/config in initramfs (Windows QEMU9p may unavailable). WSL defaultgateway
+from /proc/net/route is172.22.160.1; hostfwd bind this virtual-adapter IP only,
+not LAN. Then native WSL rsync -> Windows guest. Test metadata fixture first.
+Never attach host block devices. Preserve incomplete old images. No new phone
+trial needed for filesystem copy optimization. Actual userland/UI still pending.
+
 ### PHONE SAFE: ORIGINAL BOOT RESTORED; UFS HANDOFF VERIFIED
 
 16:47:55 UTC original BOOT restored with full96MiB hash; recovery/DTBO/vbmeta
