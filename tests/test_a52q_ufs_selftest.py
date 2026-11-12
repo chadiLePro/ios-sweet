@@ -33,6 +33,13 @@ class KernelUfsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'disagree'):
             decode_kernel_console(self.frame() + self.frame(crc=0), self.config)
 
+    def test_disk_requires_both_transfer_and_bsd_path_proof(self):
+        self.assertFalse(decode_kernel_console(self.frame(), self.config)['readonly_disk_verified'])
+        self.assertFalse(decode_kernel_console(self.frame(phase=0x30), self.config)['readonly_disk_verified'])
+        self.assertTrue(decode_kernel_console(self.frame() + self.frame(phase=0x30), self.config)['readonly_disk_verified'])
+        self.assertFalse(decode_kernel_console(self.frame() + self.frame(phase=0x30) +
+            self.frame(phase=0xe8), self.config)['readonly_disk_verified'])
+
     def test_hardware_binding_and_adt_tamper(self):
         data, manifest = fixture()
         offset, size = struct.unpack_from('<2Q', data, 0x20)
