@@ -2,6 +2,31 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### 17:16:39 UTC: HFS RAM-root PHONE TRIAL ACTIVE — restore BOOT on TWRP return
+
+Candidate1a0bf3a467e31a513b6cd4e29eed895cc7d3932205f3862fed2a383cd982caf3
+installed/full96MiBreadback, TWRP Systemreboot. Receipt backup/a52q/hfs-hardware-ramroot/receipt.json
+requires_restore=true! WatcherPID7332 research/watch_hfs_ramroot_restore.py,
+E:/A52-iOS16/hfs-ramroot-watcher*.log. Userconfirmedready, asked90s+TWRP.
+Collect/restoreFIRST and confirmhash; theninspecthfs mount/PID1/heartbeat text
+andCRCentrymarkers. Kernel0e9fea... alreadyhardwareverified; thistrial hasNO
+UFSnode, uses32MiBHFSRAMfixture70665... withidenticalpinnedowninit, noAppleUI.
+QEMU samekernel+root PASS7heartbeats+explicit hfs mountedA52Diagnosticconsole.
+Physicalpayload/image50,066,608B; packagedimage96MiB. No userdata format.
+OriginalAndroidcontrol priortrial boot_completed=1 confirmed, thenautomatic
+recoveryreturn withprotectedhashesverified. backup/a52q/control-after-kernel-ufs/.
+
+Full BSDdiskkernel43264401092 SUCCESS at112ea38697e3eeb92568b152023bd949ad6f6b4a.
+Download ACTIVE unified90714 toE:/A52-iOS16/builds/43264401092/artifact. Needverify
+HFSselection/newUFSsource/headerhashes, thenQEMUbaseline beforeanynewphoneinstall.
+HostCI43264398995 alsoSUCCESS. Do not mix thisnewkernel resultwithold0e9phoneproof.
+
+ASan sourceReader readALL179359regularfiles,8291487156bytes, noASan/readerror.
+This is NOT an rsync/root-image success. Exact rsyncstaging underASan ACTIVE
+hiddenPID8564, research/stage_ios16_asan.py. Destinationstaged-asan-v4, logs
+E:/A52-iOS16/stage-asan-v4*.log. Reportstaged-asan-v4-sources.json onlyifall3copiesexit0.
+AllpreviousfullHFSimagesinvalid; noApplelaunchd/UI. Rootstaging stillomitsxattrs/ACLs.
+
 ### Minimal HFS RAM-root candidate support; no new phone trial yet
 
 Added explicit --hfs-qemu-proof RESULT_JSON for physical --hfs-test-root.
