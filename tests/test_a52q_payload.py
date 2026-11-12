@@ -96,7 +96,7 @@ def ramdisk_fixture(root_data=None):
 
 
 class PayloadTests(unittest.TestCase):
-    def test_hfs_root_is_qemu_only_and_hash_bound(self):
+    def test_hfs_root_needs_matching_qemu_proof_for_hardware(self):
         from test_a52q_hfs_root import fixture as hfs_fixture
         from a52q_hfs_root import validate_hfs_test_root
         root = hfs_fixture()
@@ -104,7 +104,18 @@ class PayloadTests(unittest.TestCase):
         manifest['hfs_test_root'] = dict(manifest.pop('bootstrap_init'), volume=validate_hfs_test_root(root))
         validate_payload(data, manifest)
         manifest['environment'] = 'SM-A525F/DS hardware candidate'
-        with self.assertRaisesRegex(ValueError, 'QEMU-only'):
+        with self.assertRaisesRegex(ValueError, 'pass QEMU PID1 first'):
+            validate_payload(data, manifest)
+        manifest['kernel_sha256'] = 'k'
+        proof = {'scope': 'QEMU virt only; no Samsung boot or hardware claim',
+            'status': 'diagnostic PID1 observed in QEMU; not Apple iOS userland',
+            'diagnostic_pid1_observed': True, 'diagnostic_init_heartbeats': 7,
+            'payload': {'environment': 'QEMU virt ONLY; never flash', 'kernel_sha256': 'k',
+                        'hfs_test_root': {'sha256': manifest['hfs_test_root']['sha256']}}}
+        manifest['hfs_test_root']['qemu_boot_proof'] = proof
+        validate_payload(data, manifest)
+        proof['payload']['kernel_sha256'] = 'other'
+        with self.assertRaisesRegex(ValueError, 'pass QEMU PID1 first'):
             validate_payload(data, manifest)
         manifest['environment'] = 'QEMU virt ONLY; never flash'
         manifest['hfs_test_root']['sha256'] = '0' * 64

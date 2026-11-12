@@ -1,4 +1,4 @@
-"""Container checks for a small, QEMU-only HFS+ root experiment.
+"""Container/provenance checks for a small HFS+ diagnostic RAM root.
 
 Layout: Apple OSS hfs-627.100.6/core/hfs_format.h, pinned by patch 0026.
 This checks volume geometry and clean-unmount flags; it is not a filesystem
@@ -8,6 +8,34 @@ It deliberately supplies no Samsung storage or physical-memory placement.
 import struct
 
 MAX_BYTES = 32 << 20
+
+
+def hardware_root_proof(report, kernel_hash, root_hash):
+    """Bind a physical diagnostic candidate to its exact successful QEMU root.
+
+    This checks local test provenance, not cryptographic authentication of the
+    report. The normal evidence-bound hardware RAM planner still selects all
+    physical addresses; QEMU's addresses must never be copied to a phone.
+    """
+    if not isinstance(report, dict):
+        raise ValueError('HFS QEMU proof must be an object')
+    payload = report.get('payload', {})
+    if not isinstance(payload, dict) or not isinstance(payload.get('hfs_test_root', {}), dict):
+        raise ValueError('HFS QEMU proof has invalid payload metadata')
+    root = payload.get('hfs_test_root', {})
+    beats = report.get('diagnostic_init_heartbeats', 0)
+    if (not kernel_hash or not root_hash or
+            report.get('scope') != 'QEMU virt only; no Samsung boot or hardware claim' or
+            'error' in report or report.get('status') != 'diagnostic PID1 observed in QEMU; not Apple iOS userland' or
+            report.get('diagnostic_pid1_observed') is not True or
+            not isinstance(beats, int) or beats < 3 or
+            payload.get('environment') != 'QEMU virt ONLY; never flash' or
+            payload.get('kernel_sha256') != kernel_hash or root.get('sha256') != root_hash):
+        raise ValueError('physical HFS diagnostic requires the same kernel/root to pass QEMU PID1 first')
+    return {'scope': report['scope'], 'status': report['status'],
+            'diagnostic_pid1_observed': True, 'diagnostic_init_heartbeats': report['diagnostic_init_heartbeats'],
+            'payload': {'environment': payload['environment'], 'kernel_sha256': kernel_hash,
+                        'hfs_test_root': {'sha256': root_hash}}}
 
 
 def validate_hfs_test_root(data):

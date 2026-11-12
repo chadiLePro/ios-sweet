@@ -240,7 +240,10 @@ def validate_payload(data, manifest):
             raise ValueError('bootstrap init/root manifest mismatch')
         if hfs:
             if manifest.get('environment') != 'QEMU virt ONLY; never flash':
-                raise ValueError('HFS root experiments are QEMU-only; physical packaging is prohibited')
+                if manifest.get('environment') != 'SM-A525F/DS hardware candidate':
+                    raise ValueError('unsupported HFS diagnostic environment')
+                from a52q_hfs_root import hardware_root_proof
+                hardware_root_proof(hfs.get('qemu_boot_proof', {}), manifest.get('kernel_sha256', ''), hfs['sha256'])
             from a52q_hfs_root import validate_hfs_test_root
             if hfs.get('volume') != validate_hfs_test_root(data[pos:pos + disk]):
                 raise ValueError('HFS volume manifest mismatch')
@@ -293,7 +296,9 @@ def main():
     p.add_argument('--bootstrap-init', type=Path,
                    help='static diagnostic PID1 from mkinit.py, served by mockfs; not Apple launchd')
     p.add_argument('--hfs-test-root', type=Path,
-                   help='small fsck-checked HFS+ diagnostic RAM root; QEMU ONLY, never phone packaged')
+                   help='small fsck-checked HFS+ diagnostic RAM root; hardware additionally needs --hfs-qemu-proof')
+    p.add_argument('--hfs-qemu-proof', type=Path,
+                   help='QEMU result.json proving this exact kernel/root reached diagnostic PID1; hardware only')
     p.add_argument('--ufs-selftest-build', type=Path, help='successful physical shim one-block-read build.json')
     p.add_argument('--ufs-selftest-log', type=Path, help='matching CRC-checked physical read console')
     p.add_argument('--qemu-dtb', type=Path, help='QEMU-generated virt DTB; makes a payload that phone packaging rejects')
@@ -317,14 +322,22 @@ def main():
                                          a.ufs_selftest_log.read_bytes())
         init = None
         hfs_root = None
+        if a.hfs_qemu_proof and (not a.hfs_test_root or a.qemu_dtb):
+            raise ValueError('HFS QEMU proof is only for a physical HFS diagnostic root')
         root_path = a.bootstrap_init or a.hfs_test_root
         if a.hfs_test_root:
-            if a.bootstrap_init or not a.qemu_dtb:
-                raise ValueError('HFS test root is QEMU-only and excludes mockfs bootstrap-init')
+            if a.bootstrap_init or (not a.qemu_dtb and not a.hfs_qemu_proof):
+                raise ValueError('HFS diagnostic excludes mockfs init and requires QEMU mode or matching boot proof')
             from a52q_hfs_root import validate_hfs_test_root
             init_data = a.hfs_test_root.read_bytes()
             hfs_root = {'sha256': hashlib.sha256(init_data).hexdigest(), 'bytes': len(init_data),
                         'volume': validate_hfs_test_root(init_data)}
+            if a.hfs_qemu_proof:
+                from a52q_hfs_root import hardware_root_proof
+                proof_data = a.hfs_qemu_proof.read_bytes()
+                hfs_root['qemu_boot_proof'] = hardware_root_proof(json.loads(proof_data),
+                    hashlib.sha256(kernel).hexdigest(), hfs_root['sha256'])
+                hfs_root['qemu_report_sha256'] = hashlib.sha256(proof_data).hexdigest()
         if a.bootstrap_init:
             init_data = a.bootstrap_init.read_bytes()
             validate_bootstrap_init(init_data)
@@ -385,7 +398,7 @@ def main():
                   'cpu_log_sha256': hashlib.sha256(a.cpu_log.read_bytes()).hexdigest(),
                   'payload_sha256': hashlib.sha256(payload).hexdigest(), 'macho': info,
                   'timer_hz': hz, 'virtual_timer_intid': intid, 'gic_reg': gic,
-                  'root_filesystem': 'QEMU-only HFS+ diagnostic RAM root' if hfs_root else
+                  'root_filesystem': 'HFS+ diagnostic RAM root; not Apple userland' if hfs_root else
                                      'mockfs RAM disk with static diagnostic init' if init else
                                      'none yet; rd=md0 is intentional next-stage boot target'}
         if init:

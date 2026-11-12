@@ -2,6 +2,22 @@
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
+### Minimal HFS RAM-root candidate support; no new phone trial yet
+
+Added explicit --hfs-qemu-proof RESULT_JSON for physical --hfs-test-root.
+Rejects missing/mismatching kernel/root/PID1/heartbeat proof. DefaultphysicalHFS
+stillrejected without proof. All physicalRAMplacement remains hardware-evidence
+derived; QEMUaddresses not copied. No UFSnode needed for thisRAMroot. Same pinned
+ownstaticinit, notApplelaunchd. 83Python tests pass (includes proofbinding/tamper).
+QEMU HFS test with already-physical-testedkernel0e9fea... RUNNING unified21660,
+shim/out/a52q-hfs-kernel-ufs-qemu/run; need hfs mount+PID1>=3heartbeats beforepackage.
+Full BSDdiskkernel43264401092 stillcompiling. No newexperimentalBOOTinstalled.
+OriginalBOOT Androidcontrol+automaticTWRPreturn RUNNING unified5814; record
+backup/a52q/control-after-kernel-ufs/android-control.json onlyafterboot_completed1.
+This establishes freshconsole before nexttrial, notanexperimentalphonewrite.
+ASan fullfile-read now>5GB nofault; rsync-specific failure notyet reproduced under
+ASan. No claim readerfix/rootcopycompleted. Need reproduce exactrsync withASan.
+
 ### New read-only BSD disk implementation — source/host checked, build next
 
 Full HFS kernel build ACTIVE43264401092 atremote112ea38697e3eeb92568b152023bd949ad6f6b4a.

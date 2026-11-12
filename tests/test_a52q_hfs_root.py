@@ -4,7 +4,7 @@ import struct
 import sys
 import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
-from a52q_hfs_root import validate_hfs_test_root
+from a52q_hfs_root import validate_hfs_test_root, hardware_root_proof
 
 
 def fixture():
@@ -16,6 +16,22 @@ def fixture():
 
 
 class HfsRootTests(unittest.TestCase):
+    def test_physical_diagnostic_requires_same_kernel_and_root_qemu_boot(self):
+        import copy
+        report = {'scope': 'QEMU virt only; no Samsung boot or hardware claim',
+            'status': 'diagnostic PID1 observed in QEMU; not Apple iOS userland',
+            'diagnostic_pid1_observed': True, 'diagnostic_init_heartbeats': 7,
+            'payload': {'environment': 'QEMU virt ONLY; never flash', 'kernel_sha256': 'k',
+                        'hfs_test_root': {'sha256': 'r'}}}
+        normalized = hardware_root_proof(report, 'k', 'r')
+        self.assertEqual(hardware_root_proof(normalized, 'k', 'r'), normalized)
+        for kernel, root in [('other', 'r'), ('k', 'other')]:
+            with self.assertRaises(ValueError): hardware_root_proof(report, kernel, root)
+        for key, value in [('error', 'timeout'), ('diagnostic_pid1_observed', False),
+                           ('diagnostic_init_heartbeats', 0), ('scope', 'phone'), ('status', 'panic')]:
+            bad = copy.deepcopy(report); bad[key] = value
+            with self.assertRaises(ValueError): hardware_root_proof(bad, 'k', 'r')
+
     def test_clean_geometry(self):
         self.assertEqual(validate_hfs_test_root(fixture())['block_size'], 4096)
 
