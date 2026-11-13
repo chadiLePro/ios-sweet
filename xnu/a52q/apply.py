@@ -76,6 +76,22 @@ def apply(root, filesystem='mockfs'):
             '\tvfsinit();\n#if defined(ARM64_BOARD_CONFIG_A52Q)\n'
             '\textern void a52q_ufs_selftest(void);\n\ta52q_ufs_selftest();\n'
             '\textern void a52q_display_selftest(void);\n\ta52q_display_selftest();\n#endif\n')
+    root_hook = '''#if defined(ARM64_BOARD_CONFIG_A52Q)
+    if (strcmp(rdBootVar, "a52root0") == 0) {
+        extern int a52q_ufs_rootdev(dev_t *dev);
+        OSSafeReleaseNULL(matching);
+        int error = a52q_ufs_rootdev(root);
+        if (error) panic("IOFindBSDRoot: A52 diagnostic disk unavailable: %d", error);
+        strlcpy(rootName, rdBootVar, rootNameSize);
+        *oflags = 0;
+        goto iofrootx;
+    }
+#endif
+
+'''
+    replace('iokit/bsddev/IOKitBSDInit.cpp',
+            '#if defined(ARM64_BOARD_CONFIG_SWEET)\n//\n//\tSWEET: root on a GPT partition',
+            root_hook + '#if defined(ARM64_BOARD_CONFIG_SWEET)\n//\n//\tSWEET: root on a GPT partition')
 
     replace('makedefs/MakeInc.def', 'VMAPPLE SWEET\n', 'VMAPPLE SWEET A52Q\n')
     replace('makedefs/MakeInc.def', 'ifneq ($(CURRENT_MACHINE_CONFIG),SWEET)',

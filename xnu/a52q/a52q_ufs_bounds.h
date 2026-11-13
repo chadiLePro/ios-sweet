@@ -14,6 +14,21 @@ static inline uint32_t a52q_ufs_chunk(uint64_t offset, uint32_t remaining)
     uint32_t available = 4096 - (uint32_t)(offset % 4096);
     return remaining < available ? remaining : available;
 }
+/* Software test layout: a small filesystem at the end of captured BOOT.
+ * No partition address is hardcoded. This is never a whole-userdata mapping. */
+static inline int a52q_ufs_boot_window(uint32_t last, uint64_t boot_first,
+    uint64_t boot_count, uint64_t first, uint64_t count)
+{
+    uint64_t capacity = (uint64_t)last + 1;
+    return boot_first >= 2 && boot_count == (96U << 20) / 4096 &&
+        boot_first <= capacity && boot_count <= capacity - boot_first &&
+        count >= (8U << 20) / 4096 && count <= (32U << 20) / 4096 &&
+        first == boot_first + boot_count - count;
+}
+static inline int a52q_ufs_window_range(uint64_t blocks, uint64_t offset, uint64_t count)
+{
+    return blocks <= UINT64_MAX / 4096 && offset <= blocks * 4096 && count <= blocks * 4096 - offset;
+}
 /* Samsung utp_cmd_rsp: residual DW3, sense length at bytes32..33. A successful
  * status alone must not turn a short/overrun DMA transfer into a complete read.
  */

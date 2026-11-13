@@ -58,6 +58,8 @@ def main():
     p.add_argument('--build', type=Path, required=True)
     p.add_argument('--mkbootimg', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
+    p.add_argument('--ufs-diagnostic-root', type=Path, help='exact QEMU-proven HFS fixture selected by payload')
+    p.add_argument('--ufs-root-gpt-capture', type=Path, help='matching captured GPT/sysfs evidence')
     a = p.parse_args()
     try:
         if a.out.exists():
@@ -81,6 +83,10 @@ def main():
         if len(vbmeta) < 256 or vbmeta[:4] != b'AVB0' or not struct.unpack_from('>I', vbmeta, 120)[0] & 2:
             raise ValueError('captured vbmeta does not already disable verification; no policy changes implemented')
         build = json.loads((a.build / 'build.json').read_text())
+        payload = build.get('embedded_payload', {})
+        root_config = payload.get('ufs_diagnostic_root')
+        if bool(a.ufs_diagnostic_root) != bool(root_config) or bool(a.ufs_root_gpt_capture) != bool(root_config):
+            raise ValueError('BOOT root requires payload configuration, exact fixture and GPT evidence together')
         if build.get('embedded_payload', {}).get('environment', '') not in ('', 'SM-A525F/DS hardware candidate'):
             raise ValueError('refusing to package an emulation/test payload for a phone')
         raw = (a.build / 'diag-core.Image').read_bytes()
@@ -88,6 +94,14 @@ def main():
                 hashlib.sha256(raw).hexdigest() != build['image_sha256'] or
                 raw[56:60] != b'ARM\x64' or struct.unpack_from('<Q', raw, 8)[0] != contract['text_offset']):
             raise ValueError('diagnostic build is not bound to this evidence/template')
+        if root_config:
+            from a52q_payload import validate_payload
+            symbols = {w[2]: int(w[0], 16) for line in (a.build / 'symbols.txt').read_text().splitlines()
+                       if len(w := line.split()) == 3}
+            start, end = symbols['_payload_start'], symbols['_payload_end']
+            if not 0 <= start < end <= len(raw):
+                raise ValueError('embedded disk-root payload bounds differ from Image')
+            validate_payload(raw[start:end], payload)
         # Never carry the original signed footer/hash forward after replacing a kernel.
         cmdline = (original[64:576].split(b'\0')[0] + original[608:1632].split(b'\0')[0]).decode('ascii')
         a.out.parent.mkdir(parents=True, exist_ok=True)
@@ -129,6 +143,16 @@ def main():
             packed += trailer
             if template_trailer(packed) != trailer:
                 raise ValueError('round-trip changed Samsung trailer')
+            root_plan = None
+            if root_config:
+                from a52q_ufs_root import validate_packaging
+                root_data = a.ufs_diagnostic_root.read_bytes()
+                root_plan = validate_packaging(root_config, payload['ufs_selftest'], root_data,
+                                               a.ufs_root_gpt_capture, len(packed))
+                offset = root_plan['offset_in_boot_bytes']
+                packed += bytes(offset - len(packed)) + root_data
+                if packed[offset:offset + len(root_data)] != root_data or len(packed) != len(original):
+                    raise ValueError('round-trip changed diagnostic root or BOOT bounds')
             # Full partition-sized output clears old AVB metadata at the tail
             # even when a recovery writer does not erase unwritten tail blocks.
             packed += bytes(len(original) - len(packed))
@@ -143,6 +167,8 @@ def main():
                   'kernel_contract': contract, 'candidate_ramoops': log,
                   'remaining': ['Samsung acceptance of unsigned boot image', 'actual entry EL and CPU feature report',
                                 'ramoops retention across reset', 'integrity-checked diagnostic record in TWRP']}
+        if root_plan:
+            report['ufs_diagnostic_root'] = dict(root_config, packed_layout=root_plan)
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
         p.exit(1, f'packaging refused: {exc}\n')

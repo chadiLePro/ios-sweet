@@ -23,6 +23,15 @@ int main(void)
         offset += chunk; remaining -= chunk;
     }
     assert(remaining == 0);
+    assert(a52q_ufs_boot_window(last, 99312, 24576, 115696, 8192));
+    assert(!a52q_ufs_boot_window(last, 99312, 24576, 115695, 8192));
+    assert(!a52q_ufs_boot_window(last, 99312, 24576, 123888, 8192));
+    assert(!a52q_ufs_boot_window(last, 99312, 24576, 99312, 24576));
+    assert(!a52q_ufs_boot_window(last, UINT64_MAX - 100, 24576, 0, 8192));
+    assert(!a52q_ufs_boot_window(110000, 99312, 24576, 115696, 8192));
+    assert(a52q_ufs_window_range(8192, (32U << 20) - 512, 512));
+    assert(!a52q_ufs_window_range(8192, (32U << 20) - 512, 1024));
+    assert(!a52q_ufs_window_range(UINT64_MAX, 0, 4096));
     uint8_t response[40] = {0x21};
     assert(a52q_ufs_response_ok(response, 1));
     const unsigned rejected_fields[] = {1, 2, 3, 6, 7, 10, 11, 12, 13, 14, 15, 32, 33};

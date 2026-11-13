@@ -1,6 +1,45 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## A52Q handoff — 2026-11-13: XNU display refresh VERIFIED; PHONE SAFE
+## A52Q handoff — 2026-11-13: display + PID1 VERIFIED; PHONE SAFE
+
+LONG TRIAL FINISHED: receipt backup/a52q/kernel-display-long/receipt.json says
+requires_restore=false, original_boot_restored=true; protected hashes unchanged.
+Watcher1448 finished. Three CRC-valid XNU entries, all3display phases5copies each,
+EXACT PID1 banner and31intact diagnostic heartbeats. This confirms continued boot
+with display enabled. No Apple launchd/SpringBoard yet. Prior missingPID1 record
+was a shorter capture; do not claim a display-related hang from it.
+
+Native source-transfer-v8.ext4 completed and e2fsck -fn passed (321224 inodes).
+DrvFS export v8 failed Cannot allocate memory; partialv8file INVALID. Windows-side
+bounded streaming export v9 PASSED native-stream SHA +Windows full readback:
+E:/A52-iOS16/ios16-source-transfer-v9.ext4,16GiB,
+SHA256527540400e87c55b15876477fb889b711cc37886738724df7d318ad1b93165e1.
+Its .verified.json records result. Full HFS v9 preparation started exec39810,
+regular sparse16GiB destination created; copy/fsck stillNOTdone. Cnearlyfilled
+61MiBfree; losslessNTFScompression of22OWNgeneratedBOOTimages reclaimed2.1GB.
+Image bytes/paths unchanged, no user files deleted. Efree~49GB before HFS fill.
+
+Implementing opt-in read-only BOOT-tail HFS root, based on capturedGPT+successful
+kernelUFS proofs. New minor1/root-device hook, host bounds validation+packager.
+NOT yet compiled/tested/installed. DefaultwholeLUN0 and hardwaredrivers preserved.
+The longer-test ACTIVE records below are historical, phone restoration complete.
+
+17:07:26UTC same corrected display kernel installed for THREE-MINUTE follow-up.
+Receipt backup/a52q/kernel-display-long/receipt.json requires_restore=true;
+original BOOT NOT restored yet. User explicitly confirmed 3min reset readiness.
+Watcher PID1448 research/watch_kernel_display_long_restore.py; logs
+E:/A52-iOS16/kernel-display-long-watcher*.log. Captures then restores BOOT on
+TWRP return. If watcher times out, restore manually via helper collect-restore.
+Android control beforehand PASSED boot_completed=1 and original/protected hashes.
+Source unchanged; image SHA5ebbae2... /kernel33cdd5f... as recorded below.
+Historical safe-state statements below describe the preceding restored test.
+
+Independent host work: WSL A52-HakiOS-Build-20261107 responding again. Started
+research/prepare_pristine_hfs_v8.py under WSL, exec session52783, printed
+POPULATING_NATIVE_TRANSFER_IMAGE. No full HFS image claim yet. Native regular
+ext4 file/root/a52-ios16-host/images/source-transfer-v8.ext4 (16GiB) is populating;
+v8 output files did not exist before this attempt. Private appliance builder now
+explicitly copies GNU sha256sum for its 47-file verification job.
 
 Original BOOT is RESTORED with full SHA256 readback. Private receipt
 backup/a52q/kernel-display-v2/receipt.json: requires_restore=false,
