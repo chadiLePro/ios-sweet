@@ -27,6 +27,7 @@ jobs:
       - run: python3 tools/validate-repo.py
       - run: python3 -m unittest discover -s tests -v
       - run: gcc -std=c11 -Wall -Wextra -Werror tests/host_ramlog_test.c -o /tmp/host-ramlog && /tmp/host-ramlog
+      - run: gcc -std=c11 -Wall -Wextra -Werror tests/host_display_pattern_test.c -o /tmp/host-display-pattern && /tmp/host-display-pattern
       - run: gcc -std=c11 -Wall -Wextra -Werror tests/host_ufs_nop_test.c -o /tmp/host-ufs-nop && /tmp/host-ufs-nop
       - run: gcc -std=c11 -Wall -Wextra -Werror tests/host_ufs_read_test.c -o /tmp/host-ufs-read && /tmp/host-ufs-read
       - run: gcc -std=c11 -Wall -Wextra -Werror tests/host_a52q_ufs_bounds_test.c -o /tmp/host-a52q-ufs-bounds && /tmp/host-a52q-ufs-bounds

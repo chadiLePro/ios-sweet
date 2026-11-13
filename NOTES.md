@@ -1,5 +1,45 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## A52Q handoff — 2026-11-13: visible display refresh verified; PHONE SAFE
+
+The full-screen RGB/white-border shim test PASSED on SM-A525F/DS. User explicitly
+reported bars appeared and returned to TWRP. Private receipt:
+backup/a52q/display-fullscreen-v1/receipt.json, requires_restore=false,
+original_boot_restored=true; RECOVERY/DTBO/vbmeta unchanged. No trial pending.
+Original full BOOT SHA256 d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Five CRC-valid stage0x93/ESR0 frames, all13 guards match; trial nonce
+9521967036039165491. checked-result.json separates decoded controller completion
+from human_confirmed_visible_output=true. No measured panel Hz/VSync claim.
+
+Changes: full captured surface instead of 160x96 marker; virtual-counter bounded
+100ms polling (CNTVCT, already proven by UFS), timebase check before pixel/MMIO
+writes, CPU-only bounds-checked pattern helper, nonce-aware result decoder,
+host C canary/stride/overflow tests and CI step. Only captured pixels and one
+CTL0_START=1 are written; no DSI command, clock/reset/mode/IOMMU changes.
+Framebuffer 0x9c000000, reservation0x9e4000, BGRA1080x2400/stride4320.
+Candidate shim/out/a52q-display-fullscreen-v1/a52q-display-fullscreen-UNTESTED.img
+SHA256 0e021a5e8f1277bfde4f0ccfd2518d4cdeac3fcdd30904e41b73b04aa2e7ff65;
+bare core 42816bytes SHA256 7ee383ecc9fc3178e5400972f9e380b452e07f30639b70a9f216368d6f05286e.
+92 Python tests and native C test passed; supported cross build/package passed.
+Ordinary core remains byte-identical r4 ee37e8f025fb20b38699d0d67044be9f8a6f06fb640eee71668916204a93f823.
+
+Source audit: user acknowledged the 120Hz/Applelaunchd claim came from AI, no
+failure log. No justified 120->60 patch; existing SWEET IOMFB timer is16667us.
+A52 excludes SWEET framebuffer/IOSurface drivers; Boot_Video still zero and
+platform expert has no display nub. Do not enable early console blindly.
+Next: evidence-bound, opt-in XNU framebuffer mapping/CPU presentation with
+command-mode refresh, preserving guards and no clock/panel reinitialization.
+Requires real kernel integration/build/test; shim result alone does not prove it.
+Do not invent CoreAnimation flags or assume a nil Metal device gives software UI.
+No Apple launchd, SpringBoard or mounted UFS root; current AMFI accepts own init.
+UFS/read-only BSD disk, diagnostic PID1 and ramoops were not changed.
+
+Earlier Nov11 host-image notes below are historical: v7 preparation was stopped,
+v8 launch failed with WSL WSAETIMEDOUT. No full HFS iOS image is validated or flash
+ready. Invalid/incomplete v1-v7 images must not be installed. Native OS/SystemOS/
+AppOS staging succeeded separately, without Apple xattrs/ACLs/BSD flags.
+The BOOT-tail HFS-on-UFS experiment remains a proposal, not implemented.
+
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
 ### SOURCE STAGING COMPLETE; HFS image preparation active; PHONE SAFE
