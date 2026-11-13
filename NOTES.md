@@ -2,6 +2,19 @@
 
 ## A52Q handoff — 2026-11-13: display mapping fix; PHONE SAFE
 
+CURRENT: corrected isolated rebuild43464680521 queued for macos-15-intel at
+source394d057da98110a15517eab395a2b9bed9973347. Earlier leaf43464368423 failed
+only because BSD headers hide ml_io_map_unmappable prototype; exact declaration
+added from implementation. Redundant automatic full builds canceled; host CI
+43464337693 PASSED, new source host check43464679787 pending/result query needed.
+No new candidate installed. Original Android control PASSED sys.boot_completed=1
+then auto-returnedTWRP; protectedhashes and originalBOOT verified. Freshconsole
+backup/a52q/control-before-kernel-display-v2/console.txt has ZERO oldXNUmarkers.
+Next: verify isolated artifact SHA/selectedimplementation hash, run QEMU PID1
+baseline v2, then packageonly via research/prepare_kernel_display_hardware_v2.py.
+Private verify_display_relink.py and v2 QEMU/restore scripts prepared. Ask/announce
+short retry when ready; user confirmed phone readiness earlier, no flash pending.
+
 FIRST KERNEL TRIAL FINISHED: original BOOT restored with full SHA readback,
 protected hashes unchanged; watcher3664 finished, receipt requires_restore=false.
 User saw NO bars. Three valid XNU entry frames, zero intact A52D1 phase frames.
