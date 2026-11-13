@@ -1,115 +1,93 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## A52Q handoff — 2026-11-13: display mapping fix; PHONE SAFE
+## A52Q handoff — 2026-11-13: XNU display refresh VERIFIED; PHONE SAFE
 
-CURRENT: corrected isolated rebuild43464680521 queued for macos-15-intel at
-source394d057da98110a15517eab395a2b9bed9973347. Earlier leaf43464368423 failed
-only because BSD headers hide ml_io_map_unmappable prototype; exact declaration
-added from implementation. Redundant automatic full builds canceled; host CI
-43464337693 PASSED, new source host check43464679787 pending/result query needed.
-No new candidate installed. Original Android control PASSED sys.boot_completed=1
-then auto-returnedTWRP; protectedhashes and originalBOOT verified. Freshconsole
-backup/a52q/control-before-kernel-display-v2/console.txt has ZERO oldXNUmarkers.
-Next: verify isolated artifact SHA/selectedimplementation hash, run QEMU PID1
-baseline v2, then packageonly via research/prepare_kernel_display_hardware_v2.py.
-Private verify_display_relink.py and v2 QEMU/restore scripts prepared. Ask/announce
-short retry when ready; user confirmed phone readiness earlier, no flash pending.
+Original BOOT is RESTORED with full SHA256 readback. Private receipt
+backup/a52q/kernel-display-v2/receipt.json: requires_restore=false,
+original_boot_restored=true; RECOVERY/DTBO/vbmeta unchanged. Watcher8644 finished.
+No active trial, no pending restoration, no userdata format or GPT change.
+Original BOOT SHA256 d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
 
-FIRST KERNEL TRIAL FINISHED: original BOOT restored with full SHA readback,
-protected hashes unchanged; watcher3664 finished, receipt requires_restore=false.
-User saw NO bars. Three valid XNU entry frames, zero intact A52D1 phase frames.
-Retained text reports guarded mapping banner then kmem_alloc(...10371072...)
-failed with3 panic. Source osfmk/arm/io_map.c IO_MAP_SIZE=8MiB; ml_io_map uses
-permanent io_submap and cannot fit10.37MiB. Runtime panic text is unprotected,
-not a repaired/CRC-proven register dump, but its requested size/backtrace agree
-with this source path. Fix uses ml_io_map_unmappable(...VM_WIMG_IO) for frame
-only, which uses kernel_map; small guarded MMIO maps unchanged. Fix NOT yet built.
-Added strict display leaf rebuild support: exact same board/overlay/patchset,
-unselected leaves/shared pixel header/UFS source must match base full build.
-Base successful run43459301822; no need to rebuild unchanged kernel components.
-Earlier ACTIVE/RESTORE PENDING record below is historical; phone is restored.
+User confirmed RGB bars appeared BEFORE reset, then returned to TWRP.
+Kernel A52D1 phases0x10/0x20/0x30 each have FIVE matching CRC-valid copies,
+detail0, nonce9697378418859164443. Three valid XNU entry frames survived.
+This proves guarded XNU mapping, CPU pixel write, command-mode START and visible
+output on SM-A525F/DS. No measured panel Hz/VSync, IOSurface, Apple UI or GPU claim.
+Retention corruption remains in unprotected console text; no byte repair used.
+This trial log ends in network initialization, with NO intact diagnostic PID1
+banner or heartbeat. Do NOT claim physical display+PID1 together yet. QEMU with
+the same kernel and no display node reached PID1 +7heartbeats. Next hardware
+test: longer follow-through of this same corrected kernel (after original Android
+control to clear old entry records), before enabling a framebuffer ABI.
 
-16:30:07UTC BOOT-only XNU display trial installed+readback+TWRP System reboot.
-backup/a52q/kernel-display-v1/receipt.json requires_restore=true. Candidate
-2559acd4a6487755abd83d8b02eed1685d507295934ce87cc9a9f1f362a28b3f,
-kernel d01a8d650364ae9b0ba630bc237f591ad72fe1dbc98dca18e322f28234e0c67e.
-User confirmed readiness and was asked to observe RGB bars then returnTWRP90s.
-Hidden watcher PID3664 research/watch_kernel_display_restore.py waits600s for
-recovery, captures logs then restores original full BOOT +protectedhashes.
-Logs E:/A52-iOS16/kernel-display-watcher*.log. If watcher times out, restoration
-is STILL REQUIRED: use collect-restore --receipt backup/a52q/kernel-display-v1/receipt.json.
-Latest QEMU baseline PASSED: 3CRCentryframes, diagnosticPID1 +7heartbeats;
-shim/out/a52q-kernel-display-qemu-v1/run/result.json, samekernel hash. Hardware
-image prepares with successful physical shim refresh proof, all13runtimeguards.
-No UFS test node in this image; no write CDB, userdata format or GPT change.
-Earlier PHONE SAFE statements below describe previous restored tests only.
+Corrected kernel SHA256 33cdd5f013dfec14f22ef1c544ca2f2736215092dc5c6643e1b09c51d0c017e1.
+Phone image SHA256 5ebbae2b22ff58b9ae341d30ed2c12a79431c5a2bb9d7524ec67fe5c09e3d14c,
+shim/out/a52q-kernel-display-hardware-v2/build/a52q-kernel-display-UNTESTED.img.
+Its shim Image is21176160bytes; accepted/reached XNU despite conservative filename.
+Successful isolated rebuild43464680521, source394d057da98110a15517eab395a2b9bed9973347,
+selected implementation SHA256 f38543f9e7ae6e4efea962f984d806333bd6820154dabeb6706077739347bab0.
+Base full build43459301822/sourceb4cec1fb755419d5646750ba09ddddd62292ef04;
+base kernel d01a8d650364ae9b0ba630bc237f591ad72fe1dbc98dca18e322f28234e0c67e.
+All68 archived overlay files matched reviewed full-build source. Corrected kernel
+and selected implementation hashes checked; unchanged base init SHA256
+aaacee08d03b7f0d93b0b34aa1d2436b0c3798b370ebf1e623732c5739c4473e.
+Artifacts E:/A52-iOS16/builds/{43459301822,43464680521}/; verified-build.json records.
+QEMU v2 shim/out/a52q-kernel-display-qemu-v2/run/result.json PASSED3CRCentry +7HB.
+Host CI43464679787 PASSED96A52 Python tests/native C/cross-build/4QEMU core checks.
+Validator81patches/36Python/7shell PASS. Original81Redmi patches unchanged.
 
-Kernel display build43459301822 PASSED at b4cec1fb755419d5646750ba09ddddd62292ef04.
-Downloaded E:/A52-iOS16/builds/43459301822/artifact; SHA manifests and all68
-reviewed overlay files match actual archived patched source. Kernel SHA256
-d01a8d650364ae9b0ba630bc237f591ad72fe1dbc98dca18e322f28234e0c67e;
-init unchanged aaacee08d03b7f0d93b0b34aa1d2436b0c3798b370ebf1e623732c5739c4473e.
-Host CI43459301694 PASSED. Kernel compiles with existing header/C99 style
-warnings and a provably bounded band-index narrowing warning; not a Werror build.
-2GiB QEMU baseline currently running: shim/out/a52q-kernel-display-qemu-v1/.
-User confirmed readiness for next90s XNU display trial; no new image installed.
-Private updated device helper requires explicit --kernel-display-selftest and
-revalidates successful standalone physical proof; restoration watcher prepared
-research/watch_kernel_display_restore.py, not started. Latest preflight original
-BOOT restored, protected hashes unchanged. No phone restoration pending.
+Display implementation: evidence-bound a52q-display-selftest ADT, absent by default;
+tools/a52q_display_selftest.py revalidates raw successful shim refresh proof and
+pinned Samsung register sources against live DT. Rejects QEMU hardware node,
+invalid ranges/geometry, overlapping kernel/panic RAM and changed runtime guards.
+FB0x9c000000/reservation0x9e4000, BGRA1080x2400/stride4320. No address invented.
+All13 registers read/checked before pixels; one CTL_START only,100ms wait deadline.
+No DSI command, mode switch, clock/reset/IOMMU programming. UFS/AMFI/init/ramoops
+implementations unchanged. Early Boot_Video stays zero; no premature console writes.
 
-NEW KERNEL STEP prepared: xnu/a52q/a52q_display.c, build-list + bsd_init hook in
-apply.py, tools/a52q_display_selftest.py and payload opt-in proof args. Default
-has no ADT node and no display accesses. Uses ml_io_map(VM_WIMG_IO), all13 live
-guards, shared CPU pattern, one START/100ms deadline, CRC A52D1 phases10/20/30.
-No UFS/AMFI/init/ramoops implementation changes; early Boot_Video still zero.
-96 Python tests pass; both overlays apply to actual81-patch source (mockfs/HFS
-differ only filesystem config/report); validator36tools/7shell/81patches PASS.
-Actual new physical refresh proof re-derived successfully into private
-research/kernel-display-proof.json. New kernel build and QEMU/phone test still
-required. Do NOT promote shim's visible success into a kernel-display claim.
+First kernel trial v1 (private backup/a52q/kernel-display-v1) showed NO bars.
+Retained log: guarded mapping then kmem_alloc(...10371072...) failed3 panic.
+Source osfmk/arm/io_map.c IO_MAP_SIZE=8MiB explains why the framebuffer cannot
+fit ml_io_map permanent io_submap. Correction maps ONLY framebuffer through
+ml_io_map_unmappable(...VM_WIMG_IO), using kernel_map; small MMIO maps unchanged.
+First leaf43464368423 failed compile for BSD-hidden helper declaration; exact
+prototype added, successful corrected leaf above. No failed artifact installed.
+Full builds have existing header/C99 warnings and bounded band-index narrowing;
+not a Werror build. No unsupported global warning suppression added.
 
-The full-screen RGB/white-border shim test PASSED on SM-A525F/DS. User explicitly
-reported bars appeared and returned to TWRP. Private receipt:
-backup/a52q/display-fullscreen-v1/receipt.json, requires_restore=false,
-original_boot_restored=true; RECOVERY/DTBO/vbmeta unchanged. No trial pending.
-Original full BOOT SHA256 d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
-Five CRC-valid stage0x93/ESR0 frames, all13 guards match; trial nonce
-9521967036039165491. checked-result.json separates decoded controller completion
-from human_confirmed_visible_output=true. No measured panel Hz/VSync claim.
+Earlier standalone shim full-screen test also PASSED: 5CRC stage93/ESR0 guards
+match and human-visible bars, backup/a52q/display-fullscreen-v1/. CPU pattern
+uses bounds/stride canary-tested helper; virtual-counter100ms timeout avoids
+assuming physical-counter EL2 access. Ordinary r4 core byte-identical SHA256
+ee37e8f025fb20b38699d0d67044be9f8a6f06fb640eee71668916204a93f823.
+Shim candidate0e021a5e8f1277bfde4f0ccfd2518d4cdeac3fcdd30904e41b73b04aa2e7ff65.
 
-Changes: full captured surface instead of 160x96 marker; virtual-counter bounded
-100ms polling (CNTVCT, already proven by UFS), timebase check before pixel/MMIO
-writes, CPU-only bounds-checked pattern helper, nonce-aware result decoder,
-host C canary/stride/overflow tests and CI step. Only captured pixels and one
-CTL0_START=1 are written; no DSI command, clock/reset/mode/IOMMU changes.
-Framebuffer 0x9c000000, reservation0x9e4000, BGRA1080x2400/stride4320.
-Candidate shim/out/a52q-display-fullscreen-v1/a52q-display-fullscreen-UNTESTED.img
-SHA256 0e021a5e8f1277bfde4f0ccfd2518d4cdeac3fcdd30904e41b73b04aa2e7ff65;
-bare core 42816bytes SHA256 7ee383ecc9fc3178e5400972f9e380b452e07f30639b70a9f216368d6f05286e.
-92 Python tests and native C test passed; supported cross build/package passed.
-Ordinary core remains byte-identical r4 ee37e8f025fb20b38699d0d67044be9f8a6f06fb640eee71668916204a93f823.
-Published source commit87fd0886b1d877737b34f45e98970c9ba4e66494 (same tree as
-local b76a0aa). Host CI43458038918 PASSED: validator, Python/native C tests,
-cross-build and all4QEMU EL1/EL2 normal/fault checks. This CI does not exercise
-physical display MMIO; the independent phone observation above establishes that.
+Audit: user acknowledged 120Hz/Applelaunchd failure claim came from AI; no log.
+No justified 120->60 patch. Existing SWEET notification timer16667us. Captured
+Samsung panel DT has fhd60/fhd90 descriptors, not measured active ABL timing.
+No nil-Metal-device CPU fallback established; no invented CA/backboardd flags.
+Future IOMobileFramebuffer/IOSurface port must preserve A52-specific command-mode
+commit and proven geometry, and must NOT enable Redmi hardware drivers. Current
+AMFI accepts only own static init, not Apple launchd; UFS root is NOT mounted.
+HFS RAM root and read-only UFS/BSD block paths were separately verified earlier.
+The combined large HFS RAM root + UFS node stall remains unresolved.
 
-Source audit: user acknowledged the 120Hz/Applelaunchd claim came from AI, no
-failure log. No justified 120->60 patch; existing SWEET IOMFB timer is16667us.
-A52 excludes SWEET framebuffer/IOSurface drivers; Boot_Video still zero and
-platform expert has no display nub. Do not enable early console blindly.
-Next: evidence-bound, opt-in XNU framebuffer mapping/CPU presentation with
-command-mode refresh, preserving guards and no clock/panel reinitialization.
-Requires real kernel integration/build/test; shim result alone does not prove it.
-Do not invent CoreAnimation flags or assume a nil Metal device gives software UI.
-No Apple launchd, SpringBoard or mounted UFS root; current AMFI accepts own init.
-UFS/read-only BSD disk, diagnostic PID1 and ramoops were not changed.
+Android control before v2 PASSED sys.boot_completed=1, then auto-returned TWRP;
+backup/a52q/control-before-kernel-display-v2/console.txt had ZERO stale XNU entries.
+Private helper install requires explicit --kernel-display-selftest and reviewed
+proof, full BOOT/template hashes and zero MISC before native TWRP System reboot.
+Restoration watcher captures logs then restores exact original BOOT in finally.
 
-Earlier Nov11 host-image notes below are historical: v7 preparation was stopped,
-v8 launch failed with WSL WSAETIMEDOUT. No full HFS iOS image is validated or flash
-ready. Invalid/incomplete v1-v7 images must not be installed. Native OS/SystemOS/
-AppOS staging succeeded separately, without Apple xattrs/ACLs/BSD flags.
-The BOOT-tail HFS-on-UFS experiment remains a proposal, not implemented.
+Workflow alternate standardmacos-15 ARM host verified available in official
+runner manifest with Xcode16.0/16A242d, but its job43466726845 canceled before
+execution after Intel queued job started. ARM host option is NOT tested. Default
+Intel preserved; exact Xcode checks added. Redundant automatic full builds canceled.
+
+Historical Nov11 host-root notes below: source staging succeeded, preserving
+POSIX owners/modes/links but NOT Apple xattrs/ACLs/BSD flags. Full HFS images
+v1-v7 invalid/incomplete; v7 stopped, v8 launch failed WSL WSAETIMEDOUT. No full
+iOS HFS image is validated/flash-ready. BOOT-tail HFS-on-UFS remains a host-only
+proposal; no packager/root-driver implementation and no userdata-format approval.
 
 ## A52Q handoff — 2026-11-11 (separate device/session)
 
