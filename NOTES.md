@@ -1,6 +1,49 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## A52Q handoff — 2026-11-13: visible display refresh verified; PHONE SAFE
+## A52Q handoff — 2026-11-13: display mapping fix; PHONE SAFE
+
+FIRST KERNEL TRIAL FINISHED: original BOOT restored with full SHA readback,
+protected hashes unchanged; watcher3664 finished, receipt requires_restore=false.
+User saw NO bars. Three valid XNU entry frames, zero intact A52D1 phase frames.
+Retained text reports guarded mapping banner then kmem_alloc(...10371072...)
+failed with3 panic. Source osfmk/arm/io_map.c IO_MAP_SIZE=8MiB; ml_io_map uses
+permanent io_submap and cannot fit10.37MiB. Runtime panic text is unprotected,
+not a repaired/CRC-proven register dump, but its requested size/backtrace agree
+with this source path. Fix uses ml_io_map_unmappable(...VM_WIMG_IO) for frame
+only, which uses kernel_map; small guarded MMIO maps unchanged. Fix NOT yet built.
+Added strict display leaf rebuild support: exact same board/overlay/patchset,
+unselected leaves/shared pixel header/UFS source must match base full build.
+Base successful run43459301822; no need to rebuild unchanged kernel components.
+Earlier ACTIVE/RESTORE PENDING record below is historical; phone is restored.
+
+16:30:07UTC BOOT-only XNU display trial installed+readback+TWRP System reboot.
+backup/a52q/kernel-display-v1/receipt.json requires_restore=true. Candidate
+2559acd4a6487755abd83d8b02eed1685d507295934ce87cc9a9f1f362a28b3f,
+kernel d01a8d650364ae9b0ba630bc237f591ad72fe1dbc98dca18e322f28234e0c67e.
+User confirmed readiness and was asked to observe RGB bars then returnTWRP90s.
+Hidden watcher PID3664 research/watch_kernel_display_restore.py waits600s for
+recovery, captures logs then restores original full BOOT +protectedhashes.
+Logs E:/A52-iOS16/kernel-display-watcher*.log. If watcher times out, restoration
+is STILL REQUIRED: use collect-restore --receipt backup/a52q/kernel-display-v1/receipt.json.
+Latest QEMU baseline PASSED: 3CRCentryframes, diagnosticPID1 +7heartbeats;
+shim/out/a52q-kernel-display-qemu-v1/run/result.json, samekernel hash. Hardware
+image prepares with successful physical shim refresh proof, all13runtimeguards.
+No UFS test node in this image; no write CDB, userdata format or GPT change.
+Earlier PHONE SAFE statements below describe previous restored tests only.
+
+Kernel display build43459301822 PASSED at b4cec1fb755419d5646750ba09ddddd62292ef04.
+Downloaded E:/A52-iOS16/builds/43459301822/artifact; SHA manifests and all68
+reviewed overlay files match actual archived patched source. Kernel SHA256
+d01a8d650364ae9b0ba630bc237f591ad72fe1dbc98dca18e322f28234e0c67e;
+init unchanged aaacee08d03b7f0d93b0b34aa1d2436b0c3798b370ebf1e623732c5739c4473e.
+Host CI43459301694 PASSED. Kernel compiles with existing header/C99 style
+warnings and a provably bounded band-index narrowing warning; not a Werror build.
+2GiB QEMU baseline currently running: shim/out/a52q-kernel-display-qemu-v1/.
+User confirmed readiness for next90s XNU display trial; no new image installed.
+Private updated device helper requires explicit --kernel-display-selftest and
+revalidates successful standalone physical proof; restoration watcher prepared
+research/watch_kernel_display_restore.py, not started. Latest preflight original
+BOOT restored, protected hashes unchanged. No phone restoration pending.
 
 NEW KERNEL STEP prepared: xnu/a52q/a52q_display.c, build-list + bsd_init hook in
 apply.py, tools/a52q_display_selftest.py and payload opt-in proof args. Default
