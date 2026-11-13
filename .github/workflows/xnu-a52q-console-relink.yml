@@ -5,6 +5,11 @@ on:
     paths: ['.github/workflows/xnu-a52q-console-relink.yml']
   workflow_dispatch:
     inputs:
+      host:
+        description: 'Compiler host only; target stays arm64 with pinned Xcode 16.0'
+        type: choice
+        default: macos-15-intel
+        options: [macos-15-intel, macos-15]
       base_run:
         description: Successful full A52Q build run containing its link archive
         required: true
@@ -19,7 +24,7 @@ permissions:
 jobs:
   relink:
     if: github.event_name == 'workflow_dispatch'
-    runs-on: macos-15-intel
+    runs-on: ${{ inputs.host || 'macos-15-intel' }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +42,9 @@ jobs:
           echo "BASE_SHA=$SHA" >> "$GITHUB_ENV"
           echo 'DEVELOPER_DIR=/Applications/Xcode_16.0.app/Contents/Developer' >> "$GITHUB_ENV"
           sudo xcode-select -s /Applications/Xcode_16.0.app
+          xcodebuild -version
+          xcodebuild -version | grep -qx 'Xcode 16.0'
+          xcodebuild -version | grep -qx 'Build version 16A242d'
       - name: Recompile and relink selected implementation
         env:
           LEAF: ${{ inputs.leaf }}
