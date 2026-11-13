@@ -14,6 +14,7 @@
 #include "a52q_display_pattern.h"
 
 extern vm_offset_t ml_io_map(vm_offset_t phys_addr, vm_size_t size);
+extern vm_offset_t ml_io_map_unmappable(vm_offset_t phys_addr, vm_size_t size, unsigned int flags);
 
 struct a52d_guard { uint64_t address; uint32_t value, reserved; };
 _Static_assert(sizeof(struct a52d_guard) == 16, "display ADT guard ABI");
