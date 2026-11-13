@@ -2,6 +2,17 @@
 
 ## A52Q handoff — 2026-11-13: visible display refresh verified; PHONE SAFE
 
+NEW KERNEL STEP prepared: xnu/a52q/a52q_display.c, build-list + bsd_init hook in
+apply.py, tools/a52q_display_selftest.py and payload opt-in proof args. Default
+has no ADT node and no display accesses. Uses ml_io_map(VM_WIMG_IO), all13 live
+guards, shared CPU pattern, one START/100ms deadline, CRC A52D1 phases10/20/30.
+No UFS/AMFI/init/ramoops implementation changes; early Boot_Video still zero.
+96 Python tests pass; both overlays apply to actual81-patch source (mockfs/HFS
+differ only filesystem config/report); validator36tools/7shell/81patches PASS.
+Actual new physical refresh proof re-derived successfully into private
+research/kernel-display-proof.json. New kernel build and QEMU/phone test still
+required. Do NOT promote shim's visible success into a kernel-display claim.
+
 The full-screen RGB/white-border shim test PASSED on SM-A525F/DS. User explicitly
 reported bars appeared and returned to TWRP. Private receipt:
 backup/a52q/display-fullscreen-v1/receipt.json, requires_restore=false,

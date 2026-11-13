@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Prepare an A52 bootstrap ADT and embedded XNU payload from captured evidence.
 
-No Apple userland, framebuffer descriptor, storage nodes or device writes.
+No Apple userland or device writes. Hardware-only diagnostic nodes are opt-in.
 RAM placement is a conservative snapshot candidate; the shim probes it at boot.
 """
 import argparse
@@ -82,7 +82,7 @@ def validate_bootstrap_init(data):
         raise ValueError('bootstrap init lacks a static entry or signature')
 
 
-def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None):
+def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None, display_test=None):
     if base % BLOCK or total < 4 * BLOCK or total % BLOCK or not 16 <= intid < 32:
         raise ValueError('unsupported bootstrap memory/timer geometry')
     memory = total - PANIC
@@ -111,6 +111,9 @@ def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None
     if ufs_test:
         from a52q_ufs_selftest import adt_node
         result.children.append(adt_node(ufs_test))
+    if display_test:
+        from a52q_display_selftest import adt_node
+        result.children.append(adt_node(display_test))
     return result
 
 
@@ -218,6 +221,17 @@ def validate_payload(data, manifest):
         from a52q_ufs_selftest import adt_node
         if tests[0].props != adt_node(ufs_test).props:
             raise ValueError('UFS selftest ADT differs from validated proof configuration')
+    displays = [c for c in tree.children if c.name == 'a52q-display-selftest']
+    display_test = manifest.get('display_selftest')
+    if displays or display_test:
+        if len(displays) != 1 or not display_test or manifest.get('environment') != 'SM-A525F/DS hardware candidate':
+            raise ValueError('display selftest must be explicitly hardware-bound and have exactly one ADT node')
+        from a52q_display_selftest import adt_node
+        if displays[0].props != adt_node(display_test).props:
+            raise ValueError('display selftest ADT differs from validated proof configuration')
+        fb, size = display_test['reg']
+        if fb < phys + memory + PANIC and phys < fb + size:
+            raise ValueError('display reservation overlaps kernel RAM/panic log')
     chosen = next(c for c in tree.children if c.name == 'chosen')
     if chosen.prop('dram-base') != u64(phys) or chosen.prop('dram-size') != u64(memory):
         raise ValueError('ADT RAM differs from loader RAM')
@@ -301,6 +315,9 @@ def main():
                    help='QEMU result.json proving this exact kernel/root reached diagnostic PID1; hardware only')
     p.add_argument('--ufs-selftest-build', type=Path, help='successful physical shim one-block-read build.json')
     p.add_argument('--ufs-selftest-log', type=Path, help='matching CRC-checked physical read console')
+    p.add_argument('--display-selftest-build', type=Path, help='successful standalone physical display build.json')
+    p.add_argument('--display-selftest-log', type=Path, help='matching CRC-checked physical refresh console')
+    p.add_argument('--display-register-sources', type=Path, help='pinned Samsung display register sources')
     p.add_argument('--qemu-dtb', type=Path, help='QEMU-generated virt DTB; makes a payload that phone packaging rejects')
     p.add_argument('--qemu-diagnostic', type=Path, help='matching QEMU loader diagnostic result with measured CNTFRQ')
     p.add_argument('--qemu-lowmem', action='store_true',
@@ -311,6 +328,14 @@ def main():
             raise ValueError('output exists or invalid memory budget (128..1024 MiB, multiple of 32)')
         kernel = a.kernel.read_bytes()
         validate_kernel(kernel)
+        display_test = None
+        display_args = (a.display_selftest_build, a.display_selftest_log, a.display_register_sources)
+        if any(display_args):
+            if not all(display_args) or a.qemu_dtb or b'A52Q display selftest: guarded kernel mapping' not in kernel:
+                raise ValueError('display test needs new kernel, physical placement, proof build/log and pinned sources')
+            from a52q_display_selftest import configuration as display_configuration
+            display_test = display_configuration(a.evidence, a.display_register_sources,
+                json.loads(a.display_selftest_build.read_text()), a.display_selftest_log.read_bytes())
         ufs_test = None
         if bool(a.ufs_selftest_build) != bool(a.ufs_selftest_log):
             raise ValueError('kernel UFS test needs both physical proof artifacts')
@@ -387,7 +412,8 @@ def main():
             environment = 'QEMU virt ONLY; never flash'
         a.out.parent.mkdir(parents=True, exist_ok=True)
         tree_path = a.out.with_suffix('.adt')
-        tree_path.write_bytes(adt.serialize(make_adt(base, total, gic, hz, intid, mpidr, ufs_test=ufs_test)))
+        tree_path.write_bytes(adt.serialize(make_adt(base, total, gic, hz, intid, mpidr,
+                                                   ufs_test=ufs_test, display_test=display_test)))
         payload, info = mkpayload.build(str(a.kernel), str(tree_path),
                                        'debug=0xc serial=3 cpus=1 keepsyms=1 -v -noprogress rd=md0',
                                        ramdisk_path=str(root_path) if root_path else None)
@@ -407,6 +433,8 @@ def main():
             report['hfs_test_root'] = hfs_root
         if ufs_test:
             report['ufs_selftest'] = ufs_test
+        if display_test:
+            report['display_selftest'] = display_test
         validate_payload(payload, report)
         a.out.write_bytes(payload)
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')
