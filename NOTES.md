@@ -22,6 +22,10 @@ SHA256 0e021a5e8f1277bfde4f0ccfd2518d4cdeac3fcdd30904e41b73b04aa2e7ff65;
 bare core 42816bytes SHA256 7ee383ecc9fc3178e5400972f9e380b452e07f30639b70a9f216368d6f05286e.
 92 Python tests and native C test passed; supported cross build/package passed.
 Ordinary core remains byte-identical r4 ee37e8f025fb20b38699d0d67044be9f8a6f06fb640eee71668916204a93f823.
+Published source commit87fd0886b1d877737b34f45e98970c9ba4e66494 (same tree as
+local b76a0aa). Host CI43458038918 PASSED: validator, Python/native C tests,
+cross-build and all4QEMU EL1/EL2 normal/fault checks. This CI does not exercise
+physical display MMIO; the independent phone observation above establishes that.
 
 Source audit: user acknowledged the 120Hz/Applelaunchd claim came from AI, no
 failure log. No justified 120->60 patch; existing SWEET IOMFB timer is16667us.
