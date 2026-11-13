@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 from types import SimpleNamespace
 import unittest
+import zlib
 from unittest.mock import MagicMock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import a52q_display_probe as probe
@@ -39,8 +40,11 @@ class DisplayProbeTests(unittest.TestCase):
         config = self.config()
         self.assertEqual(config['base'], 0x9c000000)
         self.assertEqual(config['stride'], 4320)
+        self.assertEqual(config['buffer_bytes'], self.region[1])
         self.assertEqual(len(config['guards']), 13)
         self.assertIn('A52Q_DISPLAY_START_REGISTER', probe.header(config))
+        self.assertIn('A52Q_DISPLAY_WIDTH 1080ULL', probe.header(config))
+        self.assertIn('A52Q_DISPLAY_HEIGHT 2400ULL', probe.header(config))
 
     def test_no_scanout_outside_reservation(self):
         self.region = (0x9c000000, 0x1000)
@@ -62,6 +66,36 @@ class DisplayProbeTests(unittest.TestCase):
         self.captured['live_dtb_sha256'] = 'other firmware'
         with self.assertRaisesRegex(ValueError, 'does not match'):
             self.config()
+
+    def trial_result(self, stage=0x93, esr=0, value=0x12345678, nonce=81):
+        def frame(kind, body):
+            raw = body.encode()
+            return kind.encode() + b' ' + raw + f' {zlib.crc32(raw):08x}\n'.encode()
+        build = {'handoff_probe': {'capture_id': 81, 'tag': 12, 'group': 'display',
+                    'registers': [{'address': 0xae05014, 'label': 'fixture'}]},
+                 'display_test': {'capture_id': 80, 'guards': [{'index': 0, 'value': 0x12345678}]}}
+        data = frame('A52M2', f'{nonce:016x}/000000000000000c/01/01/ffffffffffffffff')
+        data += frame('A52S2', f'{nonce:016x}/{stage:08x}/{esr:016x}')
+        data += frame('A52R2', f'{nonce:016x}/00/0ae05014/{value:08x}')
+        return build, data
+
+    def test_controller_completion_is_not_visible_output_or_vsync(self):
+        build, data = self.trial_result()
+        result = probe.result(build, data)
+        self.assertTrue(result['controller_start_consumed'])
+        self.assertFalse(result['visible_output_verified'])
+        self.assertIsNone(result['panel_refresh_hz'])
+        # Uses the trial's nonce, never the earlier handoff nonce.
+        self.assertEqual(result['capture_id'], 81)
+
+    def test_reject_stale_capture_and_never_report_timeout_or_fault_as_success(self):
+        build, data = self.trial_result(nonce=80)
+        with self.assertRaises(ValueError): probe.result(build, data)
+        for fields in ({'stage': 0xe9}, {'esr': 1}, {'value': 0}):
+            build, data = self.trial_result(**fields)
+            self.assertFalse(probe.result(build, data)['controller_start_consumed'])
+        build, data = self.trial_result()
+        self.assertFalse(probe.result(build, data.replace(b'00000093', b'00000092'))['controller_start_consumed'])
 
 
 if __name__ == '__main__':

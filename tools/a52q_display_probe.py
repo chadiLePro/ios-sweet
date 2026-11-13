@@ -1,8 +1,8 @@
 """Derive a bounded splash-buffer refresh experiment from CRC-checked handoff.
 
 This is a diagnostic, not a framebuffer driver. It reuses only the bootloader's
-captured linear BGRA pipe, checks the same state at runtime, touches a 160x96
-rectangle in the DT splash reservation, and writes CTL_START once. No flush,
+captured linear BGRA pipe, checks the same state at runtime, fills the captured
+surface in the DT splash reservation, and writes CTL_START once. No flush,
 address, clock, reset, IOMMU, DSI command or panel configuration is programmed.
 The CTL_START operation is defined by pinned sde_hw_ctl.c:trigger_start().
 """
@@ -56,10 +56,11 @@ def configuration(evidence, sources, capture_build, console):
     needed = ['ctl0.ctl_top', 'ctl0.ctl_start', 'ctl0.ctl_intf_active',
               'ctl1.ctl_intf_active', 'ctl2.ctl_intf_active', 'dsi.dsi_ctrl', 'dsi.dsi_status']
     guards = [rows[label] for label in needed] + pipe
-    return {'scope': '160x96 splash RAM pattern and one CTL0_START=1; experimental refresh',
+    return {'scope': 'full captured splash surface and one CTL0_START=1; experimental refresh',
             'capture_id': captured['capture_id'], 'capture_console_sha256': hashlib.sha256(console).hexdigest(),
             'live_dtb_sha256': expected['live_dtb_sha256'], 'base': base, 'width': width,
             'height': height, 'stride': stride, 'splash_region': [lo, length],
+            'buffer_bytes': lo + length - base,
             'start_register': rows['ctl0.ctl_start']['address'],
             'guards': [{'index': next(i for i, r in enumerate(expected['registers']) if r['label'] == g['label']),
                         'value': g['value']} for g in guards],
@@ -69,8 +70,42 @@ def configuration(evidence, sources, capture_build, console):
 def header(config):
     return ('/* Evidence-derived diagnostic only; never a generic display map. */\n' +
             ''.join(f'#define A52Q_DISPLAY_{k.upper()} {config[k]}ULL\n' for k in
-                    ('base', 'stride', 'start_register')) +
+                    ('base', 'width', 'height', 'stride', 'buffer_bytes', 'start_register')) +
             'static const unsigned display_guard_indices[] = {' +
             ','.join(str(g['index']) for g in config['guards']) + '};\n' +
             'static const uint32_t display_guard_values[] = {' +
             ','.join(hex(g['value']) + 'U' for g in config['guards']) + '};\n')
+
+
+def result(build, console):
+    """Decode the new trial nonce, not the earlier capture used for guards."""
+    if not build.get('display_test') or build.get('embedded_payload'):
+        raise ValueError('need a standalone display diagnostic build')
+    trial = build['handoff_probe']
+    if trial.get('group') != 'display':
+        raise ValueError('not a display handoff trial')
+    captured = decode(console, trial)
+    guards = build['display_test']['guards']
+    values = {i: r['value'] for i, r in zip(sorted(captured['valid_register_copies']), captured['registers'])}
+    guards_match = all(values.get(g['index']) == g['value'] for g in guards)
+    consumed = (captured['complete'] and guards_match and captured['stage'] == 0x93 and
+                captured['esr'] == 0 and captured['valid_stage_copies'] > 0)
+    return {'scope': 'display diagnostic only; not iOS UI or measured panel VSync',
+            'capture_id': captured['capture_id'], 'stage': captured['stage'], 'esr': captured['esr'],
+            'valid_stage_copies': captured['valid_stage_copies'], 'guards_match': guards_match,
+            'controller_start_consumed': consumed, 'visible_output_verified': False,
+            'panel_refresh_hz': None, 'next': 'record human observation of full-screen RGB bars'}
+
+
+if __name__ == '__main__':
+    import argparse
+    import json
+    from pathlib import Path
+    parser = argparse.ArgumentParser(description='Decode a CRC-bound A52 display diagnostic; never writes a device.')
+    parser.add_argument('--build', required=True, type=Path)
+    parser.add_argument('--console', required=True, type=Path)
+    args = parser.parse_args()
+    try:
+        print(json.dumps(result(json.loads(args.build.read_text()), args.console.read_bytes()), indent=2))
+    except (OSError, ValueError, KeyError) as error:
+        parser.exit(1, f'display result rejected: {error}\n')
