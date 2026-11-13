@@ -25,6 +25,7 @@ LEAVES = {
     'ram-root': (None, 'iokit/Kernel/IOService.cpp', 'IOService.cpo', 'iokit'),
     'static-init': (None, 'bsd/kern/ubc_subr.c', 'ubc_subr.o', 'bsd'),
     'amfi': ('a52q_amfi.c', 'bsd/kern/sweet_amfi.c', 'sweet_amfi.o', 'bsd'),
+    'display': ('a52q_display.c', 'bsd/dev/a52q_display.c', 'a52q_display.o', 'bsd'),
 }
 AMFI_OVERLAY_ADDITION = (
     "    replace('bsd/kern/sweet_amfi.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',\n"
@@ -80,6 +81,18 @@ def main():
             raise SystemExit('full build required: changed ' + name)
     if run('git', 'diff', '--name-only', a.base_sha, 'HEAD', '--', 'xnu/patches', cwd=root).strip():
         raise SystemExit('full build required: base patch set changed')
+    # A display-only rebuild must not silently retain stale shared pixel code
+    # or storage implementations from the base archive. All leaves check these.
+    for name in ('shim/a52q/display_pattern.h', 'xnu/a52q/a52q_ufs.c',
+                 'xnu/a52q/a52q_ufs_disk.c', 'xnu/a52q/a52q_ufs_bounds.h'):
+        try:
+            old = run('git', 'show', a.base_sha + ':' + name, cwd=root)
+        except subprocess.CalledProcessError:
+            if a.leaf == 'display':
+                raise SystemExit('full build required: base predates guarded display implementation')
+            continue  # Older console-only bases predate these implementations.
+        if old != (root / name).read_bytes():
+            raise SystemExit('full build required: changed shared/unselected implementation ' + name)
     for key, (name, _, _, _) in LEAVES.items():
         if name and key != a.leaf and run('git', 'show', a.base_sha + ':xnu/a52q/' + name, cwd=root) != (root / 'xnu/a52q' / name).read_bytes():
             raise SystemExit('full build required: unselected implementation changed: ' + name)

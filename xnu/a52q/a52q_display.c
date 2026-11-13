@@ -8,6 +8,7 @@
 #include <kern/clock.h>
 #include <mach/mach_time.h>
 #include <machine/machine_routines.h>
+#include <vm/pmap.h>
 #include <pexpert/device_tree.h>
 #include <libkern/libkern.h>
 #include "a52q_display_pattern.h"
@@ -83,7 +84,12 @@ void a52q_display_selftest(void)
         if (!registers[i]) { a52d_report(nonce, 0xe1, i); return; }
         if (*registers[i] != guards[i].value) { a52d_report(nonce, 0xe2, i); return; }
     }
-    volatile uint32_t *pixels = (volatile uint32_t *)ml_io_map((vm_offset_t)reg[0], (vm_size_t)reg[1]);
+    /* io_map's permanent submap is only 8 MiB in this XNU. The DT splash
+     * reservation is larger; allocate its VA in kernel_map with the existing
+     * unmappable API, retaining VM_WIMG_IO and the same physical bounds.
+     * Keep this mapping for the boot lifetime; no cached aliases are created. */
+    volatile uint32_t *pixels = (volatile uint32_t *)ml_io_map_unmappable(
+        (vm_offset_t)reg[0], (vm_size_t)reg[1], VM_WIMG_IO);
     if (!pixels) { a52d_report(nonce, 0xe1, 13); return; }
     a52d_report(nonce, 0x10, 0);
     if (!a52q_display_pattern(pixels, geometry[0], geometry[1], geometry[2], reg[1])) {
