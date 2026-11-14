@@ -1,6 +1,42 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## Active A52 handoff: V10 restored; mount executed; enforcement/read-only audit
+## Active A52 handoff: V10 restored; enforcement negatives pass; RO fstab prepared
+
+No restoration pending. V10 receipt backup/a52q/ios-ufs-v10/receipt.json has
+original_boot_restored=true, requires_restore=false, whole BOOT SHA d6bf...4b016,
+protected hashes unchanged. Phone remains TWRP; never boot Android or format.
+Full root/master unchanged; no new storage write authorized.
+
+Enforcement full build43640145137/source b413f58d5dba12b948ac9e12e10992e25cfa4d6e
+SUCCESS; host CI43640144989 SUCCESS. Artifact E:/A52-iOS16/builds/43640145137/artifact,
+kernel d7e3496080a357099eb970d6e02708f1f0daddf6205d45d518dcdb2e417e1fcd,
+all72 overlay files verified. Exact-kernel QEMU positive and two genuine negative
+exec trials PASS: approved init7heartbeats; valid-page unknownCD denied(error1,
+loaderror4) thenSIGKILL; originalCD with only filebyte1000modified acceptedpin then
+SIGKILL, zeroPID1banner/heartbeats. All3CRCentryframes, enforcement system1/process1.
+Private proof E:/A52-iOS16/exec-enforcement-result-v1.json and
+shim/out/a52q-exec-enforcement-qemu-v1; fixtureFS fsck clean. These are synthetic
+diagnostic RAM-root emulation tests, not Apple/UFS emulation or phone boots.
+
+New a52q_bootfs.c publishes only actual mounted RO HFS a52ios0 via
+vfs.generic.apfs.edt_fstab. Exact measured Libinfo564.120.2 consumer inspected in
+validated native staging cache; sysctl string0x1946faff6, code0x1946e2a24/2a5c;
+entrystride236, offsets0/32/96/128/192/freq224/pass228/trailing4zero. Cache read-only
+audit E:/A52-iOS16/cache-fstab-audit-v1. Exact Apple source confirms missingfstab
+synthesizes RWroot; diskdev_cmds701.100.2 mount then triesRO->RWupgrade. Newcallback
+advertises actual /dev/a52ios0 / hfs ro, pass1, requires matchingrootdev/MNT_ROOTFS/
+MNT_RDONLY/HFS, denieswrite/otherroots. Native actual-body callback checks PASS;
+both overlays apply to actual81patchsource,73files. Requires NEW fullkernelbuild.
+No mount_hfs pin added. Do not weaken RO driver.
+
+Next: build new overlay, implement measured local unsealed boot-manifest identifier
+for mount's unconditional chosen-property lookup; never reuse fabricated Redmi
+hash or claim AppleIMG4trust. Do not alter master. Explicitly distinguish optional
+OTHERenv bind mounts from actual mainOS firmware mounts. See docs/A52Q-BOOT-FILESYSTEM.md.
+After build, exact-kernel QEMU baseline and package/provenance/rootprefixchecks;
+only then readiness and BOOT-only trial with restoration. Future4GiBvarnotinstalled.
+
+## Historical handoff: V10 restored; mount executed; enforcement/read-only audit
 
 Original BOOT restored after V10 and freshly hash-verified d6bf0307...4b016;
 receipt requires_restore=false, protected partition hashes unchanged. No pending

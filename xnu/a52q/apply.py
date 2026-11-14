@@ -68,7 +68,7 @@ def apply(root, filesystem='mockfs'):
     changes['bsd/dev/a52q_display_pattern.h'] = (HERE.parents[1] / 'shim/a52q/display_pattern.h').read_text()
     replace('bsd/conf/files', 'bsd/dev/sweet_ufs.c\t\t\tstandard\n',
             'bsd/dev/sweet_ufs.c\t\t\tstandard\nbsd/dev/a52q_display.c\t\t\tstandard\n')
-    for name in ('a52q_ufs_disk.c', 'a52q_ufs_bounds.h'):
+    for name in ('a52q_ufs_disk.c', 'a52q_ufs_bounds.h', 'a52q_bootfs.c'):
         changes['bsd/dev/' + name] = (HERE / name).read_text()
     for name in ('ufs_nop_protocol.h', 'ufs_read_protocol.h'):
         changes['bsd/dev/a52q_' + name] = (HERE.parents[1] / 'shim/a52q' / name).read_text()

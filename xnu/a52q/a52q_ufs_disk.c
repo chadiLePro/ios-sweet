@@ -252,3 +252,5 @@ static int a52u_disk_publish(uint32_t known_lba, uint32_t expected_crc)
     printf("A52Q UFS: read-only whole LUN0 minor0 /dev/a52ufs0 /dev/ra52ufs0\n");
     return a52u_root_publish(block_major, raw_major);
 }
+
+#include "a52q_bootfs.c"

@@ -222,3 +222,49 @@ BOOT candidate SHA256:
 5811579a9b4075b1ec87a65c156e425d60974d56470e5be7347dfc43ffac33ba.
 The user confirmed readiness for its BOOT-only phone test. This preparation
 still does not establish mount execution or services on the phone.
+
+## V10: mount executed; process-enforcement gap corrected
+
+The V10 phone log retains mount's admission and its own output, then:
+
+```text
+proc 4: load code signature error 4 for file "mount_hfs"
+mount_hfs: error on mount(): error=-1.
+mount_hfs: Read-only file system
+mount: / failed with 1
+mount: failed to get boot manifest hash - No such file or directory
+```
+
+The helper's own message proves it executed despite its rejected signature.
+The inherited macOS process-enforcement default was zero: mach_loader.c
+explicitly ignores a load-signature failure in that mode. Cache enforcement
+was active, but host allowlist rejection alone did not imply process rejection.
+This was a real enforcement gap, not a reason to approve the helper blindly.
+
+A52 now defaults process enforcement to one at cs_init, retaining system
+enforcement. It also marks already admitted launchd/dyld/diagnostic signatures
+CS_SIGNED; no additional executable or entitlement is admitted. Other boards
+are unchanged. CONFIG_ENFORCE_SIGNED_CODE is not enabled: its separate dyld
+platform requirement is unrelated to this runtime enforcement correction.
+
+Full build 43640145137/source b413f58d5dba12b948ac9e12e10992e25cfa4d6e passed,
+as did host CI 43640144989. Kernel SHA256:
+d7e3496080a357099eb970d6e02708f1f0daddf6205d45d518dcdb2e417e1fcd.
+Exact-kernel QEMU with synthetic diagnostic HFS fixtures produced:
+
+| Fixture | Observed result |
+|---|---|
+| Original approved init | PID1 banner and seven heartbeats |
+| Valid code pages, unapproved CodeDirectory | check_signature error 1, load-signature error 4, init SIGKILL |
+| One changed first-page byte, original approved signature intact | pin accepted, then init SIGKILL; no user code banner |
+
+All three retained three valid kernel entry frames and
+`A52Q signing enforcement: system=1 process=1`. The altered-page input differs
+only at file byte 1000; its entire signature is unchanged and host verification
+independently identifies its code-page hash mismatch. Negative tests have zero
+PID1 banners/heartbeats. This demonstrates executable rejection under QEMU,
+not a full-root Apple or phone result. The master and installed root were not
+modified. Original BOOT is restored with complete hash verification.
+
+The separate read-only mount contract is documented in
+[A52Q-BOOT-FILESYSTEM.md](A52Q-BOOT-FILESYSTEM.md).
