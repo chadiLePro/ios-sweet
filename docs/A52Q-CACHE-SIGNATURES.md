@@ -113,3 +113,36 @@ matched 0f4bcaa7...312149. Physical cache-mapping/main results remain pending.
 The previous trial's Original BOOT was restored
 and freshly read back as d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016;
 recovery, DTBO and vbmeta were unchanged. The root image was not rewritten.
+
+## Physical result: cache mapping and Apple launchd main passed
+
+The fourth full-root trial contains three intact markers:
+
+```text
+A52Q: PID1 set kern.initproc_spawned=1 (launchd main marker)
+```
+
+They are followed by Apple's own hello and Darwin Bootstrapper Version 7.0.0
+messages, then system-domain creation. The actual launchd binary references
+that sysctl 56 bytes after LC_MAIN. This demonstrates early Apple launchd main
+from the full persistent UFS filesystem, beyond loader execution. It does not
+demonstrate userland services or SpringBoard.
+
+The next actual failure is fsck signature rejection, followed by:
+
+```text
+userspace panic: boot task is not a platform binary (fsck, /sbin/fsck)
+```
+
+The master fsck is checksum-identical to the native staged source. All 13
+signed 4 KiB pages pass; no XML/DER entitlements are present. Actual launchd
+calls csops(CS_OPS_STATUS) at offset 0x3feac; error or missing bit26 branches
+to this panic. XNU derives that bit from csb_platform_binary.
+
+The next policy explicitly classifies only that exact fsck CodeDirectory as a
+local development platform boot task, only on the same read-only full A52 root.
+It grants no entitlements and makes no Apple CMS trust claim. The cache policy
+continues to grant no platform status. Native tests reject changed/unapproved
+hashes, writable/unrelated mounts, entitlement blobs and missing/invalid signatures.
+Kernel-only build 43627967750 is pending; no root filesystem change is required.
+Original BOOT was restored and freshly hash-verified after the fourth trial.

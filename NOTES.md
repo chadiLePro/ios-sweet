@@ -2,6 +2,14 @@
 
 ## CURRENT: APPLE LAUNCHD MAIN PROVEN ON FULL UFS ROOT; BOOT RESTORED
 
+AMFI-only build43627967750/sourcef4ab8f8 PASS and verified against fullbase
+43624481615/a46569c. Kernel3808e55ac77a2a969fb9c622c54621f0c3acd34a698bdadb0963a9f6bccfad87,
+implementation54d4796b8b2571ac37fa85b7e5f37ba7f55e87c88f212f89f9a09f8bd6c78a50.
+HostCI43627967485 PASS. Redundant auto full43627967504 canceled.
+QEMU exactkernel fixture and master/planv4 preparation RUNNING. Next packaging
+research/prepare_boot_task_candidate.py ->hardwarev6; phone receiptios-ufs-v5,
+watcherresearch/watch_ios_ufs_v5_restore.py prepared, notrunning. No newBOOTwrite.
+
 Next fsck policy prepared: exact master /sbin/fsck fileSHA1aaf55052561aaf1214cd7d65924c46d39b1ef325e37c1faeaa76769612e59ce
 matches native staged-final-v6/os/sbin/fsck.13signed4KiBpages PASS, CDhash
 e1a3f12fb8be72d6e9a4e4178ebe152513bc599a,no XML/DERentitlements. Actuallaunchd

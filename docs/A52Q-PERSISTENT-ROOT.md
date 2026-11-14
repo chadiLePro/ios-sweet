@@ -2,8 +2,9 @@
 
 Current physical milestone (2026-11-14): Apple dyld/libignition execute from the
 installed read-only UFS filesystem, and shared-cache signature registration
-succeeds. Mapping then fails at XNU's missing SF_RESTRICTED/SIP vnode flag check.
-Apple launchd main, services and SpringBoard remain unproven. Original BOOT is
+succeeds. The exact-cache read-only-root exception also passed mapping, and
+three kern.initproc_spawned markers plus Apple startup banners prove launchd main.
+The next rejected boot task is /sbin/fsck. Services and SpringBoard remain unproven. Original BOOT is
 restored and freshly hash-verified. No root rewrite was needed for the cache fix.
 
 All 44 cache files and their 202,845 signed pages passed checksum/hash validation.
