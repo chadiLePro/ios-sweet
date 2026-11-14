@@ -184,3 +184,11 @@ policy regression check now requires this process-status visibility, while
 retaining changed/unapproved hash rejection. Build 43632122116/source 92eede2
 passed; its new kernel is b238ddc535b0eec0d9d47c3d10e4d76ee061e1544a6984a5526aff218828eb3d.
 Physical fsck execution remains unproven; no root filesystem edit was made.
+
+The CS_SIGNED candidate passed its exact-kernel diagnostic QEMU baseline
+(three valid entry records, seven heartbeats) and all 115 host tests. Its BOOT
+SHA256 is 2bb055df7bf8dbe572e84bc8521b520b009876b5ad9ef2274ad1b7a54fe34dae.
+The full master rehash still matches 0f4bcaa7...312149. This candidate is packaged
+only and has not been flashed: phone trials are on hold while the user is away.
+Original BOOT remains restored and freshly hash-verified; no restoration is
+pending. Apple fsck execution, services and SpringBoard remain unproven.

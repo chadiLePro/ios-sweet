@@ -1,5 +1,27 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## CURRENT — USER AWAY: HOLD ALL PHONE TRIALS; ORIGINAL BOOT VERIFIED
+
+User says notnearcomputer/cannot testnow. Do NOT flash or reboot phone untiluser
+returns/ready. Hostworkonly. Lastreceiptios-ufs-v8 requires_restore=false,
+original_boot_restored=true; freshREADONLYphonehash AGAIN matched d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+PhoneTWRP. NO pendingBOOTrestoration. V9receipt doesNOTexist, watcherV9notstarted.
+All olderACTIVEentries belowarehistorical/superseded. No unattendedtestauthorized
+whileuseraway. StandingBOOTscopepersistswhenready; no newuserdata/varwriteapproval.
+
+CS_SIGNEDfixkernelbuild43632122116/source92eede2 PASS. Kernelb238ddc535b0eec0d9d47c3d10e4d76ee061e1544a6984a5526aff218828eb3d.
+115Python/CI43632121862 PASS. Exactkernel+diagnosticHFSfixture QEMU PASS3entry,
+7PID1heartbeats; NOTfulliOS/UFSemulation. Entiremasterrehash0f4...312149matched,
+planv5complete. Hostcandidatehardwarev7 PACKAGEDONLY, SHA
+2bb055df7bf8dbe572e84bc8521b520b009876b5ad9ef2274ad1b7a54fe34dae.
+Private E:/A52-iOS16/fsck-signed-trial-review-v1.json records candidate/hash,
+BOOT96MiBscope,backup/recovery,hostproofandhardwareHOLD. Master/sourceunchanged.
+Helperrootplan nowv5; MUSTuse --native-reboot ->/system/bin/reboot adb Samsung
+normalreason, notdefaultshell/notcrashingTWRPGUI. FutureV9 receipt/watcher prepared
+only; rearmliveconsolefromC:archiveonceuserready, thennormalvalidatedBOOTprocedure.
+Physicalbaseline: Applelaunchdmain provenV4/V8; fscksignatureadmittedV8butstatus
+rejected becauseCS_SIGNEDmissing. Newfixnotphonetested. Services/UIremainunproven.
+
 ## CURRENT: V8 BOOT RESTORED; FSCK STATUS BLOCKER TRACED TO CS_SIGNED
 
 NextAMFIbuild43632122116/source92eede2 PASS, verifiedbasea46569c/full43624481615.
