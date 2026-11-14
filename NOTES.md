@@ -2,6 +2,18 @@
 
 ## CURRENT: APPLE LAUNCHD MAIN PROVEN ON FULL UFS ROOT; BOOT RESTORED
 
+FSCK CANDIDATE READY, PREPARING TRIAL V5: exact kernel3808e55a...ccfad87
+passed QEMU3entry/7PID1heartbeats; planv4 complete-masterhash0f4...312149PASS.
+Candidatehardwarev6 SHA1c78fb373e62da0168026236da698ba8bc2020f768a826f4d7fc0cdc895f9d2e.
+User AGAIN confirmed besidephone/ready. Installpreflight underway, receipt
+backup/a52q/ios-ufs-v5/receipt.json determines actual restore state. Combinedshell
+starts hidden research/watch_ios_ufs_v5_restore.py automatically afterinstall.
+IMPORTANT: v5 watcher/install logs are on C in backup/a52q/ios-ufs-v5/{install,
+watcher,watcher.err}.log, so E-drive loss cannot lose restoration logs.
+Consolev4 archived byteexact efdba52d...05ce8,42480bytes, then RAMrecordunlinked.
+Privatehelper nowuses ios-root-plan-v4.json. No new root/var writes; BOOTonly.
+Do not ask3minreset until actualreboot confirmed. RestoreoriginalBOOT afterTWRP.
+
 AMFI-only build43627967750/sourcef4ab8f8 PASS and verified against fullbase
 43624481615/a46569c. Kernel3808e55ac77a2a969fb9c622c54621f0c3acd34a698bdadb0963a9f6bccfad87,
 implementation54d4796b8b2571ac37fa85b7e5f37ba7f55e87c88f212f89f9a09f8bd6c78a50.

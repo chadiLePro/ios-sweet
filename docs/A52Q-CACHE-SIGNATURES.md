@@ -144,5 +144,7 @@ local development platform boot task, only on the same read-only full A52 root.
 It grants no entitlements and makes no Apple CMS trust claim. The cache policy
 continues to grant no platform status. Native tests reject changed/unapproved
 hashes, writable/unrelated mounts, entitlement blobs and missing/invalid signatures.
-Kernel-only build 43627967750 is pending; no root filesystem change is required.
+Kernel-only build 43627967750 succeeded; source/kernel hashes and its QEMU
+diagnostic baseline passed. Candidate 1c78fb37...5f9d2e is ready for the next
+BOOT-only phone trial; no root filesystem change is required.
 Original BOOT was restored and freshly hash-verified after the fourth trial.
