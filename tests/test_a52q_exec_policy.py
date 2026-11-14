@@ -22,6 +22,8 @@ class ExecPolicyTests(unittest.TestCase):
         report = json.loads((root / 'xnu/a52q/ios16-20H392-cache-pins.json').read_text())
         pins = [bytes.fromhex(d['cdhash']) for f in report['files'] for d in f['code_directories']]
         entries = ',\n'.join('{' + ','.join(str(b) for b in pin) + '}' for pin in pins)
+        boot_pin = json.loads((root / 'xnu/a52q/ios16-20H392-boot-task-pin.json').read_text())
+        fsck_bytes = bytes.fromhex(boot_pin['directories'][0]['cdhash'])
         prefix = r'''
 #include <stdint.h>
 #include <string.h>
@@ -31,6 +33,7 @@ typedef int kern_return_t;
 #define CS_CDHASH_LEN 20
 #define CS_ADHOC 2
 #define CS_VALID 1
+#define CS_PLATFORM_BINARY 0x04000000
 #define MNT_RDONLY 1
 #define MNT_ROOTFS 0x4000
 #define VREG 1
@@ -40,12 +43,15 @@ typedef int kern_return_t;
 struct cs_blob {
  uint32_t csb_flags;
  uint8_t csb_cdhash[20];
+ struct fake_vnode *csb_vnode;
+ int csb_platform_binary;
  void *csb_entitlements, *csb_entitlements_blob, *csb_der_entitlements_blob;
 };
 struct fake_mount { uint64_t flags; };
 typedef struct fake_mount *mount_t;
 struct fake_vnode { mount_t mount; int type; struct cs_blob *blob; };
 typedef struct fake_vnode *vnode_t;
+vnode_t rootvnode;
 static mount_t vnode_mount(vnode_t vp) { return vp->mount; }
 static uint64_t vfs_flags(mount_t mp) { return mp->flags; }
 static int vnode_vtype(vnode_t vp) { return vp->type; }
@@ -64,6 +70,7 @@ int main(void) {
   memset(&blob, 0, sizeof(blob)); memcpy(blob.csb_cdhash, expected[i], 20);
   full_root=1;
   assert(a52q_without_monitor(NULL, &blob) == KERN_SUCCESS);
+  assert(!(blob.csb_flags & CS_PLATFORM_BINARY) && !blob.csb_platform_binary);
   for (unsigned byte=0; byte<20; byte++) {
    blob.csb_cdhash[byte]^=1;
    assert(a52q_without_monitor(NULL, &blob) == KERN_DENIED);
@@ -102,10 +109,35 @@ int main(void) {
   assert(!a52q_cache_root_mapping_allowed(NULL, &root));
   assert(!a52q_cache_root_mapping_allowed(&cache, NULL));
  }
+ /* The one observed boot task gets an explicit local development class. */
+ struct fake_mount ro = {MNT_RDONLY | MNT_ROOTFS}, other = {MNT_RDONLY | MNT_ROOTFS};
+ struct fake_vnode root = {&ro, 2, NULL}, task = {&ro, VREG, &blob};
+ static const uint8_t fsck[20] = {BOOT_TASK_EXPECTED};
+ rootvnode=&root; full_root=1;
+ memset(&blob,0,sizeof(blob)); memcpy(blob.csb_cdhash,fsck,20);
+ blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_vnode=&task;
+ assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
+ assert(blob.csb_platform_binary && (blob.csb_flags & CS_PLATFORM_BINARY));
+ for (unsigned byte=0; byte<20; byte++) {
+  blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_platform_binary=0;
+  blob.csb_cdhash[byte]^=1;
+  assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+  assert(!blob.csb_platform_binary && !(blob.csb_flags & CS_PLATFORM_BINARY));
+  blob.csb_cdhash[byte]^=1;
+ }
+ full_root=0; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); full_root=1;
+ ro.flags=MNT_ROOTFS; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+ ro.flags=MNT_RDONLY | MNT_ROOTFS;
+ task.mount=&other; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); task.mount=&ro;
+ blob.csb_entitlements_blob=(void*)1; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+ blob.csb_entitlements_blob=NULL; blob.csb_flags=CS_ADHOC;
+ assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+ blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_vnode=NULL;
+ assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  puts("PASS: exact kernel policy, all 44 cache pins and 880 changed hashes");
  return 0;
 }
-'''.replace('EXPECTED', entries)
+'''.replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'policy.c'; path.write_text(prefix + function + body)
             executable = Path(directory) / ('policy.exe' if os.name == 'nt' else 'policy')

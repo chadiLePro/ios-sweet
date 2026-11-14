@@ -1,5 +1,6 @@
 /* Minimal bring-up interface for XNU's unconditional AMFI query callers.
- * No entitlements, platform binaries, trust caches or Apple validation service.
+ * No entitlements, trust caches or Apple validation service. The exact fsck
+ * boot task has an explicit local development platform classification only.
  * Diagnostic mode permits only our exact entitlement-free ad-hoc init.
  * The separate full UFS root may also attempt the two audited 20H392 launch
  * executables and the audited entitlement-free shared caches below. Entitlement queries fail;
@@ -160,17 +161,22 @@ static int a52q_cache_pin_index(const struct cs_blob *blob)
     return -1;
 }
 
+static int a52q_readonly_root_vnode(vnode_t vp, vnode_t root)
+{
+    extern int a52q_ufs_root_named(const char *name);
+    if (!vp || !root || !a52q_ufs_root_named("a52ios0")) return 0;
+    mount_t mp = vnode_mount(vp);
+    return mp && mp == vnode_mount(root) && vnode_vtype(vp) == VREG &&
+        (vfs_flags(mp) & (MNT_RDONLY | MNT_ROOTFS)) == (MNT_RDONLY | MNT_ROOTFS);
+}
+
 /* Called only for a missing SF_RESTRICTED flag, after root ownership checks.
  * Registered CodeDirectory identity + the actual RO root mount replace that
  * one missing filesystem flag. Ordinary range/page checks run afterwards. */
 int a52q_cache_root_mapping_allowed(vnode_t vp, vnode_t root);
 int a52q_cache_root_mapping_allowed(vnode_t vp, vnode_t root)
 {
-    extern int a52q_ufs_root_named(const char *name);
-    if (!vp || !root || !a52q_ufs_root_named("a52ios0")) return 0;
-    mount_t mp = vnode_mount(vp);
-    if (!mp || mp != vnode_mount(root) || vnode_vtype(vp) != VREG ||
-        (vfs_flags(mp) & (MNT_RDONLY | MNT_ROOTFS)) != (MNT_RDONLY | MNT_ROOTFS)) return 0;
+    if (!a52q_readonly_root_vnode(vp, root)) return 0;
     struct cs_blob *blob = csvnode_get_blob(vp, 0);
     if (!blob || !(blob->csb_flags & CS_VALID) || a52q_cache_pin_index(blob) < 0) return 0;
     printf("A52Q shared cache: pinned signature on read-only root; SIP flag exception only\n");
@@ -192,6 +198,25 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
          0xc6,0x93,0x01,0x1d,0x4d,0x99,0x7a,0x86,0x9d,0x2a}
     };
     if (blob && !ent && a52q_ufs_root_named("a52ios0")) {
+        /* Actual launchd boot task checks CS_OPS_STATUS bit26. This exact
+         * entitlement-free fsck was read from the unchanged validated master,
+         * compared with staged source and all13 code pages verified. This is
+         * an explicit local development classification, NOT Apple CMS trust.
+         * No other executable/cache receives platform status or entitlements. */
+        static const uint8_t fsck_pin[CS_CDHASH_LEN] = {
+            0xe1,0xa3,0xf1,0x2f,0xb8,0xbe,0x72,0xd6,0xe9,0xa4,
+            0xe4,0x17,0x8e,0xbe,0x15,0x25,0x13,0xbc,0x59,0x9a
+        };
+        extern vnode_t rootvnode;
+        if ((blob->csb_flags & CS_VALID) && !blob->csb_entitlements &&
+            !blob->csb_entitlements_blob && !blob->csb_der_entitlements_blob &&
+            !memcmp(blob->csb_cdhash, fsck_pin, sizeof(fsck_pin)) &&
+            a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) {
+            blob->csb_flags |= CS_PLATFORM_BINARY;
+            blob->csb_platform_binary = 1;
+            printf("A52Q boot policy: exact 20H392 fsck admitted as local development platform task; no entitlements\n");
+            return KERN_SUCCESS;
+        }
         for (unsigned i = 0; i < 2; i++) {
             if (!memcmp(blob->csb_cdhash, apple_pins[i], CS_CDHASH_LEN)) {
                 printf("A52Q exec policy: pinned 20H392 %s accepted; entitlements UNAVAILABLE, not an execution proof\n",

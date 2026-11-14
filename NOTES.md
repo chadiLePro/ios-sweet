@@ -1,6 +1,41 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## CURRENT: APPLE LAUNCHD MAIN PROVEN ON FULL UFS ROOT; BOOT RESTORED
+
+Next fsck policy prepared: exact master /sbin/fsck fileSHA1aaf55052561aaf1214cd7d65924c46d39b1ef325e37c1faeaa76769612e59ce
+matches native staged-final-v6/os/sbin/fsck.13signed4KiBpages PASS, CDhash
+e1a3f12fb8be72d6e9a4e4178ebe152513bc599a,no XML/DERentitlements. Actuallaunchd
+csops stub0x50d70 called0x3feac withSTATUS0; cbnzerror/tbzbit26 ->panic0x400d8.
+Kernel CS_OPS_STATUS uses csb_platform_binary. New AMFI-only policy admits exact
+fsck only with CS_VALID, no entitlement blobs, on same RO rootmount; assigns
+explicit LOCAL DEVELOPMENT platform classification (NOT Apple CMS trust).
+No other executables/cache gainplatform status. Newnative tests reject20changed
+fsckhashes,RW/wrongmount,missing/invalidsignature,entblob;115PythonPASS.
+Needs isolated AMFI rebuild from full43624481615/sourcea46569c (overlay unchanged).
+This supersedes earlier blanket 'no platform classification' history forfsck ONLY.
+
+V4 mapping trial finished; receipt backup/a52q/ios-ufs-v4/receipt.json
+requires_restore=false,original_boot_restored=true,protected hashes unchanged.
+Fresh device BOOT SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Console contains THREE intact kern.initproc_spawned=1 main markers, actual Apple
+launchd 'hello'/Darwin Bootstrapper7.0.0 banner, system created/ondemand. This
+proves early Apple launchd MAIN from full16GiB UFS image, NOT services or UI.
+First next error: fsck signature denied (check_signature error1/proc2error4),
+then launchd userspace panic 'boot task is not a platform binary (fsck, /sbin/fsck)'.
+Main code actualLC_MAIN0x169b4 references sysctl0x169ec,56bytesin, matchingmarker.
+No graphics/daemon speculation. Next: extract/audit exact master /sbin/fsck,
+compare native stagedsource; trace registration/platform requirement before
+narrow next-policy change. No filesystem rewrite or var install authorized.
+Phone TWRP, no pending restoration. All older ACTIVE/pending entries superseded.
+
 ## A52Q latest — mapping candidate prepared, BOOT preflight in progress
+
+V4 TRIAL ACTIVE: receipt backup/a52q/ios-ufs-v4/receipt.json requires_restore=true,
+original_boot_restored=false. Candidate64a78ada...3cd5ad installed+fullreadback,
+TWRP native System reboot sent. Hidden watcher_v4 is waiting; logs
+E:/A52-iOS16/ios-ufs-v4-watcher*.log. User asked3min thenresetTWRP. Collect console
+and restore original BOOT immediately on recovery return; no Android boot/format.
+The earlier preflight/original-safe statements below are superseded whileactive.
 
 Full HFS build43624481615/sourcea46569c verified71overlayfiles. Kernel09e97749...
 45c3a1. QEMU exactkernel+diagnosticRAMfixture PASS3entry/7heartbeats (not fullUFS).

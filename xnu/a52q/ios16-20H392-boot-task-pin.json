@@ -1,0 +1,26 @@
+{
+  "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
+  "path": "/sbin/fsck",
+  "bytes": 71008,
+  "sha256": "1aaf55052561aaf1214cd7d65924c46d39b1ef325e37c1faeaa76769612e59ce",
+  "staged_source_sha256_matches": true,
+  "directories": [
+    {
+      "slot": 0,
+      "identifier": "com.apple.fsck",
+      "version": "0x20400",
+      "flags": "0x2",
+      "hash_type": 2,
+      "platform": 0,
+      "page_bytes": 4096,
+      "pages": 13,
+      "executable_page_hashes_match": true,
+      "cdhash": "e1a3f12fb8be72d6e9a4e4178ebe152513bc599a"
+    }
+  ],
+  "entitlement_keys": [],
+  "cms_present": true,
+  "cms_trust_authenticated": false,
+  "development_role": "exact local platform boot task; no entitlements; read-only full A52 root only",
+  "scope": "observed fsck boot-task rejection; no other executables admitted"
+}
