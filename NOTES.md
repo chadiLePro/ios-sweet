@@ -2,6 +2,14 @@
 
 ## A52Q active handoff — cache candidate prepared, 2026-11-14
 
+TRIAL v3 ACTIVE: backup/a52q/ios-ufs-v3/receipt.json requires_restore=true.
+Candidate3c6224...69c37 installed/readback; TWRP System reboot sent. Watcher
+research/watch_ios_ufs_v3_restore.py is waiting; logs E:/A52-iOS16/ios-ufs-v3-watcher*.log.
+User requested3minreset. Restore original BOOT immediately on TWRP return.
+Live pstore was ALREADY absent at preflight (no unlink this turn); last collected
+v2 console preserved verbatim in v3/pretrial-console-archived.bin and proof.
+The historical NO restore pending statement below is superseded duringtrial.
+
 NO BOOT restore pending. Full root remains installed/read-only; never run Android
 control or format data. All 44 original cache SHA256 checks and 202,845 16-KiB
 CodeDirectory page hashes PASS (3,330,359,296 bytes); format v0x20400/SHA256,
