@@ -24,7 +24,7 @@ validated native staging cache; sysctl string0x1946faff6, code0x1946e2a24/2a5c;
 entrystride236, offsets0/32/96/128/192/freq224/pass228/trailing4zero. Cache read-only
 audit E:/A52-iOS16/cache-fstab-audit-v1. Exact Apple source confirms missingfstab
 synthesizes RWroot; diskdev_cmds701.100.2 mount then triesRO->RWupgrade. Newcallback
-advertises actual /dev/a52ios0 / hfs ro, pass1, requires matchingrootdev/MNT_ROOTFS/
+advertises the actual mounted-source alias / hfs ro, pass1, requires matchingrootdev/MNT_ROOTFS/
 MNT_RDONLY/HFS, denieswrite/otherroots. Native actual-body callback checks PASS;
 both overlays apply to actual81patchsource,73files. Requires NEW fullkernelbuild.
 No mount_hfs pin added. Do not weaken RO driver.
@@ -34,8 +34,22 @@ and mount ismounted() compares exact statfs names. Publishing /dev/a52ios0 would
 not skip the mounted root. Callback now copies actual bounded f_mntfromname and
 requires actual f_mntonname=/, retaining verifieddevice/RO/HFS guards. Native test
 covers initialalias, laterrealdevicepath, long/empty names andwrongmountpath.
-Build43642823797/source738da8b is superseded before any phone trial; replace with
-new fullHFSbuild for this corrected callback. No phone writes have occurred.
+Build43642823797/source738da8b was cancelled/superseded before any phone trial.
+Corrected full HFS build43643720989/source67f6d6bd63ecd0bab0c42eec93fb40f7fe360780
+is RUNNING. HostCI43643720945 failed only because Linux C11 hid strnlen in the
+native fixture; reproduced stderr in WSL, enabled POSIX2008 for that fixture,
+passed on Linux/Windows, committed99a8ede. HostCI43643867819 SUCCESS (120tests).
+No kernel change in that test fix. Fresh phone BOOT SHA matched d6bf...4b016
+again at22:33; phone recovery. Fresh hashes of the 3 source cache files supplying
+the measured Libinfo segments match original validated cache checksums.
+
+Prepared private host runner research/prepare_bootfs_artifacts.py will verify
+new kernel QEMU(positive diagnosticRAMfixture), stream-rehash full master into
+root-plan-v7, and package hardware-v9 with localmanifest. No phone writes there.
+Prepared readiness-gated research/start_bootfs_trial.py archives console in C:
+and invokes BOOT-only install, then starts research/watch_ios_ufs_v11_restore.py
+with C: backup/a52q/ios-ufs-v11 logging/receipt. NONE started yet. Private helper
+now expects plan-v7 and explicit --local-boot-manifest; restore has no E:dependency.
 Opt-in --local-boot-manifest now computes SHA384 of canonical sortedASCIIcompact
 JSON with exactkernel/root/liveDTB SHA256, target/format/unsealedtrustlabel. Both
 hash and explicitlocaldocument embeddedchosen, validationrecomputesfrommeasurements
