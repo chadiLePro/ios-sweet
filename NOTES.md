@@ -1,15 +1,17 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## Active A52 handoff: fsck executed; V10 mount trial preflight
+## Active A52 handoff: V10 mount trial running — BOOT restoration required
 
-The phone is in TWRP with original BOOT restored. The last trial receipt,
-`backup/a52q/ios-ufs-v9/receipt.json`, has `requires_restore=false` and
-`original_boot_restored=true`. A fresh phone readback matched
-`d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016`.
-V10 installation preflight is now running after the user confirmed readiness.
-The authoritative state is `backup/a52q/ios-ufs-v10/receipt.json`: once it says
-`requires_restore=true`, restore BOOT on recovery return. Native reboot and
-watcher startup are combined in the install shell. The user is beside the phone.
+V10 BOOT candidate 5811579a...ac33ba was installed with full readback. Native
+`/system/bin/reboot adb` left recovery, and the C: restoration watcher is active.
+The authoritative receipt `backup/a52q/ios-ufs-v10/receipt.json` currently has
+`requires_restore=true` and `original_boot_restored=false`. The user was asked
+to wait five minutes then return to TWRP, or leave recovery open if it returns
+itself. Collect the log and restore original BOOT immediately on return; verify
+full SHA256 d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+C: logs are in backup/a52q/ios-ufs-v10/{install,watcher,watcher.err}.log. The user
+confirmed readiness. No root/var/other partition write or format is included.
+The preceding V9 restoration was verified; it is historical during this trial.
 
 V9 retained three Apple launchd-main markers. Apple's fsck executed and printed
 `not booting main or diagnostic OS. Skipping fsck on OS container`; it did NOT
