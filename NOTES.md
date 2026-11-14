@@ -1,5 +1,25 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## CURRENT — USER RETURNED; V9 SIGNED-FSCK PREFLIGHT RUNNING
+
+V9 ACTIVE NOW: candidate2bb055df...e34dae installed/fullreadbackverified,
+/system/bin/reboot adb sent, recoveryUSBdepartureconfirmed. Receiptrequires_restore=true,
+original_boot_restored=false. WatcherV9waitingonC:backup/a52q/ios-ufs-v9/watcher*.log.
+UseraskedFIVEminutesthenresetTWRP (orleaveifitreturnsitself). Collectlogsandrestore
+originalBOOPhashimmediatelyonreturn. No current 'safe/no pending' statementbelow
+applieswhileV9active. Receiptisdefinitive. No root/var/otherpartitionwrite.
+
+User explicitly 'im back', revoking temporary hardware hold. PhoneconfirmedTWRP,
+a52q/bootloaderA525FXXSCFYF1, freshoriginalBOOPhashd6bf...4b016 beforetrial.
+V9 installpreflightrunning. Authoritative receiptbackup/a52q/ios-ufs-v9/receipt.json
+willmarkrequires_restore=true onlyafterwrite. Candidatehardwarev7 SHA2bb055df...
+e34dae/kernelb238ddc5...28eb3d/rootplanv5. Native --native-reboot MUST remain
+/system/bin/reboot adb. Automatic watcherV9C: logs inbackup/a52q/ios-ufs-v9.
+Beforeactualreboot noresetprompt; afterdepartureaskFIVEminutes thenTWRP, orif
+TWRPreturnsitselfleaveopen. Collect/restoreoriginalBOOPhashimmediatelyonreturn.
+No userdata/root/varwrites orformat. OldRAMconsolearchivedbyteexactthenrecord
+unlinked; proofinV9folder. Priorawayholdbelowissupersededbyuserreturn.
+
 ## CURRENT — USER AWAY: HOLD ALL PHONE TRIALS; ORIGINAL BOOT VERIFIED
 
 User says notnearcomputer/cannot testnow. Do NOT flash or reboot phone untiluser
