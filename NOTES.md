@@ -2,6 +2,21 @@
 
 ## CURRENT: V8 BOOT RESTORED; FSCK STATUS BLOCKER TRACED TO CS_SIGNED
 
+NextAMFIbuild43632122116/source92eede2 PASS, verifiedbasea46569c/full43624481615.
+Kernelb238ddc535b0eec0d9d47c3d10e4d76ee061e1544a6984a5526aff218828eb3d,
+AMFIimplementation8e32b8f2ed13acb69e3e05e0f51a76f7594e39e8c5ac314d2a355603b1f0caf0.
+HostCI43632121862 PASS; redundantautofull43632121916 canceled. QEMU/newmasterplanv5
+running. Prepared research/prepare_fsck_signed_candidate.py ->hardwarev7 and
+watch_ios_ufs_v9_restore.py ->receiptios-ufs-v9, notinstalled. Reboot MUST native
+--native-reboot explicitadbnormalreason; privatehelper currentlyusesplanv4,
+update toplanv5 beforeinstall oncecandidatepackaged. No restorependingnow.
+
+Additionalreadonlyhostauditmaster-next-boot-files-v1: /sbin/mount SHAac55c4c7...
+2364df,18signed4Kpages,entitlementsXML+DERpresent. hfs.fs/fsck_hfs SHAb90942e8...
+6520cc,66signed4Kpages,entitlementsXML+DERpresent. BothmatchnativeOSstagedsource.
+TheseareAUDITED ONLY; no newpins/admission or entitlementhandlingimplemented.
+Onlyextendafteractualobservedfailure. WSLownbuilddistroterminatedafterread.
+
 V8 native '/system/bin/reboot adb' normal reason WORKED: changedkernelbootID,
 3CRCentry frames,3CRCrootframes, THREE launchd-mainmarkers. PreviousTWRProute
 problemsresolvedforthistrial. OriginalBOOTrestored andfreshphoneSHA d6bf0307...

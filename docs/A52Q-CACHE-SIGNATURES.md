@@ -168,3 +168,19 @@ normal boot explicitly. The next unchanged-candidate trial uses that supported
 reason. This is a source-based hypothesis pending fresh XNU-entry evidence,
 not a claim that the fsck policy passed. No raw PMIC, GPT or filesystem write
 was added. Source: [pinned Samsung restart policy](https://github.com/LineageOS/android_kernel_samsung_sm7125/blob/f6bbda4e5986f09e4d51ceffd1b645b2d5aa75b4/drivers/samsung/debug/sec_debug.c#L337).
+
+The explicit Samsung `adb` reason then reached XNU: a changed recovery boot ID,
+three valid entry frames, three root-window frames and three Apple launchd-main
+markers survived. BOOT was restored and its full hash matched. Fsck registration
+now passes with flags 0x04000003, but launchd still rejects its platform status.
+
+The missing contract is CS_SIGNED (0x20000000). kern_exec propagates that flag
+to the process, and kern_cs.c::csproc_get_blob returns NULL without it. Therefore
+CS_OPS_STATUS cannot inspect the registered blob's platform field. Existing
+Redmi patch 0036 documents the same dependency. The next narrow change adds
+CS_SIGNED only in the already verified fsck branch; other executable/cache
+pins, entitlement denials and page enforcement remain unchanged. The native
+policy regression check now requires this process-status visibility, while
+retaining changed/unapproved hash rejection. Build 43632122116/source 92eede2
+passed; its new kernel is b238ddc535b0eec0d9d47c3d10e4d76ee061e1544a6984a5526aff218828eb3d.
+Physical fsck execution remains unproven; no root filesystem edit was made.
