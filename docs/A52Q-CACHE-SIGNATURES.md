@@ -148,3 +148,14 @@ Kernel-only build 43627967750 succeeded; source/kernel hashes and its QEMU
 diagnostic baseline passed. Candidate 1c78fb37...5f9d2e is ready for the next
 BOOT-only phone trial; no root filesystem change is required.
 Original BOOT was restored and freshly hash-verified after the fourth trial.
+
+The first fsck-policy phone capture ended after CPU self-SGI initialization,
+without root or fsck records, despite the user's three-minute wait. It is
+inconclusive for the new policy. An immediate repeat produced no XNU log;
+TWRP's log and unchanged Linux boot ID/uptime show that its GUI reboot path
+restarted the recovery process rather than the kernel. Both trials restored
+original BOOT. The private runner now requires recovery USB departure and
+records Linux boot identity, using the installed native reboot command to
+bypass that GUI path. A longer unchanged-candidate trial is pending. None of
+these incomplete attempts proves fsck execution or invalidates the earlier
+Apple launchd-main result.

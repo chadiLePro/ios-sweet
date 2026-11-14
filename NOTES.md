@@ -1,5 +1,50 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## LATEST: V6 DID NOT REBOOT LINUX; V7 NATIVE-REBOOT PREFLIGHT
+
+V7 ACTIVE NOW: candidate1c78fb37...5f9d2e readbackverified, native/system/bin/reboot
+sent, reboot_disconnect_observed=true (ADBsocketclosed, expectedCalledProcessError).
+Receipt backup/a52q/ios-ufs-v7/receipt.json requires_restore=true. Watcherv7active
+onC:backup/a52q/ios-ufs-v7/watcher*.log. UseraskedFIVEminutes thenresetTWRP.
+RestoreoriginalBOOTimmediatelyonreturn; capturebootIDinsidefinally-protectedflow.
+No currentrestorepending statementsbelow applywhileV7active. Receiptdefinitive.
+
+V6 returned immediately with no pstore log (65-byte cat error, NOT kerneldata).
+BOOT automatically restored/hashverified; no restorepending forV6. TWRP log
+shows CLI 'reboot system', DRM pageflip failure then TWRP UI processrestart.
+Linux boot_id d112... remainedsame, uptime~500s whileV6attemptjustended. This
+proves V6 didNOT rebootLinux; NOT evidence of fsck or XNU failure. User unsure
+what occurred. Original BOOT freshSHA matched afterV6. V5earlycapture inconclusive.
+
+Private research/a52q_xnu_device_test.py now supports --native-reboot using the
+actual /system/bin/reboot binary (property_set sys.powerctl, no TWRP GUI).
+Requires recovery USB departure <=30s or restores original BOOT immediately;
+records pre/post LinuxbootID, kernel_reboot_confirmed on return. Boot-IDcapture
+is inside restoration try/finally, so its failure cannot skipBOOTrestore. Exact
+observer hosttests PASS: unchangedRecovery rejected, disconnect accepted.
+No XNU/AMFIfunctionalcodechanged forretries. V7 preflightcurrentlyrunning,
+receiptbackup/a52q/ios-ufs-v7/receipt.json isdefinitiveforrestorepending.
+C: logs install.log/watcher.log/watcher.err.log inthatdirectory. Hiddenwatcher
+research/watch_ios_ufs_v7_restore.py startsafterinstall. Samekernel3808e55a...
+ccfad87/candidate1c78fb37...5f9d2e/planv4. AskFIVE-minute reset onlyafteractual
+USBdeparture. Userrecentlyactive/phoneinTWRP. No Androidboot/format/rootwrite.
+
+## CURRENT: V5 RESTORED; IDENTICAL FSCK CANDIDATE V6 FIVE-MINUTE PREFLIGHT
+
+V5 receipt requires_restore=false/original_boot_restored=true, full freshphone
+SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Saved console8326bytes,3validentry copies, ends atCPUselfSGIdelivered. NO root/UFS
+or fsck evidence in this capture. Userconfirmed3minonSamsungSplash,noautoreboot.
+Previous ApplelaunchdMAIN remainsproven byV4; V5 does NOT provefsckexecution.
+No functionalcodechanged for this unexplained earlycapture. SamecheckedBOOT
+1c78fb37...5f9d2e (kernel3808e55a...ccfad87) retry plannedFIVEminutes tocheck
+lateprogress/reproducibility. V6 installpreflightrunning; authoritative receipt
+backup/a52q/ios-ufs-v6/receipt.json willmarkrestorependingafterwrite. C: watcher
+logs inthatdirectory; research/watch_ios_ufs_v6_restore.py startsautomatically
+wheninstallends. Oldconsole+pmsgarchivedprivatebeforeconsoleRAMrecordunlink.
+Afteractualreboot askFIVEminreset, not3min. Ifsameearlystop, compareknown-good
+V4kernel09e beforechanging fsck code. No Android boot/format or new rootwrite.
+
 ## CURRENT: APPLE LAUNCHD MAIN PROVEN; V5 ACTIVE, BOOT RESTORATION REQUIRED
 
 V5 FSCK TRIAL ACTIVE NOW: backup/a52q/ios-ufs-v5/receipt.json requires_restore=true,
