@@ -2,6 +2,11 @@
 
 ## A52Q active handoff — cache candidate prepared, 2026-11-14
 
+FULL HFS BUILD43624481615/sourcea46569c is running. HostCI43624481552 PASS.
+71-file overlay applied/checks PASS; mapping native negatives PASS,115Python tests.
+Prepared research/prepare_cache_mapping_qemu.py / prepare_cache_mapping_candidate.py;
+next planv3/candidatehardwarev5/receiptios-ufs-v4/watcherv4, none installed yet.
+
 V3 TRIAL FINISHED: ORIGINAL BOOT RESTORED and fresh phone SHA matched
  d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
 Receipt requires_restore=false, protected hashes unchanged, phone TWRP.

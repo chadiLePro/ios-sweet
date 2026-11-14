@@ -65,9 +65,42 @@ The exact kernel passed the small diagnostic RAM-root QEMU fixture. QEMU does
 not emulate this Samsung UFS root. BOOT candidate SHA256 is
 3c6224d3b9ca65e6cb98ab2fe94484ca5ae97fac1f76041ba3634654a4d69c37.
 It keeps the previous ignition settings and adds only cache policy plus CS
-logging. Physical cache-registration and launchd-main results are pending.
+logging. The physical registration result is recorded below; launchd main remains unproven.
 
 A successful allowlist callback is not itself successful registration. Require
 the post-attachment CODE SIGNING log for cache files, then distinct evidence
 of Apple launchd reaching main. Userland services and a visible SpringBoard
 lock screen remain separate, later milestones.
+
+## Physical result: cache registration passed; mapping rejected
+
+The third full-root trial retained 35 intact post-attachment CODE SIGNING lines,
+plus damaged lines kept verbatim, through .42.dyldlinkedit. The .symbols companion
+is audited but not requested by this loader. Dyld progressed to its shared-region
+mapping syscall. Registration is therefore demonstrated on the actual A52;
+this is stronger evidence than an allowlist acceptance message alone.
+
+The next intact error is:
+
+```text
+dyld cache '(null)' not loaded: syscall to map cache into shared region failed
+initproc failed to start
+```
+
+The preceding shared_region diagnostic identifies a missing SIP-protected vnode
+flag. The pinned kernel source returns EPERM at its SF_RESTRICTED check. BSD
+flags were not preserved by filesystem staging. The next A52-only patch permits
+that one missing flag only for an already registered, valid, approved cache
+CodeDirectory on the same read-only root mount. Root ownership checks remain
+before it; normal cache-directory, signature-range and page checks remain after
+it. No CSR boot argument, trust-cache success or general code-signing exemption
+is introduced. Unknown/modified pins, unrelated/writable mounts, non-root
+mounts, non-regular files and missing/invalid signatures fail the native harness.
+
+The overlay also observes the existing PID1-only kern.initproc_spawned write,
+which XNU documents as launchd reaching main. The actual launchd binary contains
+that sysctl name. Logging does not set it or launch any program.
+
+Full HFS build 43624481615/source a46569c is pending. Original BOOT was restored
+and freshly read back as d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016;
+recovery, DTBO and vbmeta were unchanged. The root image was not rewritten.
