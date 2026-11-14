@@ -4,7 +4,8 @@ Current physical milestone (2026-11-14): Apple dyld/libignition execute from the
 installed read-only UFS filesystem, and shared-cache signature registration
 succeeds. The exact-cache read-only-root exception also passed mapping, and
 three kern.initproc_spawned markers plus Apple startup banners prove launchd main.
-The next rejected boot task is /sbin/fsck. Services and SpringBoard remain unproven. Original BOOT is
+Apple fsck now executes, skips its OS-container check, and advances to the
+next rejected task, mount-phase-1 (/sbin/mount). Services and SpringBoard remain unproven. Original BOOT is
 restored and freshly hash-verified. No root rewrite was needed for the cache fix.
 
 All 44 cache files and their 202,845 signed pages passed checksum/hash validation.

@@ -192,3 +192,33 @@ The full master rehash still matches 0f4bcaa7...312149. This candidate is packag
 only and has not been flashed: phone trials are on hold while the user is away.
 Original BOOT remains restored and freshly hash-verified; no restoration is
 pending. Apple fsck execution, services and SpringBoard remain unproven.
+
+## Physical result: Apple fsck executed; mount-phase-1 rejected
+
+V9 retained three launchd-main markers and Apple's own fsck message:
+
+```text
+fsck: not booting main or diagnostic OS. Skipping fsck on OS container
+```
+
+Launchd then started mount-phase-1 and its `/sbin/mount` signature was rejected.
+Thus fsck execution is proven, but an Apple OS-container integrity check,
+persistent userland services and SpringBoard are not. Original BOOT was restored
+and freshly hash-verified, with protected partition hashes unchanged.
+
+The exact master mount binary matches staged source; all 18 signed pages and
+both signed entitlement slots pass. XML is 472 bytes and DER is 222 bytes. The
+next policy pins only this observed executable, validates both slots using the
+existing XNU APIs, and retains the original blobs without creating a context or
+granting AMFI privileges. Raw signed metadata remains readable through CSOPS;
+this must not be confused with a successful kernel authorization query.
+The host auditor rejects changed XML and DER content, independently of code-page
+checks. Kernel build 43637854082 and all 116 host tests passed. Physical mount
+execution is pending; the root image remains unchanged and read-only.
+
+The mount-policy kernel passed its exact-kernel diagnostic QEMU baseline
+(three entry frames, seven heartbeats); the entire master hash was rechecked.
+BOOT candidate SHA256:
+5811579a9b4075b1ec87a65c156e425d60974d56470e5be7347dfc43ffac33ba.
+The user confirmed readiness for its BOOT-only phone test. This preparation
+still does not establish mount execution or services on the phone.

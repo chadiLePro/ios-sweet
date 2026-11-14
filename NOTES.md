@@ -1,5 +1,64 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## Active A52 handoff: fsck executed; V10 mount trial preflight
+
+The phone is in TWRP with original BOOT restored. The last trial receipt,
+`backup/a52q/ios-ufs-v9/receipt.json`, has `requires_restore=false` and
+`original_boot_restored=true`. A fresh phone readback matched
+`d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016`.
+V10 installation preflight is now running after the user confirmed readiness.
+The authoritative state is `backup/a52q/ios-ufs-v10/receipt.json`: once it says
+`requires_restore=true`, restore BOOT on recovery return. Native reboot and
+watcher startup are combined in the install shell. The user is beside the phone.
+
+V9 retained three Apple launchd-main markers. Apple's fsck executed and printed
+`not booting main or diagnostic OS. Skipping fsck on OS container`; it did NOT
+perform an OS-container integrity check. Launchd advanced to mount-phase-1,
+where `/sbin/mount` was rejected by the signature policy. Apple persistent
+services and a visible SpringBoard lock screen remain unproven.
+
+The next A52-only policy admits the exact measured mount CD hash, requires the
+same read-only root mount, and validates its XML/DER special-slot hashes with
+XNU's existing `csblob_get_entitlements` and `csblob_get_der_entitlements` APIs.
+The original signed blobs stay as metadata and may be read via CSOPS; AMFI
+privilege queries remain denied. No entitlement context or privilege is granted.
+The already verified fsck/cache guards remain. Do not add other executable pins
+without an observed failure and source/content audit.
+
+Build 43637854082, source 791b0a763a9753b7ca77f0917bd0b41552e4b017, passed.
+Kernel SHA256: dc062e2146534886552e35d9c308d57fcec310c9b76494922b6d1879588eb7d3.
+AMFI implementation: bdc6d1de71c025bf6484aff0999ef9447e04f006e542a07b8407795808fedc08.
+Host CI 43637853970 and 116 local Python tests passed; the original 81 patches
+are intact. The redundant automatic full build 43637853977 was canceled.
+Exact-kernel diagnostic QEMU passed (three entry frames, seven diagnostic
+heartbeats); the complete master hash matched 0f4bcaa7...312149 and plan-v6 is
+ready. QEMU does not emulate the full iOS UFS root. The prepared hardware-v8
+BOOT image hash is 5811579a9b4075b1ec87a65c156e425d60974d56470e5be7347dfc43ffac33ba.
+
+Next host script: `research/prepare_mount_candidate.py`, output hardware-v8.
+Trial receipt: `backup/a52q/ios-ufs-v10/receipt.json`.
+Watcher: `research/watch_ios_ufs_v10_restore.py`, starts automatically when the
+install leaves recovery. After confirmed departure, ask for five minutes then
+TWRP. The previous RAM console was archived byte-exact before rearming it.
+All installation/watcher logs belong on C: beside the receipt, so E: loss cannot
+interrupt restoration logging. The private helper now references root-plan-v6 for this candidate. Use `--native-reboot`, which must call
+`/system/bin/reboot adb`: generic no-argument reboot requests `shell`, which
+retained recovery selection; TWRP's GUI reboot can crash when its display sleeps.
+The runner now verifies recovery USB departure and records pre/post boot IDs.
+
+The user authorizes temporary BOOT-only trials with restoration. Announce the
+96 MiB BOOT scope and five-minute reset procedure before each trial. Restore
+original BOOT immediately after TWRP returns, then verify its complete hash.
+Never boot the original Android image as a control: Android userdata was replaced
+by the explicitly approved 16 GiB root installation. Keep GPT/recovery/DTBO/
+vbmeta/metadata/modem/persist unchanged. The installed root and host master stay
+read-only and byte-identical to 0f4bcaa7...312149. No RAM-root substitution.
+A host 4 GiB var image exists but is NOT installed and has no kernel write/mount
+implementation. Any new UFS range write requires its own concrete approval;
+the earlier backup waiver and root-install approval do not authorize it.
+
+## Historical status records (superseded by the active handoff above)
+
 ## CURRENT: V9 RESTORED; APPLE FSCK EXECUTED; MOUNT PIN PREPARED
 
 V9 completed, originalBOOTrestored/freshphoneSHAd6bf...4b016matched; receipt
