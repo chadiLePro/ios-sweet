@@ -1,7 +1,32 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## A52Q latest — mapping candidate prepared, BOOT preflight in progress
+
+Full HFS build43624481615/sourcea46569c verified71overlayfiles. Kernel09e97749...
+45c3a1. QEMU exactkernel+diagnosticRAMfixture PASS3entry/7heartbeats (not fullUFS).
+E: disconnected during masterhash; user reconnected. Restarted completehash,
+planv3 created ONLY after matching0f4bcaa7...312149. Master/root unchanged.
+Candidate shim/out/a52q-ios-ufs-hardware-v5/build/a52q-ios-ufs-UNTESTED.img,
+SHA64a78adae4d4ce7f50264cfabb3d8b1726984c4512f716e3abeb88235c3cd5ad.
+User confirmed besidephone/readiness again. Install helper is in preflight
+(current original BOOT expected); receipt backup/a52q/ios-ufs-v4/receipt.json
+will require restore if BOOT installed. Combined install shell will start hidden
+research/watch_ios_ufs_v4_restore.py automatically after reboot, even if install
+exits with error but receipt requires_restore=true. Logs E:/A52-iOS16/ios-ufs-v4-*.log.
+Old liveRAM console archived byte-exact then unlinked; no partition touched for
+rearm. v4/pretrial-console-archived.bin SHA cff5c70c...ee1d1,34014bytes.
+Announce3minreset ONLY after actualreboot. Do not boot Android or formatuserdata.
+The below v3 ACTIVE/pending history is superseded: v3 BOOT restored, allhashesPASS.
+
 ## A52Q active handoff — cache candidate prepared, 2026-11-14
 
+FULL HFS BUILD43624481615/sourcea46569c PASSED; all71 overlay source hashes
+verified from downloaded buildtree. Kernel09e97749a7856e81c640668665a20de36c21440ee3ea384c3ef13f5aa345c3a1.
+Exact kernel + diagnostic HFS RAM fixture QEMU PASS,3entry/7heartbeats, no full
+UFS emulation. E: disconnected during master rehash, user reconnected; retry
+research tool process is checking entire master again before planv3 packaging.
+Phone TWRP, original BOOT restored, no new phone writes or pending restoration.
+Historical build-running sentence follows for context:
 FULL HFS BUILD43624481615/sourcea46569c is running. HostCI43624481552 PASS.
 71-file overlay applied/checks PASS; mapping native negatives PASS,115Python tests.
 Prepared research/prepare_cache_mapping_qemu.py / prepare_cache_mapping_candidate.py;

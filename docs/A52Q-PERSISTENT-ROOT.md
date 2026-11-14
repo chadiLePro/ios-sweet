@@ -1,5 +1,17 @@
 # A52Q persistent iOS root: preparation and current limits
 
+Current physical milestone (2026-11-14): Apple dyld/libignition execute from the
+installed read-only UFS filesystem, and shared-cache signature registration
+succeeds. Mapping then fails at XNU's missing SF_RESTRICTED/SIP vnode flag check.
+Apple launchd main, services and SpringBoard remain unproven. Original BOOT is
+restored and freshly hash-verified. No root rewrite was needed for the cache fix.
+
+All 44 cache files and their 202,845 signed pages passed checksum/hash validation.
+The exact cache allowlist is restricted to the separate full-root target, with
+no entitlement grants or global signing disable. The next mapping fix and the
+physical evidence are recorded in [cache signature analysis](A52Q-CACHE-SIGNATURES.md).
+The earlier rootauth and platform-gate experiments below are historical stages.
+
 The 2026-11-14 non-journaled BOOT-tail trial retained these lines:
 
 ```text
@@ -21,8 +33,8 @@ the validated master; original BOOT and protected partition hashes matched
 before the trial. The user waived a userdata backup. Android data was overwritten.
 The first XNU full-root trial mounted the volume and accepted the launchd
 CodeDirectory, then killed exec with CS_KILLED in process_signature. Original
-BOOT was restored and its full SHA reverified. Apple user instructions, services
-and SpringBoard have not been demonstrated.
+BOOT was restored and its full SHA reverified. This first trial did not
+demonstrate Apple user instructions, services or SpringBoard.
 
 Retained numeric reason codes disagree between copies. Source inspection
 identifies a deterministic blocker: this shared-XNU build retains the
@@ -31,7 +43,8 @@ PLATFORM_IOS. The DEVELOPMENT tunable unentitled_ios_sim_launch defaults false.
 The full-root-only --ios-exec-development option passes
 unentitled_ios_sim_launch=1 through that existing gate. It bypasses the platform
 no-sandbox requirement without granting entitlements or changing AMFI hash pins
-and code-page checks. The next BOOT-only trial tests this change.
+and code-page checks. The later BOOT-only retry demonstrated Apple loader
+execution through this gate; it did not reach launchd main.
 
 Before another trial, archive and unlink only the previous ramoops console
 record in reserved RAM. Captured evidence is retained; logging stays enabled.
@@ -62,11 +75,12 @@ The main shared-cache header identifies arm64. This establishes format and
 byte consistency, not Apple CMS authentication, entitlement support, a working
 shared-cache mapping, complete syscall compatibility or execution.
 
-The optional full-root execution policy pins only the audited 20H392 launchd
-and dyld CodeDirectories, only while the full UFS root is published. It preserves
+The initial full-root execution policy pinned the audited 20H392 launchd
+and dyld CodeDirectories, only while the full UFS root was published. It preserves
 XNU code-page/structure checks and the diagnostic pin. Entitlement queries still
 deny access; no platform status or Apple AMFI service is fabricated. Other
-executables and the shared cache are not automatically accepted. This is an
+executables are not automatically accepted. The separately audited cache hashes
+have since been added explicitly, as documented above. This is an
 instrumented next-stage experiment, not a policy sufficient for SpringBoard.
 
 The second full-root trial passed the platform gate. Apple dyld/libignition ran

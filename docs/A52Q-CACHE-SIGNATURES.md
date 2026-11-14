@@ -101,6 +101,15 @@ The overlay also observes the existing PID1-only kern.initproc_spawned write,
 which XNU documents as launchd reaching main. The actual launchd binary contains
 that sysctl name. Logging does not set it or launch any program.
 
-Full HFS build 43624481615/source a46569c is pending. Original BOOT was restored
+Full HFS build 43624481615/source a46569c passed. All 71 overlay source hashes
+matched the reviewed source. Kernel SHA256:
+09e97749a7856e81c640668665a20de36c21440ee3ea384c3ef13f5aa345c3a1.
+That kernel passed the diagnostic QEMU baseline (three valid entries and seven
+heartbeats). This does not exercise the full UFS filesystem or Apple cache.
+New BOOT candidate SHA256:
+64a78adae4d4ce7f50264cfabb3d8b1726984c4512f716e3abeb88235c3cd5ad.
+The complete master hash was rechecked after a host-drive disconnect and again
+matched 0f4bcaa7...312149. Physical cache-mapping/main results remain pending.
+The previous trial's Original BOOT was restored
 and freshly read back as d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016;
 recovery, DTBO and vbmeta were unchanged. The root image was not rewritten.
