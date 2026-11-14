@@ -114,6 +114,21 @@ def apply(root, filesystem='mockfs'):
             '        for (unsigned i = 0; i < 3; i++)\n'
             '            printf("A52Q: PID1 set kern.initproc_spawned=1 (launchd main marker)\\n");\n'
             '    }\n#endif\n\treturn error;')
+    # Observed V10: macOS runtime defaults ignore load_code_signature failures,
+    # allowing an unapproved helper to execute. Enable both exec rejection and
+    # VM page enforcement for A52 through its normal early read-only defaults.
+    # CONFIG_ENFORCE_SIGNED_CODE has a separate dylinker-platform contract.
+    replace('bsd/kern/kern_cs.c',
+            '#if CONFIG_ENFORCE_SIGNED_CODE\n#define DEFAULT_CS_SYSTEM_ENFORCEMENT_ENABLE 1',
+            '#if CONFIG_ENFORCE_SIGNED_CODE || defined(ARM64_BOARD_CONFIG_A52Q)\n'
+            '#define DEFAULT_CS_SYSTEM_ENFORCEMENT_ENABLE 1')
+    replace('bsd/kern/kern_cs.c',
+            '\tPE_parse_boot_argn("cs_debug", &cs_debug, sizeof(cs_debug));',
+            '\tPE_parse_boot_argn("cs_debug", &cs_debug, sizeof(cs_debug));\n'
+            '#if defined(ARM64_BOARD_CONFIG_A52Q)\n'
+            '    printf("A52Q signing enforcement: system=%d process=%d\\n",\n'
+            '        cs_system_enforcement_enable, cs_process_enforcement_enable);\n'
+            '#endif')
     root_hook = '''#if defined(ARM64_BOARD_CONFIG_A52Q)
     if (strcmp(rdBootVar, "a52root0") == 0 || strcmp(rdBootVar, "a52ios0") == 0) {
         extern int a52q_ufs_rootdev(dev_t *dev);

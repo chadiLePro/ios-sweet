@@ -245,6 +245,7 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
         }
         for (unsigned i = 0; i < 2; i++) {
             if (!memcmp(blob->csb_cdhash, apple_pins[i], CS_CDHASH_LEN)) {
+                blob->csb_flags |= CS_SIGNED;
                 printf("A52Q exec policy: pinned 20H392 %s accepted; entitlements UNAVAILABLE, not an execution proof\n",
                     i ? "dyld" : "launchd");
                 return KERN_SUCCESS;
@@ -265,6 +266,7 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
         memcmp(blob->csb_cdhash, pin, sizeof(pin))) {
         return KERN_DENIED;
     }
+    blob->csb_flags |= CS_SIGNED;
     printf("A52Q AMFI diagnostic: pinned init signature, no entitlements\n");
     return KERN_SUCCESS;
 }

@@ -1,5 +1,33 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## Active A52 handoff: V10 restored; mount executed; enforcement/read-only audit
+
+Original BOOT restored after V10 and freshly hash-verified d6bf0307...4b016;
+receipt requires_restore=false, protected partition hashes unchanged. No pending
+restoration. Mount ran after signed XML/DER checks. It reports data volume not
+required in env0, starts mount_hfs, then fails root remount with EROFS and cannot
+get a boot-manifest hash; launchd panics on mount-phase-1 exit66. Keep root RO.
+
+Security finding: mount_hfs signature was rejected but its own error text proves
+it still executed. mach_loader.c:1299 explicitly ignores signature-load failures
+when cs_process_global_enforcement()==0 (inherited macOS default). Cache checking
+was enforced, but whole-process enforcement was NOT. Do not claim host callback
+rejection proves runtime exec denial. A52 overlay now enables normal early
+DEFAULT_CS_PROCESS_ENFORCEMENT_ENABLE=1 (same default branch as system checking),
+without enabling unrelated CONFIG_ENFORCE_SIGNED_CODE dylinker-platform rules.
+This makes loader failures fatal and vm_map_cs_enforcement always true on A52.
+Add runtime system/process enforcement log; mark only admitted launchd/dyld/own
+init as CS_SIGNED for correct process metadata, not platform status. Existing
+fsck/mount classes and cache/entitlement guards remain. Requires full build.
+
+Prepare exact-kernel QEMU positive plus unapproved-init and modified-page negative
+fixtures; neither touches the master or phone root. Actual mount_hfs extracted
+read-only to E:/A52-iOS16/master-mount-helper-v1, SHAa031b91c661de06f11c4c22d94e28dcb43a0c41366225bfa470f1bab11d391e5,
+72656B. Parent mount does NOT contain 'error on mount()'; helper DOES. Do not add
+helper pin until exec rejection is genuinely enforced. Also trace mount-phase-1
+read-only/boot-manifest contract; do NOT make root RW or invent a manifest hash.
+No new storage writes authorized. Other historical ACTIVE entries are superseded.
+
 ## Active A52 handoff: V10 mount trial running — BOOT restoration required
 
 V10 BOOT candidate 5811579a...ac33ba was installed with full readback. Native
