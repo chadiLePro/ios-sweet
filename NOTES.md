@@ -1,5 +1,23 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## CURRENT: V8 BOOT RESTORED; FSCK STATUS BLOCKER TRACED TO CS_SIGNED
+
+V8 native '/system/bin/reboot adb' normal reason WORKED: changedkernelbootID,
+3CRCentry frames,3CRCrootframes, THREE launchd-mainmarkers. PreviousTWRProute
+problemsresolvedforthistrial. OriginalBOOTrestored andfreshphoneSHA d6bf0307...
+4b016 verified; recovery/DTBO/vbmeta unchanged. No restorepending; phoneTWRP.
+
+V8 log: exactfsckadmitted, embedded signature attached flags0x4000003; iOSspawn
+platformgatepassed, but launchd STILLpanic 'boot task is not a platformbinary'.
+Source kern_cs.c::csproc_get_blob returnsNULL unless PROCESS hasCS_SIGNED;
+kern_exec copiesCS_SIGNED fromcsblobloadresult, csopsSTATUS readsplatformfield
+throughthathelper. OurfsckCSblobflags lackedCS_SIGNED0x20000000. OriginalRedmi
+patch0036 documents SAMEcontract. Minimal A52fix setsCS_SIGNED onlyinexactfsck
+branch, alongsideexistinglocaldevelopmentplatformclass. No globalCSdisable,
+newpins, rootchanges, orotherexecutablemetadatachanges. Nativecontracts/negative
+testsupdated; requiresnextAMFI-onlybuildfromfull43624481615/sourcea46569c.
+AlsocorrectedAMFIregistrationbanner tosayexacthashpolicy/entqueriesdenied.
+
 ## LATEST: V7 RESTORED; SAMSUNG NORMAL-REASON V8 PREFLIGHT
 
 V8 ACTIVE NOW: receiptbackup/a52q/ios-ufs-v8/receipt.json requires_restore=true,

@@ -34,6 +34,7 @@ typedef int kern_return_t;
 #define CS_ADHOC 2
 #define CS_VALID 1
 #define CS_PLATFORM_BINARY 0x04000000
+#define CS_SIGNED 0x20000000
 #define MNT_RDONLY 1
 #define MNT_ROOTFS 0x4000
 #define VREG 1
@@ -118,11 +119,17 @@ int main(void) {
  blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_vnode=&task;
  assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
  assert(blob.csb_platform_binary && (blob.csb_flags & CS_PLATFORM_BINARY));
+ /* XNU kern_exec copies CS_SIGNED, and csproc_get_blob requires it before
+    CS_OPS_STATUS can inspect the blob's platform field (patch0036 contract). */
+ unsigned process_csflags=blob.csb_flags & CS_SIGNED;
+ assert(process_csflags && blob.csb_platform_binary);
+ process_csflags &= ~CS_SIGNED;
+ assert(!process_csflags); /* same registered platform blob is hidden */
  for (unsigned byte=0; byte<20; byte++) {
   blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_platform_binary=0;
   blob.csb_cdhash[byte]^=1;
   assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
-  assert(!blob.csb_platform_binary && !(blob.csb_flags & CS_PLATFORM_BINARY));
+  assert(!blob.csb_platform_binary && !(blob.csb_flags & (CS_PLATFORM_BINARY | CS_SIGNED)));
   blob.csb_cdhash[byte]^=1;
  }
  full_root=0; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); full_root=1;

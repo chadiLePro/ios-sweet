@@ -212,7 +212,10 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
             !blob->csb_entitlements_blob && !blob->csb_der_entitlements_blob &&
             !memcmp(blob->csb_cdhash, fsck_pin, sizeof(fsck_pin)) &&
             a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) {
-            blob->csb_flags |= CS_PLATFORM_BINARY;
+            /* exec copies CS_SIGNED to the process. Without it,
+             * csproc_get_blob() hides this validated blob from CS_OPS_STATUS
+             * and launchd cannot observe the platform classification. */
+            blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
             blob->csb_platform_binary = 1;
             printf("A52Q boot policy: exact 20H392 fsck admitted as local development platform task; no entitlements\n");
             return KERN_SUCCESS;
@@ -283,6 +286,6 @@ static const amfi_t a52q_diagnostic_amfi = {
 __startup_func static void a52q_register_diagnostic_amfi(void)
 {
     amfi_interface_register(&a52q_diagnostic_amfi);
-    printf("A52Q AMFI diagnostic interface registered: no entitlements or platform status\n");
+    printf("A52Q AMFI diagnostic interface registered: exact hash policy; entitlement queries denied\n");
 }
 STARTUP(EARLY_BOOT, STARTUP_RANK_MIDDLE, a52q_register_diagnostic_amfi);
