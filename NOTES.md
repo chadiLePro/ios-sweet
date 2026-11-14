@@ -1,5 +1,28 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## CURRENT: V9 RESTORED; APPLE FSCK EXECUTED; MOUNT PIN PREPARED
+
+V9 completed, originalBOOTrestored/freshphoneSHAd6bf...4b016matched; receipt
+requires_restore=false,protectedhashesunchanged,changedbootID/3validXNUentries.
+THREElaunchdMAINmarkers; actualApplefsckprinted 'not booting main or diagnostic
+OS. Skipping fsck on OS container'. Thus fsck EXECUTED, NOT OScontainerchecked.
+Launchdadvancedto mount-phase-1; /sbin/mount signaturedenied53/error4 thenplatform
+panic. No Applepersistentservices or SpringBoard. No restorepending; phoneTWRP.
+
+MountmasterfileSHAac55c4c7d200d0153cc266b39d69d4d771a9707ac91eefec94f83eb2522364df
+matchesnativeOSsource;18signed4KpagesPASS. NEWaudit validatessignedXML/DERspecial
+slots: XML472B SHA363b86fdcb854e0a6c4a09971d16a50e2a5dfe5991fa252384e54697eb51e674,
+DER222B SHA9a81f1e551e61017df33201bbfa06b2dc2f0e31ccb99e930b64893d9feadca98.
+AddedONEobservedmountpin CDhashb6a7272461fce359ceb407594e7aaf4fdf4949f1 onlyROroot.
+Uses XNU csblob_get_entitlements/get_der_entitlements, which validate actual
+signedspecialslothashes; requiresoriginal472/222lengths/pointers and no accelerated
+entitlementobject. Setslocaldevelopmentplatform+SIGNED onlyaftervalidation.
+OriginalXML/DERretained asmetadata, queriesremainDENIED/noentitlementgrants.
+No otherfileadmitted; fsck/cacheguardsremain. Newpublicmountpinmetadata JSON.
+PublicauditornowcheckssignedXML/DERslots; syntheticXML+DERmutationnegativechecks
+PASS. Nativepolicykernel-APIerror/missingblob/root/mutantnegativecasesPASS.
+116Python tests PASS; needsAMFI-onlyrebuild/fullbase43624481615/a46569c. NoFSwrite.
+
 ## CURRENT — USER RETURNED; V9 SIGNED-FSCK PREFLIGHT RUNNING
 
 V9 ACTIVE NOW: candidate2bb055df...e34dae installed/fullreadbackverified,

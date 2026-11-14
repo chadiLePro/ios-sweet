@@ -24,6 +24,8 @@ class ExecPolicyTests(unittest.TestCase):
         entries = ',\n'.join('{' + ','.join(str(b) for b in pin) + '}' for pin in pins)
         boot_pin = json.loads((root / 'xnu/a52q/ios16-20H392-boot-task-pin.json').read_text())
         fsck_bytes = bytes.fromhex(boot_pin['directories'][0]['cdhash'])
+        mount_meta = json.loads((root / 'xnu/a52q/ios16-20H392-mount-pin.json').read_text())
+        mount_bytes = bytes.fromhex(mount_meta['directories'][0]['cdhash'])
         prefix = r'''
 #include <stdint.h>
 #include <string.h>
@@ -41,12 +43,14 @@ typedef int kern_return_t;
 #define KERN_SUCCESS 0
 #define KERN_DENIED 53
 #define printf(...) ((void)0)
+typedef struct { uint32_t magic, length; } CS_GenericBlob;
 struct cs_blob {
  uint32_t csb_flags;
  uint8_t csb_cdhash[20];
  struct fake_vnode *csb_vnode;
  int csb_platform_binary;
- void *csb_entitlements, *csb_entitlements_blob, *csb_der_entitlements_blob;
+ void *csb_entitlements;
+ const CS_GenericBlob *csb_entitlements_blob, *csb_der_entitlements_blob;
 };
 struct fake_mount { uint64_t flags; };
 typedef struct fake_mount *mount_t;
@@ -57,6 +61,15 @@ static mount_t vnode_mount(vnode_t vp) { return vp->mount; }
 static uint64_t vfs_flags(mount_t mp) { return mp->flags; }
 static int vnode_vtype(vnode_t vp) { return vp->type; }
 static struct cs_blob *csvnode_get_blob(vnode_t vp, long offset) { assert(offset == 0); return vp->blob; }
+static int xml_error, der_error, wrong_output;
+/* Native policy harness models the kernel API return contract; the actual
+   XML/DER hash algorithm is checked independently by the host auditor. */
+static int csblob_get_entitlements(struct cs_blob *blob, void **out, size_t *size) {
+ *out = wrong_output ? NULL : (void*)blob->csb_entitlements_blob; *size = 472; return xml_error;
+}
+static int csblob_get_der_entitlements(struct cs_blob *blob, const CS_GenericBlob **out, size_t *size) {
+ *out = blob->csb_der_entitlements_blob; *size = wrong_output ? 0 : 222; return der_error;
+}
 static int full_root;
 int a52q_ufs_root_named(const char *name) { return full_root && !strcmp(name, "a52ios0"); }
 '''
@@ -71,7 +84,7 @@ int main(void) {
   memset(&blob, 0, sizeof(blob)); memcpy(blob.csb_cdhash, expected[i], 20);
   full_root=1;
   assert(a52q_without_monitor(NULL, &blob) == KERN_SUCCESS);
-  assert(!(blob.csb_flags & CS_PLATFORM_BINARY) && !blob.csb_platform_binary);
+  assert(!(blob.csb_flags & (CS_PLATFORM_BINARY | CS_SIGNED)) && !blob.csb_platform_binary);
   for (unsigned byte=0; byte<20; byte++) {
    blob.csb_cdhash[byte]^=1;
    assert(a52q_without_monitor(NULL, &blob) == KERN_DENIED);
@@ -141,10 +154,36 @@ int main(void) {
  assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_vnode=NULL;
  assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+ /* The observed mount task retains signed XML/DER, but grants no queries. */
+ static const uint8_t mount_hash[20] = {MOUNT_EXPECTED};
+ CS_GenericBlob xml = {0}, der = {0};
+ memset(&blob,0,sizeof(blob)); memcpy(blob.csb_cdhash,mount_hash,20);
+ blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_vnode=&task;
+ blob.csb_entitlements_blob=&xml; blob.csb_der_entitlements_blob=&der;
+ assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
+ assert(blob.csb_platform_binary && (blob.csb_flags & CS_SIGNED));
+ for (unsigned byte=0; byte<20; byte++) {
+  blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_platform_binary=0;
+  blob.csb_cdhash[byte]^=1;
+  assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+  assert(!blob.csb_platform_binary && !(blob.csb_flags & (CS_SIGNED | CS_PLATFORM_BINARY)));
+  blob.csb_cdhash[byte]^=1;
+ }
+ xml_error=1; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); xml_error=0;
+ der_error=1; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); der_error=0;
+ wrong_output=1; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); wrong_output=0;
+ blob.csb_entitlements=(void*)1; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); blob.csb_entitlements=NULL;
+ assert(a52q_without_monitor((void*)1,&blob)==KERN_DENIED);
+ blob.csb_entitlements_blob=NULL; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); blob.csb_entitlements_blob=&xml;
+ blob.csb_der_entitlements_blob=NULL; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); blob.csb_der_entitlements_blob=&der;
+ ro.flags=MNT_ROOTFS; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); ro.flags=MNT_RDONLY|MNT_ROOTFS;
+ task.mount=&other; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); task.mount=&ro;
+ full_root=0; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); full_root=1;
+ blob.csb_flags=0; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  puts("PASS: exact kernel policy, all 44 cache pins and 880 changed hashes");
  return 0;
 }
-'''.replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
+'''.replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'policy.c'; path.write_text(prefix + function + body)
             executable = Path(directory) / ('policy.exe' if os.name == 'nt' else 'policy')

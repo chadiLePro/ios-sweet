@@ -1,5 +1,6 @@
 """Audit code-signing bytes; no Apple data or runtime compatibility assertion."""
 import hashlib
+import plistlib
 from pathlib import Path
 import struct
 import sys
@@ -23,6 +24,24 @@ def fixture():
     return data + struct.pack('>5I', 0xfade0cc0, 20 + len(cd), 1, 0, 20) + cd
 
 
+def entitled_fixture():
+    data = bytearray(4096)
+    struct.pack_into('<8I', data, 0, 0xfeedfacf, 0x100000c, 0, 2, 1, 16, 0, 0)
+    xml = plistlib.dumps({'org.test.synthetic': True})
+    xml = struct.pack('>II', 0xfade7171, 8 + len(xml)) + xml
+    der = struct.pack('>II', 0xfade7172, 13) + b'\x30\x03\x01\x01\xff'
+    identifier = b'org.test.synthetic\0'; hashes = 44 + len(identifier) + 7 * 32
+    cd = bytearray(hashes + 32)
+    struct.pack_into('>9I', cd, 0, 0xfade0c02, len(cd), 0x20001, 2, hashes, 44, 7, 1, len(data))
+    cd[36:40] = bytes([32, 2, 0, 12]); cd[44:44 + len(identifier)] = identifier
+    for slot, item in ((5, xml), (7, der)):
+        cd[hashes - slot * 32:hashes - (slot - 1) * 32] = hashlib.sha256(item).digest()
+    total = 36 + len(cd) + len(xml) + len(der)
+    struct.pack_into('<4I', data, 32, 0x1d, 16, len(data), total)
+    cd[-32:] = hashlib.sha256(data).digest()
+    return data + struct.pack('>9I', 0xfade0cc0, total, 3, 0, 36, 5, 36 + len(cd), 7, 36 + len(cd) + len(xml)) + cd + xml + der
+
+
 class UserlandAuditTests(unittest.TestCase):
     def test_amfi_leaf_rebuild_does_not_duplicate_existing_source(self):
         old = '#if defined(ARM64_BOARD_CONFIG_SWEET)\nlegacy\n#endif\n'
@@ -38,6 +57,18 @@ class UserlandAuditTests(unittest.TestCase):
         self.assertTrue(result['signature']['directories'][0]['executable_page_hashes_match'])
         data[1000] ^= 1
         with self.assertRaisesRegex(ValueError, 'page hash mismatch'): inspect(data)
+
+    def test_checks_original_xml_and_der_special_slots(self):
+        data = entitled_fixture(); result = inspect(data)['signature']
+        self.assertEqual(result['entitlement_keys'], ['org.test.synthetic'])
+        self.assertEqual(set(result['entitlement_blobs']), {'5', '7'})
+        self.assertTrue(all(v['special_slot_hashes_match'] for v in result['entitlement_blobs'].values()))
+        for slot in (5, 7):
+            changed = bytearray(data)
+            offset = next(struct.unpack_from('>I', changed, 4096 + 16 + i * 8)[0]
+                for i in range(3) if struct.unpack_from('>I', changed, 4096 + 12 + i * 8)[0] == slot)
+            changed[4096 + offset + 8] ^= 1
+            with self.assertRaisesRegex(ValueError, 'special-slot hash mismatch'): inspect(changed)
 
     def test_rejects_malformed_signature_and_load_geometry(self):
         data = fixture(); struct.pack_into('<I', data, 36, 8)

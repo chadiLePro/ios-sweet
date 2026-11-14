@@ -1,0 +1,44 @@
+{
+  "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
+  "path": "/sbin/mount",
+  "bytes": 91952,
+  "sha256": "ac55c4c7d200d0153cc266b39d69d4d771a9707ac91eefec94f83eb2522364df",
+  "staged_source_sha256_matches": true,
+  "directories": [
+    {
+      "slot": 0,
+      "identifier": "com.apple.mount",
+      "version": "0x20400",
+      "flags": "0x2",
+      "hash_type": 2,
+      "platform": 0,
+      "page_bytes": 4096,
+      "pages": 18,
+      "executable_page_hashes_match": true,
+      "cdhash": "b6a7272461fce359ceb407594e7aaf4fdf4949f1"
+    }
+  ],
+  "entitlement_keys": [
+    "com.apple.private.bindfs-allow",
+    "com.apple.private.iokit.system-nvram-allow",
+    "com.apple.private.security.disk-device-access",
+    "com.apple.security.iokit-user-client-class"
+  ],
+  "cms_present": true,
+  "der_entitlements_present": true,
+  "entitlement_blobs": {
+    "5": {
+      "bytes": 472,
+      "sha256": "363b86fdcb854e0a6c4a09971d16a50e2a5dfe5991fa252384e54697eb51e674",
+      "special_slot_hashes_match": true
+    },
+    "7": {
+      "bytes": 222,
+      "sha256": "9a81f1e551e61017df33201bbfa06b2dc2f0e31ccb99e930b64893d9feadca98",
+      "special_slot_hashes_match": true
+    }
+  },
+  "cms_trust_authenticated": false,
+  "entitlements_granted": false,
+  "development_role": "exact local platform boot task; signed entitlement blobs hash-checked by XNU, queries denied; read-only full A52 root only"
+}

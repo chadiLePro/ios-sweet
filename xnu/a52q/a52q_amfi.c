@@ -1,6 +1,6 @@
 /* Minimal bring-up interface for XNU's unconditional AMFI query callers.
  * No entitlements, trust caches or Apple validation service. The exact fsck
- * boot task has an explicit local development platform classification only.
+ * and mount boot tasks have local development platform classifications only.
  * Diagnostic mode permits only our exact entitlement-free ad-hoc init.
  * The separate full UFS root may also attempt the two audited 20H392 launch
  * executables and the audited entitlement-free shared caches below. Entitlement queries fail;
@@ -202,7 +202,7 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
          * entitlement-free fsck was read from the unchanged validated master,
          * compared with staged source and all13 code pages verified. This is
          * an explicit local development classification, NOT Apple CMS trust.
-         * No other executable/cache receives platform status or entitlements. */
+         * Only measured boot tasks below receive local platform status; no entitlements. */
         static const uint8_t fsck_pin[CS_CDHASH_LEN] = {
             0xe1,0xa3,0xf1,0x2f,0xb8,0xbe,0x72,0xd6,0xe9,0xa4,
             0xe4,0x17,0x8e,0xbe,0x15,0x25,0x13,0xbc,0x59,0x9a
@@ -218,6 +218,29 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
             blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
             blob->csb_platform_binary = 1;
             printf("A52Q boot policy: exact 20H392 fsck admitted as local development platform task; no entitlements\n");
+            return KERN_SUCCESS;
+        }
+        /* Observed mount-phase-1 rejection after fsck executes. Preserve the
+         * original XML/DER as signed metadata, validate their special slots
+         * through XNU, but create no entitlement context and grant no queries. */
+        static const uint8_t mount_pin[CS_CDHASH_LEN] = {
+            0xb6,0xa7,0x27,0x24,0x61,0xfc,0xe3,0x59,0xce,0xb4,
+            0x07,0x59,0x4e,0x7a,0xaf,0x4f,0xdf,0x49,0x49,0xf1
+        };
+        if ((blob->csb_flags & CS_VALID) && !blob->csb_entitlements &&
+            blob->csb_entitlements_blob && blob->csb_der_entitlements_blob &&
+            !memcmp(blob->csb_cdhash, mount_pin, sizeof(mount_pin)) &&
+            a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) {
+            void *xml = NULL;
+            const CS_GenericBlob *der = NULL;
+            size_t xml_size = 0, der_size = 0;
+            if (csblob_get_entitlements(blob, &xml, &xml_size) ||
+                csblob_get_der_entitlements(blob, &der, &der_size) ||
+                xml != blob->csb_entitlements_blob || der != blob->csb_der_entitlements_blob ||
+                xml_size != 472 || der_size != 222) return KERN_DENIED;
+            blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
+            blob->csb_platform_binary = 1;
+            printf("A52Q boot policy: exact 20H392 mount admitted as local development platform task; XML/DER hashes checked, entitlement queries denied\n");
             return KERN_SUCCESS;
         }
         for (unsigned i = 0; i < 2; i++) {

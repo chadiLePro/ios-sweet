@@ -25,14 +25,17 @@ def signature(data, start, size):
     if magic != 0xfade0cc0 or length > size or count > 64 or 12 + count * 8 > length:
         raise ValueError('invalid signature SuperBlob')
     result = {'directories': [], 'entitlement_keys': [], 'cms_present': False}
+    ent_blobs, code_dirs = {}, []
     for n in range(count):
         slot, offset = struct.unpack_from('>II', blob, 12 + n * 8)
         if offset < 12 + count * 8 or offset + 8 > length: raise ValueError('signature slot exceeds blob')
         tag, size = struct.unpack_from('>II', blob, offset)
         if size < 8 or offset + size > length: raise ValueError('signature subblob exceeds blob')
         item = blob[offset:offset + size]
-        if slot == 5 and tag == 0xfade7171:
-            result['entitlement_keys'] = sorted(plistlib.loads(item[8:]).keys())
+        if slot in (5, 7):
+            if slot in ent_blobs or tag != {5: 0xfade7171, 7: 0xfade7172}[slot]:
+                raise ValueError('invalid or duplicate entitlement blob')
+            ent_blobs[slot] = item
         if slot == 7: result['der_entitlements_present'] = True
         if slot == 0x10000: result['cms_present'] = True
         if tag != 0xfade0c02: continue
@@ -52,10 +55,26 @@ def signature(data, start, size):
             expected = item[hashes + i * hash_size:hashes + (i + 1) * hash_size]
             if hashlib.new(algorithm, data[lo:hi]).digest()[:hash_size] != expected:
                 raise ValueError('CodeDirectory executable-page hash mismatch')
+        code_dirs.append((item, hashes, hash_size, algorithm, special))
         result['directories'].append(dict(slot=slot, identifier=cstring(item, identifier),
             version=hex(version), flags=hex(flags), hash_type=hash_type, platform=platform,
             page_bytes=1 << shift, pages=pages, executable_page_hashes_match=True,
             cdhash=hashlib.new(algorithm, item).digest()[:20].hex()))
+    # XML and DER are signed special slots, not executable code pages. Validate
+    # them before parsing/reporting their metadata. This grants no entitlement.
+    if ent_blobs and not code_dirs: raise ValueError('entitlements lack a CodeDirectory')
+    for cd, hashes, hash_size, algorithm, special in code_dirs:
+        for slot in (5, 7):
+            item = ent_blobs.get(slot)
+            expected = cd[hashes - slot * hash_size:hashes - (slot - 1) * hash_size] if special >= slot else None
+            if item is None:
+                if expected is not None and any(expected): raise ValueError('signed entitlement blob missing')
+            elif expected is None or hashlib.new(algorithm, item).digest()[:hash_size] != expected:
+                raise ValueError('entitlement special-slot hash mismatch')
+    if 5 in ent_blobs: result['entitlement_keys'] = sorted(plistlib.loads(ent_blobs[5][8:]).keys())
+    if ent_blobs:
+        result['entitlement_blobs'] = {str(slot): dict(bytes=len(item), sha256=hashlib.sha256(item).hexdigest(),
+            special_slot_hashes_match=True) for slot, item in ent_blobs.items()}
     return result
 
 
@@ -98,7 +117,7 @@ def inspect(data):
                 memory=memory, disk=disk, file_offset=position, protection=protection))
         offset += length
     if offset != 32 + size: raise ValueError('load commands do not fill header')
-    result['scope'] = 'format and executable-page hashes only; no CMS authentication or execution claim'
+    result['scope'] = 'format, code-page and entitlement-slot hashes; no CMS authentication or execution claim'
     return result
 
 
