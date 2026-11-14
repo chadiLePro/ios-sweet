@@ -76,12 +76,27 @@ def apply(root, filesystem='mockfs'):
             '\tvfsinit();\n#if defined(ARM64_BOARD_CONFIG_A52Q)\n'
             '\textern void a52q_ufs_selftest(void);\n\ta52q_ufs_selftest();\n'
             '\textern void a52q_display_selftest(void);\n\ta52q_display_selftest();\n#endif\n')
+    # Observed on disk-root v2: HFS mounts, then FSIOC_KERNEL_ROOTAUTH panics.
+    # A RAM root bypasses this path. Permit only our published, read-only UFS
+    # root; leave every other A52 root and the Redmi policy unchanged.
+    replace('bsd/kern/bsd_init.c',
+            '\t\t\t\tpanic("rootvp not authenticated after mounting");',
+            '''#if defined(ARM64_BOARD_CONFIG_A52Q)
+                extern int a52q_ufs_rootdev(dev_t *dev);
+                dev_t a52_root;
+                if (a52q_ufs_rootdev(&a52_root) == 0 && a52_root == rootdev &&
+                    (mountlist.tqh_first->mnt_flag & MNT_RDONLY)) {
+                    printf("A52Q: verified read-only UFS root is UNSEALED (rootauth error %d)\\n", autherr);
+                } else
+#endif
+                panic("rootvp not authenticated after mounting");''')
     root_hook = '''#if defined(ARM64_BOARD_CONFIG_A52Q)
-    if (strcmp(rdBootVar, "a52root0") == 0) {
+    if (strcmp(rdBootVar, "a52root0") == 0 || strcmp(rdBootVar, "a52ios0") == 0) {
         extern int a52q_ufs_rootdev(dev_t *dev);
+        extern int a52q_ufs_root_named(const char *name);
         OSSafeReleaseNULL(matching);
         int error = a52q_ufs_rootdev(root);
-        if (error) panic("IOFindBSDRoot: A52 diagnostic disk unavailable: %d", error);
+        if (error || !a52q_ufs_root_named(rdBootVar)) panic("IOFindBSDRoot: A52 read-only disk unavailable: %d", error);
         strlcpy(rootName, rdBootVar, rootNameSize);
         *oflags = 0;
         goto iofrootx;

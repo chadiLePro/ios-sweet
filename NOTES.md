@@ -1,26 +1,29 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## A52Q handoff — 2026-11-14: disk-root v2 ACTIVE; RESTORE PENDING
+## A52Q handoff — 2026-11-14: disk-root v2 mounted; PHONE SAFE
 
-11:34:21UTC corrected NON-JOURNALED disk-root trial installed+fullreadback,
-nativeTWRPSystem reboot. Receipt backup/a52q/ufs-root-v2/receipt.json needsrestore.
-User confirmed3minretryreadiness; watcherPID2116 research/watch_ufs_root_v2_restore.py
-logsE:/A52-iOS16/ufs-root-v2-watcher*.log. If timeout restoreBOOTvia collect-restore.
-Candidate32827efe1ce3f7c8d45583b39ca08f951367bcfe4dff1b34e823cbc42a375c75;
-kernel974unchanged; newfixtureade13aa50596f68240670ab96ca1d24cc4d8c4cbdfab2ff60c89b4c1be28ef50.
-FixtureproducerfsckPASS, newQEMUexactkernel/root7HBproof
-shim/out/a52q-ufs-root-readonly-qemu-v2/run/result.json. Hardware noRAMroot.
+Original BOOT restored by watcher; fresh ADB full-partition SHA256 readback
+matches d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+backup/a52q/ufs-root-v2/receipt.json requires_restore=false; protected hashes
+unchanged. Phone in TWRP. NO restoration pending, NO userdata/GPT writes.
+Exact retained lines: "hfs: mounted A52ReadOnly on device b(1, 1)" then
+"rootvp not authenticated after mounting @bsd_init.c:953". Root mounted from
+UFS, diagnostic PID1 NOT executed. Five matching CRC A52V1 window records.
+A RAM-root boot skips this sealed-root check; HFS cannot implement APFS rootauth.
+Implementing exception ONLY for published A52 UFS root and MNT_RDONLY, with
+explicit UNSEALED log. Redmi and all other A52 root policies remain unchanged.
+Also implementing distinct read-only 16GiB userdata root window with live GPT
+CRC/entry check and separate rd=a52ios0. Kernel source only, not built/tested yet.
 
-Fullv11HFS Unicode repair PASSED:32source-matchingNFDnames,47SHAchecks,
-cleanfsck, counts184116files/137189folders unchanged; wholeblockdiffONLY30metadata
-blocks(VH/allocation/extents/catalog). E:/A52-iOS16/ios16-20H392-pristine-v11.hfs.img.
-InitialcorrectedSHA484daf79... hadfreshjournalneedinitflag5. Thenheader-only
-journaling-disable followingApplehfs_util RawDisableJournaling (bothVHcopies),
-preservedrollbackbytes+hashes E:/A52-iOS16/v11-readonly-header-patch.json.
-NewwholeSHA0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149
-matchesvirtualpatch hash, allotherbytesunchanged. .readonly-prepared.json records;
-finalread-onlyguestfsck/47SHA check pending. v10originalretained. NoApplebootclaim.
-Earlier PHONE SAFE records below historical; currentBOOTrestorationPENDING.
+Full master: E:/A52-iOS16/ios16-20H392-pristine-v11.hfs.img, 17179869184B,
+SHA256 0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149.
+Sidecar is .hfs.verified.json (NOT .img.verified.json): read-only fsck PASS,
+47 original core/cache SHA checks PASS, non-journaled, 184116 files/137189 folders.
+32 Unicode repairs match original source NFD names; only30 metadata4Kblocks
+changed in copy of preserved v10. Journal bit cleared in both volume headers
+with rollback record; full hash matched virtual two-word patch. Staged source,
+verified transfer ext4, original v10 and current validated v11 all preserved.
+No Apple userland boot or xattrs/ACLs/BSD flags preservation claim.
 
 TRIAL FINISHED: backup/a52q/ufs-root-v1/receipt.json requires_restore=false,
 original_boot_restored=true, protected hashes unchanged. Watcher9008 finished.

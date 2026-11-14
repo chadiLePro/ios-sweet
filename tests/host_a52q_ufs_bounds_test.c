@@ -32,6 +32,12 @@ int main(void)
     assert(a52q_ufs_window_range(8192, (32U << 20) - 512, 512));
     assert(!a52q_ufs_window_range(8192, (32U << 20) - 512, 1024));
     assert(!a52q_ufs_window_range(UINT64_MAX, 0, 4096));
+    assert(a52q_ufs_ios_window(last, 3165696, 27911647, 3165696, 4194304));
+    assert(!a52q_ufs_ios_window(last, 3165696, 27911647, 3165697, 4194304));
+    assert(!a52q_ufs_ios_window(last, 3165696, 27911647, 3165696, 4194305));
+    assert(!a52q_ufs_ios_window(last, 3165696, 8192, 3165696, 4194304));
+    assert(!a52q_ufs_ios_window(last, UINT64_MAX, 27911647, UINT64_MAX, 4194304));
+    assert(!a52q_ufs_ios_window(5000000, 3165696, 27911647, 3165696, 4194304));
     uint8_t response[40] = {0x21};
     assert(a52q_ufs_response_ok(response, 1));
     const unsigned rejected_fields[] = {1, 2, 3, 6, 7, 10, 11, 12, 13, 14, 15, 32, 33};

@@ -29,6 +29,16 @@ static inline int a52q_ufs_window_range(uint64_t blocks, uint64_t offset, uint64
 {
     return blocks <= UINT64_MAX / 4096 && offset <= blocks * 4096 && count <= blocks * 4096 - offset;
 }
+/* Separate full-image layout inside the captured userdata partition. This
+ * checks read bounds only; it grants no permission to overwrite Android data. */
+static inline int a52q_ufs_ios_window(uint32_t last, uint64_t parent_first,
+    uint64_t parent_count, uint64_t first, uint64_t count)
+{
+    uint64_t capacity = (uint64_t)last + 1;
+    return parent_first >= 2 && parent_first <= capacity &&
+        parent_count <= capacity - parent_first && count == (16ULL << 30) / 4096 &&
+        parent_count >= count && first == parent_first;
+}
 /* Samsung utp_cmd_rsp: residual DW3, sense length at bytes32..33. A successful
  * status alone must not turn a short/overrun DMA transfer into a complete read.
  */
