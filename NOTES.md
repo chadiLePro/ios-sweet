@@ -1,5 +1,34 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## A52Q active handoff — cache candidate prepared, 2026-11-14
+
+NO BOOT restore pending. Full root remains installed/read-only; never run Android
+control or format data. All 44 original cache SHA256 checks and 202,845 16-KiB
+CodeDirectory page hashes PASS (3,330,359,296 bytes); format v0x20400/SHA256,
+no XML/DER entitlements. Private cache-code-signatures-v1.json retains results.
+Actual dyld-1067 disassembly proves fcntl command97/F_ADDFILESIGS_RETURN. Old
+policy source a5398f2 native test rejects all44 with KERN_DENIED53; ubc_cs_blob_add
+maps it to EPERM1. Cache rejection explains missing libSystem, present in cache.
+Exact-policy test now accepts44 and rejects880 changed hashes, unapproved/NULL,
+wrong-root and entitlement-bearing cache contexts. 115 Python tests PASS.
+Shared regions always set vm_map_cs_enforcement_set(sub_map,true); system CS
+checks default1 in kern_cs.c regardless CONFIG_ENFORCE_SIGNED_CODE. No disable
+bootargs accepted for full-root candidate; cs_debug=2 traces registered blobs.
+Runtime altered-page rejection has NOT been separately tested on the phone.
+
+AMFI-only build43607167940/sourcef1c8294 PASS, implementation743a1e4b...81b814,
+kernel b52bb868b5138677b0b99ecdbea80af773689768782d7cf4312be408a3054c76.
+Exact new kernel + tiny diagnostic RAM fixture QEMU PASS (3entry/7heartbeats),
+shim/out/a52q-cache-pins-qemu-v1/run/result.json. NOT full-UFS-root emulation.
+Full master rehash completed0f4bcaa7...312149; kernel-bound ios-root-plan-v2.json.
+Candidate shim/out/a52q-ios-ufs-hardware-v4/build/a52q-ios-ufs-UNTESTED.img,
+SHA3c6224d3b9ca65e6cb98ab2fe94484ca5ae97fac1f76041ba3634654a4d69c37,
+BOOT only, new kernel/cache pins + cs_debug=2, unchanged ignition baseline5.
+No RAM root/diagnostic PID1 substitute or filesystem rewrite. Next trial receipt
+backup/a52q/ios-ufs-v3/receipt.json; archive/rearm old RAM console first. Watcher
+must restore BOOT on TWRP return. User authorizes BOOT-only trial. Current proof
+is Apple loader/libignition execution, NOT launchd main/services/SpringBoard.
+
 ## A52Q handoff — 2026-11-14: full UFS root mounted; BOOT restored; platform fix ready
 
 CACHE FIX READY FOR BUILD: audited all44 cache files against original SHA list

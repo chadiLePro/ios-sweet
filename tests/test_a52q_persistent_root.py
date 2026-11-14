@@ -121,6 +121,14 @@ class PersistentRootTests(unittest.TestCase):
             validate_payload(data, manifest)
         with self.assertRaisesRegex(ValueError, 'explicitly declared'): check()
         manifest['ios_exec_development'] = True; check()
+        trace_command = command + b' cs_debug=2'
+        data[0x48:0x2a8] = trace_command + bytes(608 - len(trace_command))
+        with self.assertRaisesRegex(ValueError, 'trace must be explicitly declared'): check()
+        manifest['ios_codesign_debug'] = 2; check()
+        unsafe = trace_command + b' cs_enforcement_disable=1'
+        data[0x48:0x2a8] = unsafe + bytes(608 - len(unsafe))
+        with self.assertRaisesRegex(ValueError, 'retain signature enforcement'): check()
+        del manifest['ios_codesign_debug']
         ignition_command = command + b' ignition_level=1'
         data[0x48:0x2a8] = ignition_command + bytes(608 - len(ignition_command))
         with self.assertRaisesRegex(ValueError, 'ignition level must be explicitly declared'): check()
