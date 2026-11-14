@@ -51,10 +51,25 @@ remain distinct checks; the native fixture does not prove phone execution.
 Mount also unconditionally requests `/chosen/boot-manifest-hash` before its
 optional preboot bind mounts, including in its `OTHER` boot environment. A52 has
 no Apple boot manifest. The Redmi target's fabricated hash is not reused.
-Any development identifier must be derived from an explicit local manifest of
-the actual kernel/root/board evidence, labelled unsealed and unauthenticated,
-and checked by packaging. It must never assert Apple IMG4 or secure-boot trust.
-This does not provide the firmware bind mounts required by the main-OS path.
+The opt-in `--local-boot-manifest` identifier derives from an explicit canonical
+JSON document containing measured SHA256 values for the actual kernel, full
+root and captured live board DTB, plus the format, target and
+`local-development-unsealed` trust label. The document uses sorted JSON keys,
+ASCII and separators `,`/`:` with no whitespace or trailing newline. Its SHA384
+is the 48-byte namespace identifier; the exact document is also embedded in
+`a52q-local-boot-manifest` beside it. There is no hash of the containing BOOT
+image, so no circular measurement. No Apple manifest or authentication is
+claimed, and no signature/entitlement decision is based on this identifier.
+
+Packaging recomputes both chosen properties from the separately validated
+kernel/root/board measurements, rejects duplicate or undeclared properties,
+and requires explicit full-UFS-root development mode. Changing the content,
+hash, trust claim or measured inputs fails checks even after updating the
+container checksum. Legacy payloads without either property remain supported.
+The phone root still needs its independent whole-prefix verification before
+each trial. This unsealed identifier is not a root of trust and does not provide
+the firmware bind mounts required by the main-OS path. Its physical consumption
+by Apple's mount remains to be tested.
 
 The installed root and validated master remain unchanged and read-only. Writable
 `/private/var` still requires a separate bounded, storage-backed implementation

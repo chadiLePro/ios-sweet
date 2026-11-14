@@ -104,6 +104,30 @@ class PersistentRootTests(unittest.TestCase):
         data[0x48:0x2a8] = bytes(608)
         with self.assertRaisesRegex(ValueError, 'rd=a52ios0'): check()
 
+    def test_local_manifest_survives_full_payload_validation_and_detects_tampering(self):
+        import hashlib
+        from a52q_boot_manifest import measurement, chosen_properties
+        data, manifest = payload_fixture()
+        off, size = struct.unpack_from('<2Q', data, 0x20)
+        tree, _ = adt.parse(data[off:off + size])
+        tree.children += [ufs_node(self.ufs), root.adt_node(self.config)]
+        chosen = next(node for node in tree.children if node.name == 'chosen')
+        record = measurement('b' * 64, self.config['sha256'], 'c' * 64)
+        chosen.props += [(n, 0, v) for n, v in chosen_properties(record).items()]
+        command = b'rd=a52ios0 unentitled_ios_sim_launch=1'
+        data[0x48:0x2a8] = command + bytes(608-len(command))
+        manifest.update(ufs_selftest=self.ufs, ufs_ios_root=copy.deepcopy(self.config),
+            kernel_sha256='b'*64, live_dtb_sha256='c'*64, ios_exec_development=True,
+            local_boot_manifest=record, environment='SM-A525F/DS hardware candidate')
+        def check():
+            encoded = adt.serialize(tree);data[off:] = encoded
+            struct.pack_into('<Q', data, 0x28, len(encoded))
+            manifest['payload_sha256'] = hashlib.sha256(data).hexdigest()
+            validate_payload(data, manifest)
+        check()
+        chosen.props = [(n, f, bytes(48) if n == 'boot-manifest-hash' else v) for n, f, v in chosen.props]
+        with self.assertRaisesRegex(ValueError, 'measured kernel/root/board'): check()
+
     def test_platform_gate_is_explicit_and_full_root_only(self):
         import hashlib
         data, manifest = payload_fixture()

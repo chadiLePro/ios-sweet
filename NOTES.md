@@ -29,9 +29,14 @@ MNT_RDONLY/HFS, denieswrite/otherroots. Native actual-body callback checks PASS;
 both overlays apply to actual81patchsource,73files. Requires NEW fullkernelbuild.
 No mount_hfs pin added. Do not weaken RO driver.
 
-Next: build new overlay, implement measured local unsealed boot-manifest identifier
-for mount's unconditional chosen-property lookup; never reuse fabricated Redmi
-hash or claim AppleIMG4trust. Do not alter master. Explicitly distinguish optional
+New fullHFSbuild43642823797/source738da8b RUNNING for the read-only fstab overlay.
+Opt-in --local-boot-manifest now computes SHA384 of canonical sortedASCIIcompact
+JSON with exactkernel/root/liveDTB SHA256, target/format/unsealedtrustlabel. Both
+hash and explicitlocaldocument embeddedchosen, validationrecomputesfrommeasurements
+andrequiresfullrootdevelopment; rejectsundeclared/duplicate/changedproperties and
+trustclaims. This is only an unauthenticatedlocalmountnamespace, noAppleIMG4trust,
+noAMFIchange. Hosttests includeactualpayloadpositive/changedADTwithupdatedcontainerhash.
+Next: finishbuild, never reuse fabricated Redmi hash. Do not alter master. Distinguish optional
 OTHERenv bind mounts from actual mainOS firmware mounts. See docs/A52Q-BOOT-FILESYSTEM.md.
 After build, exact-kernel QEMU baseline and package/provenance/rootprefixchecks;
 only then readiness and BOOT-only trial with restoration. Future4GiBvarnotinstalled.

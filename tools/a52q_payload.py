@@ -82,7 +82,8 @@ def validate_bootstrap_init(data):
         raise ValueError('bootstrap init lacks a static entry or signature')
 
 
-def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None, display_test=None, ufs_root=None):
+def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None, display_test=None, ufs_root=None,
+             local_boot_manifest=None):
     if base % BLOCK or total < 4 * BLOCK or total % BLOCK or not 16 <= intid < 32:
         raise ValueError('unsupported bootstrap memory/timer geometry')
     memory = total - PANIC
@@ -97,6 +98,11 @@ def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None
         ('random-seed', seed if seed is not None else os.urandom(64)),
         ('debug-enabled', u32(1)), ('embedded-panic-log-size', u32(PANIC)),
         ('firmware-version', cstr('a52q-xnu-bootstrap'))], [node('memory-map')])
+    if local_boot_manifest is not None:
+        if not ufs_root or ufs_root.get('layout_kind') != 2:
+            raise ValueError('local boot manifest needs the separate full UFS root')
+        from a52q_boot_manifest import chosen_properties
+        chosen.props.extend((name, 0, value) for name, value in chosen_properties(local_boot_manifest).items())
     gic_node = node('gic', [('compatible', cstr('arm,gic-v3')), ('interrupt-controller', b''),
         ('virtual-timer-intid', u32(intid)),
         ('reg', u64(*[v for b, n in gic for v in (b - soc, n)]))])
@@ -245,6 +251,13 @@ def validate_payload(data, manifest):
         raise ValueError('only one UFS root layout may be selected')
     ios_root = manifest.get('ufs_ios_root')
     ufs_root = manifest.get('ufs_diagnostic_root') or ios_root
+    chosen_nodes = [child for child in tree.children if child.name == 'chosen']
+    if len(chosen_nodes) != 1:
+        raise ValueError('need exactly one chosen node')
+    from a52q_boot_manifest import verify_chosen
+    verify_chosen(chosen_nodes[0], manifest.get('local_boot_manifest'), manifest.get('kernel_sha256'),
+        ios_root.get('sha256') if ios_root else None, manifest.get('live_dtb_sha256'),
+        bool(ios_root) and manifest.get('ios_exec_development') is True)
     command = data[0x48:0x2a8].split(b'\0', 1)[0].split()
     development = [v for v in command if v.startswith(b'unentitled_ios_sim_launch=')]
     if manifest.get('ios_exec_development'):
@@ -380,6 +393,8 @@ def main():
                    help='full-root development only: use preflattened HFS cryptex/cache layout instead of APFS preboot mounting')
     p.add_argument('--ios-codesign-debug', action='store_true',
                    help='full-root development only: cs_debug=2 logs successful core signature registration; enforcement stays enabled')
+    p.add_argument('--local-boot-manifest', action='store_true',
+                   help='full-root development only: measured unsealed kernel/root/board namespace; no Apple IMG4 trust')
     p.add_argument('--ufs-root-qemu-proof', type=Path, help='same kernel/HFS fixture must have reached PID1 in QEMU')
     p.add_argument('--ufs-root-gpt-capture', type=Path, help='CRC-checked captured GPT and live sysfs bounds')
     p.add_argument('--display-selftest-build', type=Path, help='successful standalone physical display build.json')
@@ -402,6 +417,8 @@ def main():
             raise ValueError('ignition level 1 requires full-root development mode')
         if a.ios_codesign_debug and (not a.ufs_ios_root_plan or not a.ios_exec_development or b'cs_debug\0' not in kernel):
             raise ValueError('code-signing trace requires full-root development mode and compiled cs_debug support')
+        if a.local_boot_manifest and (not a.ufs_ios_root_plan or not a.ios_exec_development):
+            raise ValueError('local boot manifest requires full-root development mode')
         display_test = None
         display_args = (a.display_selftest_build, a.display_selftest_log, a.display_register_sources)
         if any(display_args):
@@ -502,9 +519,13 @@ def main():
                 raise ValueError('QEMU RAM does not cover the payload destination')
             environment = 'QEMU virt ONLY; never flash'
         a.out.parent.mkdir(parents=True, exist_ok=True)
+        local_manifest = None
+        if a.local_boot_manifest:
+            from a52q_boot_manifest import measurement
+            local_manifest = measurement(hashlib.sha256(kernel).hexdigest(), ufs_root['sha256'], dt_hash)
         tree_path = a.out.with_suffix('.adt')
         tree_path.write_bytes(adt.serialize(make_adt(base, total, gic, hz, intid, mpidr,
-                                                   ufs_test=ufs_test, display_test=display_test, ufs_root=ufs_root)))
+            ufs_test=ufs_test, display_test=display_test, ufs_root=ufs_root, local_boot_manifest=local_manifest)))
         payload, info = mkpayload.build(str(a.kernel), str(tree_path),
                                        'debug=0xc serial=3 cpus=1 keepsyms=1 -v -noprogress rd=' +
                                        ('a52ios0' if a.ufs_ios_root_plan else 'a52root0' if ufs_root else 'md0') +
@@ -544,6 +565,8 @@ def main():
             report['ios_ignition_level'] = a.ios_ignition_level
         if a.ios_codesign_debug:
             report['ios_codesign_debug'] = 2
+        if local_manifest is not None:
+            report['local_boot_manifest'] = local_manifest
         validate_payload(payload, report)
         a.out.write_bytes(payload)
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')
