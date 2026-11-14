@@ -4,15 +4,20 @@ Current physical milestone (2026-11-14): Apple dyld/libignition execute from the
 installed read-only UFS filesystem, and shared-cache signature registration
 succeeds. The exact-cache read-only-root exception also passed mapping, and
 three kern.initproc_spawned markers plus Apple startup banners prove launchd main.
-Apple fsck now executes, skips its OS-container check, and advances to the
-next rejected task, mount-phase-1 (/sbin/mount). Services and SpringBoard remain unproven. Original BOOT is
+Apple fsck executes and skips its OS-container check. V10 also executes Apple's
+mount, which fails on its root read-write upgrade and missing boot-manifest
+identifier. Services and SpringBoard remain unproven. Original BOOT is
 restored and freshly hash-verified. No root rewrite was needed for the cache fix.
 
 All 44 cache files and their 202,845 signed pages passed checksum/hash validation.
 The exact cache allowlist is restricted to the separate full-root target, with
-no entitlement grants or global signing disable. The next mapping fix and the
+no entitlement grants or global signing disable. The mapping fix and the
 physical evidence are recorded in [cache signature analysis](A52Q-CACHE-SIGNATURES.md).
 The earlier rootauth and platform-gate experiments below are historical stages.
+The current read-only filesystem-table compatibility and local unsealed boot
+namespace are documented in [boot filesystem contracts](A52Q-BOOT-FILESYSTEM.md).
+The inherited macOS process-enforcement default also required correction; its
+positive/negative QEMU tests are separate from a new physical full-root trial.
 
 The 2026-11-14 non-journaled BOOT-tail trial retained these lines:
 
