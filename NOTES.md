@@ -29,7 +29,13 @@ MNT_RDONLY/HFS, denieswrite/otherroots. Native actual-body callback checks PASS;
 both overlays apply to actual81patchsource,73files. Requires NEW fullkernelbuild.
 No mount_hfs pin added. Do not weaken RO driver.
 
-New fullHFSbuild43642823797/source738da8b RUNNING for the read-only fstab overlay.
+Further source check: vfs_rootmountalloc_internal initializes source "root_device",
+and mount ismounted() compares exact statfs names. Publishing /dev/a52ios0 would
+not skip the mounted root. Callback now copies actual bounded f_mntfromname and
+requires actual f_mntonname=/, retaining verifieddevice/RO/HFS guards. Native test
+covers initialalias, laterrealdevicepath, long/empty names andwrongmountpath.
+Build43642823797/source738da8b is superseded before any phone trial; replace with
+new fullHFSbuild for this corrected callback. No phone writes have occurred.
 Opt-in --local-boot-manifest now computes SHA384 of canonical sortedASCIIcompact
 JSON with exactkernel/root/liveDTB SHA256, target/format/unsealedtrustlabel. Both
 hash and explicitlocaldocument embeddedchosen, validationrecomputesfrommeasurements

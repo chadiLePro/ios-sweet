@@ -34,11 +34,19 @@ static int a52q_sysctl_edt_fstab SYSCTL_HANDLER_ARGS
     mount_t mp = vnode_mount(rootvnode);
     if (mp == NULL || (vfs_flags(mp) & (MNT_RDONLY | MNT_ROOTFS)) !=
         (MNT_RDONLY | MNT_ROOTFS) || strcmp(vfs_statfs(mp)->f_fstypename, "hfs")) return ENOENT;
-    static const struct a52q_edt_fstab_wire entry = {
-        .spec = "/dev/a52ios0", .file = "/", .vfstype = "hfs",
+    struct vfsstatfs *stat = vfs_statfs(mp);
+    if (strcmp(stat->f_mntonname, "/")) return ENOENT;
+    struct a52q_edt_fstab_wire entry = {
+        .file = "/", .vfstype = "hfs",
         .mntops = "ro", .type = "ro", .freq = 0, .passno = 1
     };
-    printf("A52Q boot filesystem: publishing mounted read-only UFS HFS root, no data volume\n");
+    /* XNU initially calls this source "root_device", even when rootdev is
+     * our verified a52ios0. mount's ismounted() compares exact statfs names;
+     * using /dev/a52ios0 here would request a redundant mount instead. */
+    size_t source_length = strnlen(stat->f_mntfromname, sizeof(entry.spec));
+    if (!source_length || source_length == sizeof(entry.spec)) return ENAMETOOLONG;
+    memcpy(entry.spec, stat->f_mntfromname, source_length);
+    printf("A52Q boot filesystem: publishing mounted read-only UFS HFS root source=%s, no data volume\n", entry.spec);
     return SYSCTL_OUT(req, &entry, sizeof(entry));
 }
 

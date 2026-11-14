@@ -35,7 +35,13 @@ returned byte count by 236, advances each entry by 0xec, and copies these fields
 | 0xe4 | fs_passno | signed 32-bit |
 | 0xe8 | not consumed by this code | four zero bytes |
 
-The implementation publishes exactly one entry: `/dev/a52ios0 / hfs ro ro 0 1`.
+The implementation publishes exactly one root entry with HFS, `ro`, and pass 1.
+Its source name is copied from the actual root's statfs record. Pinned XNU
+vfs_subr.c initially names it `root_device`; mount's `ismounted()` compares this
+string exactly, so advertising `/dev/a52ios0` prematurely would cause a redundant
+mount. The callback verifies that this mount's device really is `/dev/a52ios0`
+before returning the current source alias. Empty/overlong names or a non-root
+mount path are rejected. No root mount metadata is fabricated or changed.
 It requires the verified full-root device to be the actual root device, a root
 vnode mounted as HFS, and both MNT_ROOTFS and MNT_RDONLY. Other roots and writes
 to the sysctl fail. No data volume, APFS filesystem, container operation, or

@@ -22,7 +22,7 @@ class BootFilesystemTests(unittest.TestCase):
 #include <assert.h>
 #define dev_t test_dev_t
 typedef int dev_t;
-struct vfsstatfs { char f_fstypename[16]; };
+struct vfsstatfs { char f_fstypename[16], f_mntfromname[128], f_mntonname[128]; };
 struct mount { unsigned flags; struct vfsstatfs stat; };
 typedef struct mount *mount_t;
 typedef struct vnode { mount_t mp; } *vnode_t;
@@ -33,7 +33,7 @@ struct sysctl_req { void *newptr, *oldptr; size_t oldlen, oldidx; };
 #define SYSCTL_PROC(...)
 #define MNT_RDONLY 1
 #define MNT_ROOTFS 2
-static struct mount mounted = {3, {"hfs"}};
+static struct mount mounted = {3, {"hfs", "root_device", "/"}};
 static struct vnode node = {&mounted};
 vnode_t rootvnode = &node;
 dev_t rootdev = 42;
@@ -58,7 +58,7 @@ int main(void) {
     unsigned char bytes[236]; memset(bytes,0xa5,sizeof(bytes));
     struct sysctl_req req = {NULL,bytes,sizeof(bytes),0};
     assert(a52q_sysctl_edt_fstab(&req)==0 && req.oldidx==sizeof(bytes));
-    assert(!strcmp((char*)bytes,"/dev/a52ios0"));
+    assert(!strcmp((char*)bytes,"root_device"));
     assert(!strcmp((char*)bytes+0x20,"/"));
     assert(!strcmp((char*)bytes+0x60,"hfs"));
     assert(!strcmp((char*)bytes+0x80,"ro"));
@@ -66,6 +66,14 @@ int main(void) {
     int32_t frequency,pass;memcpy(&frequency,bytes+0xe0,4);memcpy(&pass,bytes+0xe4,4);
     assert(frequency==0 && pass==1);
     for (unsigned i=0xe8;i<236;i++) assert(bytes[i]==0);
+    strcpy(mounted.stat.f_mntfromname,"/dev/a52ios0");
+    assert(a52q_sysctl_edt_fstab(&req)==0 && !strcmp((char*)bytes,"/dev/a52ios0"));
+    memset(mounted.stat.f_mntfromname,'x',32);mounted.stat.f_mntfromname[32]=0;
+    assert(a52q_sysctl_edt_fstab(&req)==ENAMETOOLONG);
+    mounted.stat.f_mntfromname[0]=0;assert(a52q_sysctl_edt_fstab(&req)==ENAMETOOLONG);
+    strcpy(mounted.stat.f_mntfromname,"root_device");
+    strcpy(mounted.stat.f_mntonname,"/other");assert(a52q_sysctl_edt_fstab(&req)==ENOENT);
+    strcpy(mounted.stat.f_mntonname,"/");
     req.oldlen=235;assert(a52q_sysctl_edt_fstab(&req)==ENOMEM);req.oldlen=236;
     req.newptr=bytes;assert(a52q_sysctl_edt_fstab(&req)==EPERM);req.newptr=NULL;
     full_root=0;assert(a52q_sysctl_edt_fstab(&req)==ENOENT);full_root=1;
