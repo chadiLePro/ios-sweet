@@ -398,11 +398,9 @@ def main():
             if (any(root_args) or a.qemu_dtb or not ufs_test or a.bootstrap_init or a.hfs_test_root or
                     b'A52Q UFS iOS root: bounded read-only userdata window' not in kernel):
                 raise ValueError('full disk root needs new kernel, physical UFS proof and no diagnostic/RAM root')
-            from a52q_persistent_root import validate_config
-            ufs_root = json.loads(a.ufs_ios_root_plan.read_text())
-            validate_config(ufs_root, ufs_test)
-            if ufs_root['kernel_sha256'] != hashlib.sha256(kernel).hexdigest():
-                raise ValueError('full root plan kernel hash differs')
+            from a52q_persistent_root import bind_plan
+            ufs_root = bind_plan(json.loads(a.ufs_ios_root_plan.read_text()), ufs_test,
+                                 hashlib.sha256(kernel).hexdigest())
         if a.hfs_qemu_proof and (not a.hfs_test_root or a.qemu_dtb):
             raise ValueError('HFS QEMU proof is only for a physical HFS diagnostic root')
         root_path = a.bootstrap_init or a.hfs_test_root

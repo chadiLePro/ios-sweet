@@ -83,7 +83,10 @@ def validate_volume_headers(header, alt, size):
     if (not 512 <= block <= 65536 or block & (block - 1) or
             total * block != size or free > total or journal >= total):
         raise ValueError('invalid HFS test volume geometry')
-    if alt[:16] != header[:16] or alt[40:48] != header[40:48]:
+    # lastMountedVersion (bytes8..11) is a writer stamp, not geometry. Linux
+    # updates the primary stamp without rewriting the alternate on clean RO
+    # fixtures; requiring identical stamps rejects otherwise checked volumes.
+    if alt[:8] != header[:8] or alt[12:16] != header[12:16] or alt[40:48] != header[40:48]:
         raise ValueError('HFS alternate volume header geometry differs')
     for offset in range(112, 512, 80):
         logical, _, blocks = struct.unpack_from('>QII', header, offset)

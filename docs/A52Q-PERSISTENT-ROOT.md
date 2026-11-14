@@ -112,14 +112,20 @@ Retain and verify original BOOT/recovery/DTBO/vbmeta and a small metadata backup
 Unmount Android data and all its aliases before accessing raw userdata. Reject
 changed partition bounds, unexpected devices, mounted userdata or short writes.
 
-The prospective raw root write is equivalent to the following **after approval**:
+The prospective installer uses 128 MiB chunks **after approval**. For each
+chunk it verifies the host and tmpfs hashes, then uses a bounded regular-file
+copy. The offsets are `0, 134217728, ... 17045651456`; every count is 134217728:
 
 ```text
-adb shell -T dd of=/dev/block/sda31 bs=4194304 count=4096 conv=fsync
+adb push -Z HOST-CHUNK.bin /tmp/a52q-root-chunk.bin
+adb shell "dd if=/tmp/a52q-root-chunk.bin of=/dev/block/sda31 bs=4194304 oflag=seek_bytes seek=OFFSET iflag=count_bytes count=134217728 conv=notrunc,fsync"
 ```
 
-It must receive the checked 16 GiB master on stdin through a bounded host
-stream; do not push it into TWRP's RAM-backed `/tmp`. Verify the first 16 GiB
+Do not push the whole master into TWRP's RAM-backed `/tmp` or directly to a
+block node. Preflight found Windows `adb shell` stdin truncation at `0x1a`;
+`exec-in` passed one small test but failed a larger all-byte-value test. Neither
+stdin path is used for installation. A separate 4 MiB all-byte-value `adb push`
+and byte-seek/count test passed in tmpfs without partition writes. Verify the first 16 GiB
 readback against the master SHA256 before installing a candidate BOOT. A
 read-only device-side readback is equivalent to:
 

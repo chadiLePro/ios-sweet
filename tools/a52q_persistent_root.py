@@ -90,6 +90,16 @@ def adt_node(config):
         ('layout-kind', u32(2)), ('gpt-crc32', u32(*config['gpt_crc32']))])
 
 
+def bind_plan(plan, ufs, kernel_hash):
+    """Bind an immutable storage plan to this candidate's fresh log nonce."""
+    validate_config(plan, dict(ufs, nonce=plan['ufs_nonce']))
+    if plan['kernel_sha256'] != kernel_hash:
+        raise ValueError('full root plan kernel hash differs')
+    bound = dict(plan, ufs_nonce=ufs['nonce'])
+    validate_config(bound, ufs)
+    return bound
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for arg in ('image', 'validation', 'gpt-capture', 'ufs-payload', 'kernel', 'out'):

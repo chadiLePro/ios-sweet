@@ -87,8 +87,10 @@ def main():
         payload = build.get('embedded_payload', {})
         root_config = payload.get('ufs_diagnostic_root')
         ios_config = payload.get('ufs_ios_root')
+        from a52q_persistent_root import bind_plan
         if (bool(a.ufs_ios_root_plan) != bool(ios_config) or
-                (ios_config and (root_config or json.loads(a.ufs_ios_root_plan.read_text()) != ios_config))):
+                (ios_config and (root_config or bind_plan(json.loads(a.ufs_ios_root_plan.read_text()),
+                    payload['ufs_selftest'], payload['kernel_sha256']) != ios_config))):
             raise ValueError('full-root plan missing or differs from payload')
         if bool(a.ufs_diagnostic_root) != bool(root_config) or bool(a.ufs_root_gpt_capture) != bool(root_config):
             raise ValueError('BOOT root requires payload configuration, exact fixture and GPT evidence together')

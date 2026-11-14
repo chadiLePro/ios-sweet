@@ -8,13 +8,22 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import adt
 import a52q_persistent_root as root
-from a52q_hfs_root import read_test_root
+from a52q_hfs_root import read_test_root, validate_hfs_test_root
 from a52q_payload import validate_payload
 from a52q_ufs_selftest import adt_node as ufs_node
 from test_a52q_payload import fixture as payload_fixture
+from test_a52q_hfs_root import fixture as hfs_fixture
 
 
 class PersistentRootTests(unittest.TestCase):
+    def test_alternate_writer_stamp_is_not_geometry(self):
+        data = hfs_fixture()
+        data[1032:1036] = b'H+Lx'
+        data[-1016:-1012] = b'10.0'
+        validate_hfs_test_root(data)
+        data[-1020] ^= 1
+        with self.assertRaisesRegex(ValueError, 'alternate'): validate_hfs_test_root(data)
+
     def setUp(self):
         self.ufs = dict(reg=[0x1d84000, 0x3000], nonce=81, last_lba=31077375,
             block_bytes=4096, read_lba=123888, read_crc32=0x12345678)
@@ -48,6 +57,17 @@ class PersistentRootTests(unittest.TestCase):
             self.report['partitions'][0]['bytes'] = 96 << 20
             with self.assertRaisesRegex(ValueError, 'cannot contain'):
                 root.configuration(self.capture, self.ufs, self.master, 'b' * 64)
+
+    def test_rebinds_only_log_nonce_for_a_new_candidate(self):
+        fresh = dict(self.ufs, nonce=82)
+        result = root.bind_plan(self.config, fresh, 'b' * 64)
+        self.assertEqual(result['ufs_nonce'], 82)
+        self.assertEqual(dict(result, ufs_nonce=81), self.config)
+        self.assertEqual(self.config['ufs_nonce'], 81)
+        with self.assertRaisesRegex(ValueError, 'kernel hash'):
+            root.bind_plan(self.config, fresh, 'c' * 64)
+        with self.assertRaises(ValueError):
+            root.bind_plan(self.config, dict(fresh, last_lba=1000), 'b' * 64)
 
     def test_full_root_is_never_read_into_diagnostic_buffer(self):
         path = MagicMock()

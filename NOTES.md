@@ -1,48 +1,80 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## A52Q handoff — 2026-11-14: disk-root v2 mounted; PHONE SAFE
+## A52Q handoff — 2026-11-14: full-root candidate prepared; PHONE SAFE
 
+Original BOOT is installed and freshly SHA256 verified:
+d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+No pending restoration; no userdata or GPT writes. Phone is in TWRP.
+Android control-before-ios-ufs-v1 passed boot_completed=1 and returned to TWRP;
+original BOOT and protected partition hashes matched. Keep the saved v2 console.
 
-Full HFS kernel build43596004630/source2d2cd0c343a9567673f95bbc712e2c951c264582
-PASSED; kernel e40f1facea620524799430374428ab13949cbfd8423e761f6a7228d6d2f3d06f.
-All69sourcefiles/archive hashes matched reviewed overlay. HostCI43596004755 PASS.
-User NOW explicitly waived userdata backup: "delete android no problem dont backup".
-Do not repeat backup prerequisite, but present exact root write/candidate and
-request concrete approval per current user instruction BEFORE userdata writes.
-No userdata write yet. Full master fresh hash readback PASS. Separate4GiBvar
-hostimage E:/A52-iOS16/storage-data-v1/a52q-ios-var.hfs.img, fsck/checksum-rsyncPASS,
+Latest physical disk-root result: backup/a52q/ufs-root-v2/console.txt contains
+"hfs: mounted A52ReadOnly on device b(1, 1)", then
+"rootvp not authenticated after mounting @bsd_init.c:953". Five CRC-valid root
+window records. UFS HFS mount proven; diagnostic PID1 from UFS NOT proven.
+The rootauth fix allows only the published read-only UFS root, logs UNSEALED,
+and leaves other A52 roots and Redmi unchanged. RAM roots skip this check.
+
+Full HFS build43596004630/source2d2cd0c343a9567673f95bbc712e2c951c264582 PASS;
+69 archived source hashes matched reviewed overlay; kernel e40f1facea620524799430374428ab13949cbfd8423e761f6a7228d6d2f3d06f.
+AMFI-only rebuild43597692128/sourcea5398f22be05a316b21890cf709ae4f0fb8c824d PASS;
+only audited launchd/dyld pins admitted on full UFS root; no entitlements/platform
+or Apple CMS trust fabricated. Implementation SHA657609ad25d69a2330fc3ae652dd3d95d352c5eadc71ef145c3128568cf501e0.
+Final kernel210ac994cf8b7a41237613e72f738b9e74b6d22ecdc8014eeb0c602d7c5aa492.
+QEMU exact final kernel + small nonjournaled RAM fixture PASS3entry/7PID1heartbeats:
+shim/out/a52q-ios-policy-qemu-v2/run/result.json. NOT an emulated full-root boot.
+HostCI43597691763 PASS; latest local109Python tests PASS. Original81patches intact.
+
+Full master E:/A52-iOS16/ios16-20H392-pristine-v11.hfs.img,17179869184B,
+SHA0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149.
+Sidecar .hfs.verified.json: clean RO fsck,47 originalcore/cacheSHA,nonjournaled.
+Fresh full hash readback repeated during plan and installer preparation, allPASS.
+Staged native source, verified transfer ext4, original v10 and master preserved.
+Apple xattrs/ACLs/BSDflags NOT preserved; no runtime compatibility claim.
+Private master-executable-audit-v2 verified launchd/dyld/SpringBoard checksums and
+all executable-page hashes; plainarm64. Shared cache header arm64. No Apple
+launchd execution, userland services or visible SpringBoard demonstrated.
+Separate4GiB var hostimage storage-data-v1/a52q-ios-var.hfs.img fsck/rsyncPASS,
 SHAefa03fd497c0ecf2b1c5915a925fbc27979319094b663611f11e3abf860b8a36.
-Its write/mount kernel path NOT implemented; no writable storage claim.
-Master executable auditv2 PASS3original SHA+allCodeDirectorypagehashes, plainarm64.
-launchd cdhash b65c36c9f5b287a6a8f5ca83d9427fb55ef04f4e; dyld684d847c40e6e873eeaec693011d4d997a869d2a.
-Implementing full-root-only two-executable pin allowlist, no entitlement/platform
-or CMS-trust claim. Requires isolated AMFI rebuild from newfullbase, thenQEMU.
-107Python tests PASS; repo81patches/39Python/7shell PASS with Gitbash onPATH.
-Fullroot tools use streamingread; small RAM/BOOTroot tools now reject16GiBbefore
-allocation. Source/packaging fullrootplan never embedsroot inBOOT orRAM.
+Kernel bounded-write/mount path NOT implemented; this volume is NOT installed.
 
-Original BOOT restored by watcher; fresh ADB full-partition SHA256 readback
-matches d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
-backup/a52q/ufs-root-v2/receipt.json requires_restore=false; protected hashes
-unchanged. Phone in TWRP. NO restoration pending, NO userdata/GPT writes.
-Exact retained lines: "hfs: mounted A52ReadOnly on device b(1, 1)" then
-"rootvp not authenticated after mounting @bsd_init.c:953". Root mounted from
-UFS, diagnostic PID1 NOT executed. Five matching CRC A52V1 window records.
-A RAM-root boot skips this sealed-root check; HFS cannot implement APFS rootauth.
-Implementing exception ONLY for published A52 UFS root and MNT_RDONLY, with
-explicit UNSEALED log. Redmi and all other A52 root policies remain unchanged.
-Also implementing distinct read-only 16GiB userdata root window with live GPT
-CRC/entry check and separate rd=a52ios0. Kernel source only, not built/tested yet.
+Full root plan E:/A52-iOS16/ios-root-plan-v1.json binds exact kernel/master/GPT.
+Candidate shim/out/a52q-ios-ufs-hardware-v2/build/a52q-ios-ufs-UNTESTED.img
+SHA2a19c0f17281b818386920be66591f6a5907ec73544eb8fbd5ede85931a0e4cb,
+96MiB BOOT, no RAMDisk/init substitute. New root device /dev/a52ios0 is read-only
+16GiB userdata window; liveGPT CRC/header/entry checked before publication.
+Host install review E:/A52-iOS16/ios-root-install-review-v1.json.
 
-Full master: E:/A52-iOS16/ios16-20H392-pristine-v11.hfs.img, 17179869184B,
-SHA256 0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149.
-Sidecar is .hfs.verified.json (NOT .img.verified.json): read-only fsck PASS,
-47 original core/cache SHA checks PASS, non-journaled, 184116 files/137189 folders.
-32 Unicode repairs match original source NFD names; only30 metadata4Kblocks
-changed in copy of preserved v10. Journal bit cleared in both volume headers
-with rollback record; full hash matched virtual two-word patch. Staged source,
-verified transfer ext4, original v10 and current validated v11 all preserved.
-No Apple userland boot or xattrs/ACLs/BSD flags preservation claim.
+User explicitly waived userdata backup: "delete android no problem dont backup".
+Do NOT repeat backup prerequisite. Per user's step7, present exact operation
+and get concrete approval BEFORE any userdata write. Proposed ONLY root range:
+/dev/block/sda31 bytes[0,17179869184), absolute[12966690816,30146560000).
+This destroys existing Android data. BOOT restoration does NOT restore it.
+No GPT/other partition write, no future4GiBvar volume included. Private installer
+research/a52q_install_full_root.py has host-only prepare phase; install requires
+--approved-exact-root-write. It checks host master/candidate/backups/liveGPT,
+unmounts userdata-dependent aliases, records metadata snapshot, then128MiBchunks
+pushed to /tmp, perchunkSHA, bounded dd seek/count; full16GiB phonehash readback.
+The user has NOT yet approved this concrete write. No install receipt exists.
+
+Transport safety: Windows adb shell stdin truncated at0x1a; exec-in smalltest
+passed but4MiBall-byte test failed. DO NOT use either for binary root stdin.
+Binary adb push -Z and regular-file byte-seek/count dd passed4MiB tmpfs test;
+128MiB chunk push +deviceSHA also verified in backup/a52q/storage-preflight-v3.
+Metadata16MiB raw snapshot saved and deviceSHA matched; mounted filesystem
+snapshot is NOT a consistent Android data backup. Original protected images
+are retained/verified. No partition writes were performed in transport tests.
+
+BOOT helper now supports --kernel-ios-root ONLY after verified root install
+receipt +fresh16GiBdevicehash; kernel-ios-root-result separate from PID1 evidence.
+Watcher research/watch_ios_ufs_restore.py prepared, NOT running. It captures
+pstore then restores original BOOT on TWRP return; 10min deadline means restore
+still required if timeout. Do not run Android control AFTER destroying userdata.
+Need user near phone for3min fullroot trial, then button reset to TWRP.
+Current remaining: final host checks/publication, concrete write approval/readiness,
+then root install/verify, temporary BOOT trial, logs/BOOT restore. No iOS boot claim.
+
+### Earlier staging/trial history (superseded by the status above)
 
 TRIAL FINISHED: backup/a52q/ufs-root-v1/receipt.json requires_restore=false,
 original_boot_restored=true, protected hashes unchanged. Watcher9008 finished.
