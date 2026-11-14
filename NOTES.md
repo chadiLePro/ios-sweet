@@ -1,6 +1,14 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## CURRENT: APPLE LAUNCHD MAIN PROVEN ON FULL UFS ROOT; BOOT RESTORED
+## CURRENT: APPLE LAUNCHD MAIN PROVEN; V5 ACTIVE, BOOT RESTORATION REQUIRED
+
+V5 FSCK TRIAL ACTIVE NOW: backup/a52q/ios-ufs-v5/receipt.json requires_restore=true,
+original_boot_restored=false. Candidate1c78fb37...5f9d2e installed/readback and
+nativeTWRPSystem reboot sent. Hidden research/watch_ios_ufs_v5_restore.py waiting.
+C: logs backup/a52q/ios-ufs-v5/watcher.log and watcher.err.log (not E:).
+User prompted3minreset, then collect/restore immediately. Fullroot remainsRO.
+All below 'restored/no pending' statements refer to prior v4 and are superseded
+while v5 ACTIVE. Receipt is definitive. Do not bootAndroid or formatdata.
 
 FSCK CANDIDATE READY, PREPARING TRIAL V5: exact kernel3808e55a...ccfad87
 passed QEMU3entry/7PID1heartbeats; planv4 complete-masterhash0f4...312149PASS.
