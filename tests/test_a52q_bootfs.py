@@ -14,6 +14,7 @@ class BootFilesystemTests(unittest.TestCase):
         body = '\n'.join(line for line in (root/'xnu/a52q/a52q_bootfs.c').read_text().splitlines()
                          if not line.startswith('#include'))
         harness = r'''
+#define _POSIX_C_SOURCE 200809L
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
@@ -90,5 +91,6 @@ int main(void) {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory)/'bootfs.c'; binary = Path(directory)/'bootfs.exe'
             source.write_text(harness + body + checks)
-            subprocess.run([compiler, '-std=c11', '-Wall', '-Wextra', '-Werror', str(source), '-o', str(binary)], check=True, capture_output=True)
+            compiled = subprocess.run([compiler, '-std=c11', '-Wall', '-Wextra', '-Werror', str(source), '-o', str(binary)], capture_output=True, text=True)
+            self.assertEqual(compiled.returncode, 0, compiled.stderr)
             subprocess.run([str(binary)], check=True, capture_output=True)
