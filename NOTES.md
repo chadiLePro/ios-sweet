@@ -1,5 +1,34 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## LATEST: V7 RESTORED; SAMSUNG NORMAL-REASON V8 PREFLIGHT
+
+V8 ACTIVE NOW: receiptbackup/a52q/ios-ufs-v8/receipt.json requires_restore=true,
+reboot_disconnect_observed=true, candidate1c78fb37...5f9d2e installedreadback.
+Native '/system/bin/reboot adb' sent; transportclosedexpected. Watcherv8C: logs
+backup/a52q/ios-ufs-v8/watcher*.log. UseraskedFIVEminutes ifSamsungSplash;
+ifTWRPreturnsitselfleaveopenandreport. Collect/restoreBOOTimmediatelyonreturn.
+Need freshkernelbootID AND XNUentry beforeclaimsthisrouteworked. All below
+no-pending/originalsafe statements refer to oldertrials andaresupersededwhileV8active.
+
+V7 did rebootLinux: pre/postbootIDsdiffer. But262132-byte console ONLY Linux,
+last reboot cmd 'shell'; noXNUentry. BOOT restored/hashverified. Userreported
+alreadyTWRP before5min; no fsck/newkernelfailure established.
+InspectedpinnedLineageSamsungsource f6bbda4e5986f09e4d51ceffd1b645b2d5aa75b4:
+drivers/samsung/debug/sec_debug.c::sec_debug_update_restart_reason line337.
+Unrecognized'shell' falls through settingSEC_REBOOT andreturnswithoutsetting
+PMIC PONnormal. 'adb'prefix goes__done withPON_NORMALBOOT/SEC_NORMAL. This
+explainslikelyretainedRecoveryselection; currentvendorTWRPexactsourceunverified.
+Nextnativecommand /system/bin/reboot adb, NOTgenericno-argdefaultshell. No raw
+PMICaddresswrite, firmware/MISC/otherpartitionwrite. Actualnativebinaryusage
+supports [rebootcommand], property_set/sys.powerctl verified frombinary.
+
+V8 installpreflightrunning; receiptbackup/a52q/ios-ufs-v8/receipt.json definitive.
+Samecheckedcandidate1c78fb37...5f9d2e/kernel3808e55a...ccfad87/rootplanv4.
+C:install/watcherlogs inV8directory; watch_ios_ufs_v8_restore.py prepared. After
+realdepartureask5minreset; afterreturnverifybootID andfreshXNUentrybeforeclaims.
+V7Linux-onlyconsolearchivedthenRAMrecordunlinked. No userdata/root/varwrite.
+All older ACTIVEentries superseded. Current BOOToriginalUNTILV8receiptmarkswrite.
+
 ## LATEST: V6 DID NOT REBOOT LINUX; V7 NATIVE-REBOOT PREFLIGHT
 
 V7 ACTIVE NOW: candidate1c78fb37...5f9d2e readbackverified, native/system/bin/reboot

@@ -159,3 +159,12 @@ records Linux boot identity, using the installed native reboot command to
 bypass that GUI path. A longer unchanged-candidate trial is pending. None of
 these incomplete attempts proves fsck execution or invalidates the earlier
 Apple launchd-main result.
+
+A subsequent native reboot changed Linux boot identity but returned straight to
+recovery. Its retained Linux log records restart command `shell`, with no XNU
+entry. The pinned Samsung sec_debug_update_restart_reason source leaves the
+PMIC boot reason unchanged for an unrecognized command; an `adb` prefix selects
+normal boot explicitly. The next unchanged-candidate trial uses that supported
+reason. This is a source-based hypothesis pending fresh XNU-entry evidence,
+not a claim that the fsck policy passed. No raw PMIC, GPT or filesystem write
+was added. Source: [pinned Samsung restart policy](https://github.com/LineageOS/android_kernel_samsung_sm7125/blob/f6bbda4e5986f09e4d51ceffd1b645b2d5aa75b4/drivers/samsung/debug/sec_debug.c#L337).
