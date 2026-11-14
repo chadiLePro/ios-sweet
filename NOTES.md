@@ -1,5 +1,79 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## A52Q handoff — 2026-11-14: disk-root v2 ACTIVE; RESTORE PENDING
+
+11:34:21UTC corrected NON-JOURNALED disk-root trial installed+fullreadback,
+nativeTWRPSystem reboot. Receipt backup/a52q/ufs-root-v2/receipt.json needsrestore.
+User confirmed3minretryreadiness; watcherPID2116 research/watch_ufs_root_v2_restore.py
+logsE:/A52-iOS16/ufs-root-v2-watcher*.log. If timeout restoreBOOTvia collect-restore.
+Candidate32827efe1ce3f7c8d45583b39ca08f951367bcfe4dff1b34e823cbc42a375c75;
+kernel974unchanged; newfixtureade13aa50596f68240670ab96ca1d24cc4d8c4cbdfab2ff60c89b4c1be28ef50.
+FixtureproducerfsckPASS, newQEMUexactkernel/root7HBproof
+shim/out/a52q-ufs-root-readonly-qemu-v2/run/result.json. Hardware noRAMroot.
+
+Fullv11HFS Unicode repair PASSED:32source-matchingNFDnames,47SHAchecks,
+cleanfsck, counts184116files/137189folders unchanged; wholeblockdiffONLY30metadata
+blocks(VH/allocation/extents/catalog). E:/A52-iOS16/ios16-20H392-pristine-v11.hfs.img.
+InitialcorrectedSHA484daf79... hadfreshjournalneedinitflag5. Thenheader-only
+journaling-disable followingApplehfs_util RawDisableJournaling (bothVHcopies),
+preservedrollbackbytes+hashes E:/A52-iOS16/v11-readonly-header-patch.json.
+NewwholeSHA0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149
+matchesvirtualpatch hash, allotherbytesunchanged. .readonly-prepared.json records;
+finalread-onlyguestfsck/47SHA check pending. v10originalretained. NoApplebootclaim.
+Earlier PHONE SAFE records below historical; currentBOOTrestorationPENDING.
+
+TRIAL FINISHED: backup/a52q/ufs-root-v1/receipt.json requires_restore=false,
+original_boot_restored=true, protected hashes unchanged. Watcher9008 finished.
+UFS wholeBSDproof +rootwindow CRC BOTHpassed5copies. No disk-root PID1: HFS
+attempted initializing freshjournal, .strategy returnedEROFS0x1e asintended,
+journal_create failed, mountroot errno19loop. Fix is NON-JOURNALED cleanfixture,
+NOT enablingdiskwrites. Added validate_readonly_hfs_root andUFSroottool rejection
+ofjournaledfixture; RAMrootvalidation stillallowsjournalinit.101testsPASS.
+Preparing newfixture E:/A52-iOS16/a52q-hfs-init-readonly-v2.img usingguestmkfs
+without-J +samepinnedinit. NeedsnewQEMUproof+repackage; kernel974unchanged.
+
+32fullimageUnicodeproposed repairs ALLmatchoriginalsource filenamesUnicode3.2NFD:
+E:/A52-iOS16/hfs-name-repair-preview.json, privateaudit_hfs_name_repairs.py.
+Copyoforiginalv10 ->v11 .hfs.img, SHA copyverified; repair onlyv11 inisolatedguest
+exec99237 research/repair_hfs_names_v11.py. Requirescleanfsck+47SHA+file/foldercounts
+unchanged +fullblockdiff restrictedtoVH/allocation/extents/catalog metadataforks.
+No validatedv11claim yet. Originalv10preserved. Source/filenamechecksread-only.
+Livepstore auditconsolefile is catmissingerror; no newuserlandlog. Prior ACTIVE
+records below historical, currentoriginalBOOTrestored, phoneinTWRP.
+
+11:17:17UTC BOOT-only read-only HFS disk-root trial installed+fullreadback+
+nativeTWRPSystem reboot. User confirmed 3minreset readiness. Receipt
+backup/a52q/ufs-root-v1/receipt.json requires_restore=true. Restore ORIGINAL BOOT
+afterrecoveryreturn; watcher PID9008 research/watch_ufs_root_restore.py,
+logs E:/A52-iOS16/ufs-root-v1-watcher*.log. If timeout restoration still REQUIRED.
+Candidate66389c9ebbf85fbcedddecee94148d373d281b47266f4d4925c0f450fafdf7a7,
+kernel97437563bd3b5b3f57a846b4d5270667783acb6fef78ecf806f365fbdd7564e5.
+New kernel fullHFSbuild43473244579 PASSED sourcea487c5a;69overlayfiles/hashmanifests
+match localHFSsource. Artifact E:/A52-iOS16/builds/43473244579/. Samekernel+32MiB
+HFSfixture70665f70... passedQEMU PID1+7heartbeats in
+shim/out/a52q-ufs-root-hfs-qemu/run/result.json. Hardware has NO RAMroot fallback.
+BOOT96MiB sda19, boundedroot last32MiBoffset64MiB =>LBA115696/count8192;
+allGPT/sysfsbounds revalidated. No userdata format, GPT orotherpartitionwrites.
+
+Latest prompt's Applelaunchd/60HzIOMFB premise remains unsupported: actualsaved
+longdisplaytest logs own diagnosticPID1+31intactHB, no IOMFB/IOSurface/backboardd/
+SpringBoard messages. User has no newerbuild/log. LiveTWRPpstore emptyNov14;
+requested iOS/var/log+CrashReporter paths absent. Auditcapturebackup/a52q/log-audit-20261114/.
+Memoryplanner checkedfull256MiBbase0x106000000 against34DTreservationnodes,
+including5entire dynamicwindows, plusLinuxiomem/memreserve. No reserved overlap;
+not an exhaustivefirmware/XPU proof. EarlyBootVideo/IOSurface stilldisabled.
+
+FulliOSimagev10 copy+47core/cache SHAchecks PASSED but HFSfsck FAILED32IllegalName
+errors (exit8); no .verified.json/success marker. Never install asvalidatedimage.
+E:/A52-iOS16/ios16-20H392-pristine-v10.hfs.img preserved; debugreadonlyguest
+log E:/A52-iOS16/appliance-windows/pristine-debug-v10.log showsUnicode
+decomposition repairs in.localized.shortcut filenames only; VIStat/ABTStat/
+EBTStat/CBTStat zero,CatStat0x8000. Checking proposednames againstoriginalstaged
+Unicode3.2NFD names before anyrepair. Privateaudit script exec85611 (mayfinished).
+Sourceexportv9 stillverified16GiB SHA52754040...; v8export andv9HFSformatfailed
+outputsremoved onlyafterrecord in E:/A52-iOS16/discarded-incomplete-v8-v9.json.
+v10formattedinsideisolatedQEMUguest, sourceRO, no network/USB/hostphysicaldisks.
+
 ## A52Q handoff — 2026-11-13: display + PID1 VERIFIED; PHONE SAFE
 
 LONG TRIAL FINISHED: receipt backup/a52q/kernel-display-long/receipt.json says

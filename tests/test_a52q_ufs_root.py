@@ -21,6 +21,9 @@ class UfsRootTests(unittest.TestCase):
         self.ufs = dict(reg=[0x1d84000, 0x3000], nonce=81, last_lba=31077375,
             block_bytes=4096, read_lba=123888, read_crc32=0x12345678)
         self.data = hfs_fixture()
+        # Disk root is read-only; unlike the RAM fixture it must not need a journal.
+        struct.pack_into('>I', self.data, 1028, 1 << 8)
+        self.data[-1024:-512] = self.data[1024:1536]
         digest = hashlib.sha256(self.data).hexdigest()
         self.proof = {'scope': 'QEMU virt only; no Samsung boot or hardware claim',
             'status': 'diagnostic PID1 observed in QEMU; not Apple iOS userland',
@@ -56,6 +59,14 @@ class UfsRootTests(unittest.TestCase):
             self.report['disk_bytes'] -= 4096
             with self.assertRaisesRegex(ValueError, 'capacity'):
                 root.configuration(self.capture, self.ufs, self.data, 'kernel', self.proof)
+
+    def test_clean_but_uninitialized_journal_must_not_reach_disk_packaging(self):
+        from a52q_hfs_root import validate_hfs_test_root
+        journaled = hfs_fixture()
+        self.assertTrue(validate_hfs_test_root(journaled)['journaled'])
+        with patch.object(root, 'from_capture', return_value=self.report):
+            with self.assertRaisesRegex(ValueError, 'non-journaled'):
+                root.configuration(self.capture, self.ufs, journaled, 'kernel', self.proof)
 
     def test_crc_is_fresh_and_not_a_mount_claim(self):
         def frame(nonce=81, crc=None):

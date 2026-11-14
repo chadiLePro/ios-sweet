@@ -7,7 +7,7 @@ import hashlib
 import re
 import zlib
 from a52q_gpt import from_capture, diagnostic_boot_tail
-from a52q_hfs_root import validate_hfs_test_root, hardware_root_proof
+from a52q_hfs_root import validate_readonly_hfs_root, hardware_root_proof
 from mkadt import node, u32, u64
 
 
@@ -20,12 +20,12 @@ def validate_config(config, ufs):
             root_first != first + count - root_count or config['bytes'] != root_count * 4096 or
             config['offset_in_boot_bytes'] != (count - root_count) * 4096 or
             not 0 <= config['header_crc32'] <= 0xffffffff or
-            not re.fullmatch('[0-9a-f]{64}', config['sha256'])):
+            not re.fullmatch('[0-9a-f]{64}', config['sha256']) or config['volume']['journaled'] is not False):
         raise ValueError('invalid bounded BOOT diagnostic root configuration')
 
 
 def configuration(gpt_capture, ufs, data, kernel_hash, qemu_report):
-    volume = validate_hfs_test_root(data)
+    volume = validate_readonly_hfs_root(data)
     report = from_capture(gpt_capture)
     if report['block_bytes'] != 4096 or report['disk_bytes'] != (ufs['last_lba'] + 1) * 4096:
         raise ValueError('GPT and physical UFS proof capacity differ')
@@ -53,7 +53,7 @@ def adt_node(config):
 
 def validate_packaging(config, ufs, data, gpt_capture, packed_end):
     validate_config(config, ufs)
-    validate_hfs_test_root(data)
+    validate_readonly_hfs_root(data)
     if len(data) != config['bytes'] or hashlib.sha256(data).hexdigest() != config['sha256']:
         raise ValueError('root image differs from payload proof')
     if hashlib.sha256((gpt_capture / 'capture.json').read_bytes()).hexdigest() != config['gpt_capture_sha256']:

@@ -10,6 +10,19 @@ import struct
 MAX_BYTES = 32 << 20
 
 
+def validate_readonly_hfs_root(data):
+    """The disk diagnostic deliberately supports only clean, non-journaled HFS.
+
+    A clean-unmount bit alone does not make a fresh journal writable-free:
+    newfs may leave its initialization pending, which XNU then tries to write.
+    RAM roots may initialize their journals; the read-only UFS minor cannot.
+    """
+    volume = validate_hfs_test_root(data)
+    if volume['journaled']:
+        raise ValueError('read-only diagnostic root requires a non-journaled HFS fixture; journal initialization would write')
+    return volume
+
+
 def hardware_root_proof(report, kernel_hash, root_hash):
     """Bind a physical diagnostic candidate to its exact successful QEMU root.
 
