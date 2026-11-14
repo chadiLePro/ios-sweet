@@ -12,6 +12,8 @@
 #include <mach/kern_return.h>
 #include <sys/codesign.h>
 #include <sys/proc.h>
+#include <sys/mount.h>
+#include <sys/vnode.h>
 #include <sys/systm.h>
 #include <sys/ubc_internal.h>
 
@@ -52,20 +54,10 @@ static kern_return_t a52q_with_monitor(void *ent __unused, const CEQueryContext_
 {
     return KERN_NOT_SUPPORTED;
 }
-static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
+/* The same exact cache identity is used for registration and the narrowly
+ * scoped SIP-flag exception. A pin never grants a platform bit or entitlement. */
+static int a52q_cache_pin_index(const struct cs_blob *blob)
 {
-    extern int a52q_ufs_root_named(const char *name);
-    /* SHA256 CodeDirectory cdhash20, extracted from the validated full master.
-     * launchd file SHA256 12370e5e...cac61c; dyld 58068345...33757.
-     * Host audit verified every executable-page hash. CMS trust is NOT claimed.
-     * Core XNU continues checking CodeDirectory structure, special slots and
-     * executable pages. No global CS_VALID/platform/entitlement bypass. */
-    static const uint8_t apple_pins[2][CS_CDHASH_LEN] = {
-        {0xb6,0x5c,0x36,0xc9,0xf5,0xb2,0x87,0xa6,0xa8,0xf5,
-         0xca,0x83,0xd9,0x42,0x7f,0xb5,0x5e,0xf0,0x4f,0x4e},
-        {0x68,0x4d,0x84,0x7c,0x40,0xe6,0xe8,0x73,0xee,0xae,
-         0xc6,0x93,0x01,0x1d,0x4d,0x99,0x7a,0x86,0x9d,0x2a}
-    };
     /* Generated from ios16-20H392-cache-pins.json. All 44 original-file
      * checksums and every CodeDirectory page hash verified against master
      * 0f4bcaa7...312149; these caches contain no XML/DER entitlements.
@@ -160,6 +152,45 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
         /* dyld_shared_cache_arm64.symbols */
         {0x47,0x75,0x55,0x2f,0x86,0x5b,0x66,0x83,0xfe,0x78,0x86,0xdb,0x6c,0x0d,0x20,0x3d,0x39,0x01,0x50,0x5d},
     };
+    if (!blob || blob->csb_entitlements || blob->csb_entitlements_blob ||
+        blob->csb_der_entitlements_blob) return -1;
+    for (unsigned i = 0; i < sizeof(cache_pins) / sizeof(cache_pins[0]); i++) {
+        if (!memcmp(blob->csb_cdhash, cache_pins[i], CS_CDHASH_LEN)) return (int)i;
+    }
+    return -1;
+}
+
+/* Called only for a missing SF_RESTRICTED flag, after root ownership checks.
+ * Registered CodeDirectory identity + the actual RO root mount replace that
+ * one missing filesystem flag. Ordinary range/page checks run afterwards. */
+int a52q_cache_root_mapping_allowed(vnode_t vp, vnode_t root);
+int a52q_cache_root_mapping_allowed(vnode_t vp, vnode_t root)
+{
+    extern int a52q_ufs_root_named(const char *name);
+    if (!vp || !root || !a52q_ufs_root_named("a52ios0")) return 0;
+    mount_t mp = vnode_mount(vp);
+    if (!mp || mp != vnode_mount(root) || vnode_vtype(vp) != VREG ||
+        (vfs_flags(mp) & (MNT_RDONLY | MNT_ROOTFS)) != (MNT_RDONLY | MNT_ROOTFS)) return 0;
+    struct cs_blob *blob = csvnode_get_blob(vp, 0);
+    if (!blob || !(blob->csb_flags & CS_VALID) || a52q_cache_pin_index(blob) < 0) return 0;
+    printf("A52Q shared cache: pinned signature on read-only root; SIP flag exception only\n");
+    return 1;
+}
+
+static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
+{
+    extern int a52q_ufs_root_named(const char *name);
+    /* SHA256 CodeDirectory cdhash20, extracted from the validated full master.
+     * launchd file SHA256 12370e5e...cac61c; dyld 58068345...33757.
+     * Host audit verified every executable-page hash. CMS trust is NOT claimed.
+     * Core XNU continues checking CodeDirectory structure, special slots and
+     * executable pages. No global CS_VALID/platform/entitlement bypass. */
+    static const uint8_t apple_pins[2][CS_CDHASH_LEN] = {
+        {0xb6,0x5c,0x36,0xc9,0xf5,0xb2,0x87,0xa6,0xa8,0xf5,
+         0xca,0x83,0xd9,0x42,0x7f,0xb5,0x5e,0xf0,0x4f,0x4e},
+        {0x68,0x4d,0x84,0x7c,0x40,0xe6,0xe8,0x73,0xee,0xae,
+         0xc6,0x93,0x01,0x1d,0x4d,0x99,0x7a,0x86,0x9d,0x2a}
+    };
     if (blob && !ent && a52q_ufs_root_named("a52ios0")) {
         for (unsigned i = 0; i < 2; i++) {
             if (!memcmp(blob->csb_cdhash, apple_pins[i], CS_CDHASH_LEN)) {
@@ -168,13 +199,10 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
                 return KERN_SUCCESS;
             }
         }
-        if (!blob->csb_entitlements && !blob->csb_entitlements_blob && !blob->csb_der_entitlements_blob) {
-            for (unsigned i = 0; i < sizeof(cache_pins) / sizeof(cache_pins[0]); i++) {
-                if (!memcmp(blob->csb_cdhash, cache_pins[i], CS_CDHASH_LEN)) {
-                    printf("A52Q exec policy: pinned 20H392 shared cache %u accepted; no entitlements\n", i);
-                    return KERN_SUCCESS;
-                }
-            }
+        int cache_index = a52q_cache_pin_index(blob);
+        if (cache_index >= 0) {
+            printf("A52Q exec policy: pinned 20H392 shared cache %d accepted; no entitlements\n", cache_index);
+            return KERN_SUCCESS;
         }
     }
     static const uint8_t pin[CS_CDHASH_LEN] = {

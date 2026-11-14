@@ -2,6 +2,19 @@
 
 ## A52Q active handoff — cache candidate prepared, 2026-11-14
 
+V3 TRIAL FINISHED: ORIGINAL BOOT RESTORED and fresh phone SHA matched
+ d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Receipt requires_restore=false, protected hashes unchanged, phone TWRP.
+Cache registration SUCCEEDED: CODE SIGNING post-attachment logs through
+.42.dyldlinkedit. symbols companion is not requested at runtime. Next actual
+failure: shared_region reports vnode not SIP-protected; mapping syscall fails,
+libSystem consequently unavailable, initproc failed to start. No launchd main.
+Four valid UFS root window frames, UFS capacity/read phase CRC valid.
+Preparing A52-only exact-cache/RO-root SF_RESTRICTED exception in vm_unix plus
+observational kern.initproc_spawned=1 marker. No global CSR/CS disable, root image
+unchanged. Needs full HFS kernel build because overlay and vm_unix/kern_exit changed.
+The old ACTIVE/pending entries below are historical and superseded.
+
 TRIAL v3 ACTIVE: backup/a52q/ios-ufs-v3/receipt.json requires_restore=true.
 Candidate3c6224...69c37 installed/readback; TWRP System reboot sent. Watcher
 research/watch_ios_ufs_v3_restore.py is waiting; logs E:/A52-iOS16/ios-ufs-v3-watcher*.log.

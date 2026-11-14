@@ -90,6 +90,30 @@ def apply(root, filesystem='mockfs'):
                 } else
 #endif
                 panic("rootvp not authenticated after mounting");''')
+    # Full-root cache registration succeeds, then vm_unix rejects the missing
+    # macOS SF_RESTRICTED vnode flag (trial ios-ufs-v3). Preserve all later
+    # directory, signature-range and executable-page checks and all other boards.
+    replace('bsd/vm/vm_unix.c',
+            '\t\t\tif (!(va.va_flags & SF_RESTRICTED)) {',
+            '\t\t\tif (!(va.va_flags & SF_RESTRICTED)\n'
+            '#if defined(ARM64_BOARD_CONFIG_A52Q)\n'
+            '                && !a52q_cache_root_mapping_allowed(srfmp->vp, rdir_vp)\n'
+            '#endif\n'
+            '            ) {')
+    replace('bsd/vm/vm_unix.c', '#include <sys/xattr.h>\n',
+            '#include <sys/xattr.h>\n#if defined(ARM64_BOARD_CONFIG_A52Q)\n'
+            'extern int a52q_cache_root_mapping_allowed(vnode_t vp, vnode_t root);\n#endif\n')
+    # Observe Apple's existing PID1-only, one-shot main-entry signal. This does
+    # not set the sysctl, start a service or substitute diagnostic PID1.
+    replace('bsd/kern/kern_exit.c',
+            '\treturn sysctl_handle_int(oidp, &initproc_spawned, 0, req);',
+            '\tint error = sysctl_handle_int(oidp, &initproc_spawned, 0, req);\n'
+            '#if defined(ARM64_BOARD_CONFIG_A52Q)\n'
+            '    extern int a52q_ufs_root_named(const char *name);\n'
+            '    if (!error && req->newptr && initproc_spawned == 1 && a52q_ufs_root_named("a52ios0")) {\n'
+            '        for (unsigned i = 0; i < 3; i++)\n'
+            '            printf("A52Q: PID1 set kern.initproc_spawned=1 (launchd main marker)\\n");\n'
+            '    }\n#endif\n\treturn error;')
     root_hook = '''#if defined(ARM64_BOARD_CONFIG_A52Q)
     if (strcmp(rdBootVar, "a52root0") == 0 || strcmp(rdBootVar, "a52ios0") == 0) {
         extern int a52q_ufs_rootdev(dev_t *dev);
