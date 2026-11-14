@@ -56,8 +56,11 @@ def decode_kernel_console(data, config):
     expected = [0, config['last_lba'], config['block_bytes'], config['read_crc32'], 0x21000000]
     success = 0x20 in stages and stages[0x20]['values'] == expected and not any(s >= 0xe0 for s in stages)
     disk_verified = success and 0x30 in stages and stages[0x30]['values'] == expected
+    failed = any(s >= 0xe0 for s in stages)
     return {'scope': 'kernel UFS selftest/read-only device; not Apple userland or a mounted root',
             'nonce': config['nonce'], 'success': success,
             'readonly_disk_verified': disk_verified,
+            'retained_evidence': 'explicit failure frame' if failed else
+                'complete read-only disk proof' if disk_verified else 'incomplete CRC-valid console; not a hardware failure claim',
             'stages': {hex(k): dict(zip(('ocs', 'last_lba', 'block_bytes', 'data_crc32', 'response_header'), v['values']),
                                   valid_copies=v['copies']) for k, v in stages.items()}}

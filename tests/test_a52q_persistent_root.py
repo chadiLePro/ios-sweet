@@ -104,6 +104,29 @@ class PersistentRootTests(unittest.TestCase):
         data[0x48:0x2a8] = bytes(608)
         with self.assertRaisesRegex(ValueError, 'rd=a52ios0'): check()
 
+    def test_platform_gate_is_explicit_and_full_root_only(self):
+        import hashlib
+        data, manifest = payload_fixture()
+        off, size = struct.unpack_from('<2Q', data, 0x20)
+        tree, _ = adt.parse(data[off:off + size])
+        tree.children += [ufs_node(self.ufs), root.adt_node(self.config)]
+        encoded = adt.serialize(tree); data[off:] = encoded
+        struct.pack_into('<Q', data, 0x28, len(encoded))
+        command = b'rd=a52ios0 unentitled_ios_sim_launch=1'
+        data[0x48:0x2a8] = command + bytes(608 - len(command))
+        manifest.update(ufs_selftest=self.ufs, ufs_ios_root=copy.deepcopy(self.config),
+                        kernel_sha256='b' * 64, environment='SM-A525F/DS hardware candidate')
+        def check():
+            manifest['payload_sha256'] = hashlib.sha256(data).hexdigest()
+            validate_payload(data, manifest)
+        with self.assertRaisesRegex(ValueError, 'explicitly declared'): check()
+        manifest['ios_exec_development'] = True; check()
+        data[0x48:0x2a8] = b'rd=a52ios0' + bytes(608 - len(b'rd=a52ios0'))
+        with self.assertRaisesRegex(ValueError, 'exactly one'): check()
+        data[0x48:0x2a8] = command + bytes(608 - len(command))
+        del manifest['ufs_ios_root']
+        with self.assertRaisesRegex(ValueError, 'full UFS root'): check()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -15,6 +15,28 @@ mounted device is its verified UFS window and the mount is read-only. It logs
 `UNSEALED` rather than claiming Apple authentication. Other roots still panic.
 The original 81 Redmi patches remain unchanged.
 
+The full 16 GiB root has subsequently been installed in the explicitly approved
+userdata prefix. All 128 chunks completed and the full device readback matched
+the validated master; original BOOT and protected partition hashes matched
+before the trial. The user waived a userdata backup. Android data was overwritten.
+The first XNU full-root trial mounted the volume and accepted the launchd
+CodeDirectory, then killed exec with CS_KILLED in process_signature. Original
+BOOT was restored and its full SHA reverified. Apple user instructions, services
+and SpringBoard have not been demonstrated.
+
+Retained numeric reason codes disagree between copies. Source inspection
+identifies a deterministic blocker: this shared-XNU build retains the
+XNU_TARGET_OS_OSX exec gate, while the unchanged Apple binaries declare
+PLATFORM_IOS. The DEVELOPMENT tunable unentitled_ios_sim_launch defaults false.
+The full-root-only --ios-exec-development option passes
+unentitled_ios_sim_launch=1 through that existing gate. It bypasses the platform
+no-sandbox requirement without granting entitlements or changing AMFI hash pins
+and code-page checks. The next BOOT-only trial tests this change.
+
+Before another trial, archive and unlink only the previous ramoops console
+record in reserved RAM. Captured evidence is retained; logging stays enabled.
+No Android reboot or disk partition write is used to remove stale markers.
+
 ## Full image and executable inspection
 
 The private validated master is a regular 17,179,869,184-byte HFSX image:

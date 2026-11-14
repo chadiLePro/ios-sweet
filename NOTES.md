@@ -1,6 +1,49 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## A52Q handoff — 2026-11-14: full-root candidate prepared; PHONE SAFE
+## A52Q handoff — 2026-11-14: full UFS root mounted; BOOT restored; platform fix ready
+
+FIRST FULL-ROOT TRIAL FINISHED. NO BOOT RESTORATION PENDING.
+backup/a52q/ios-ufs-v1/receipt.json requires_restore=false, original_boot_restored=true.
+Watcher148 finished with full BOOT/protected hashes. Fresh recovery BOOT SHA
+confirmed d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Phone remains TWRP. USB descriptor enumeration failed after restore; user
+unplug/replug restored ADB. User said continue, still beside phone.
+
+Full root mounted from userdata:3CRC-valid A52V1 window frames; volume label
+iOS16Pristine and UNSEALED path in retention-corrupted text, INTACT launchd pin
+accepted line. No Apple user execution proven: SIGKILL(CS_KILLED) inside exec.
+Raw numeric reason0xe versus0xd disagrees; never repair/infer those numbers.
+Exact leaf symbols place backtrace in process_signature+0x1e4 -> psignal_internal.
+Compiled binary contains XNU_TARGET_OS_OSX iOS-platform gate, default DEVELOPMENT
+unentitled_ios_sim_launch=false. Applelaunchd is PLATFORM_IOS and no no-sandbox
+entitlement exists. Source therefore identifies platform rejection independently
+of corrupt numeric reason. New fullroot-only --ios-exec-development passes
+unentitled_ios_sim_launch=1; no AMFI pins/page checks or entitlement grants changed.
+Kernel21... and filesystem0f4... UNCHANGED. Candidatev3 BOOT SHA
+3031859c83b0e95fc6d412fcd296b1d86569cb29af3dcaea85d18fced719f870.
+Private helper requires explicit option; root install proof now binds root hash
+and window, allowing newer BOOT trials without another filesystem installation.
+
+Next BOOT-only retry: backup/a52q/ios-ufs-v2/receipt.json, not installed yet.
+Baseline has3oldCRC-valid entry frames; cannot run Android control afterdatawipe.
+Old console archived pretrial-console-archived.bin SHA607e75950684c423ba4c09df784059d43d5d2b70a6bc81d9f39817dd493013c3.
+Rearm ONLY console-ramoops-0 via pstore unlink after archiving (reservedRAM,
+no partition writes); proof file required for explicit absent-baseline exception.
+Logging remains enabled. User has already authorized automatic BOOT-only tests.
+
+FULL ROOT INSTALL COMPLETE AND VERIFIED. User approved exact16GiB userdata
+write and trial, waived backup, confirmed beside phone. Entire /dev/block/sda31
+prefix[0,17179869184) now matches master SHA0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149.
+Receipt backup/a52q/ios-root-install-v1/receipt.json root_installed_verified=true,
+128chunks; hostADBserverloss6.75GiB recovered by matched-prefix resume; no
+userdata write outside approved16GiB. Original BOOT/protected hashes matched
+postwrite. Android data was overwritten as approved. DO NOT boot Android or
+run any original-Android control again. Phone in TWRP, no BOOTrestorependingyet.
+Starting private BOOT helper --kernel-ios-root --kernel-ufs-selftest with
+candidate2a19c0... in backup/a52q/ios-ufs-v1/receipt.json. Watcher prepared at
+research/watch_ios_ufs_restore.py but must start immediately after install/reboot.
+Await root-readback preflight; only announce3min when reboot actually starts.
+The later "not yet approved/no install" lines below are historical and superseded.
 
 Original BOOT is installed and freshly SHA256 verified:
 d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.

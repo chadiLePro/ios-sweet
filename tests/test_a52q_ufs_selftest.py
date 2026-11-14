@@ -33,6 +33,11 @@ class KernelUfsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'disagree'):
             decode_kernel_console(self.frame() + self.frame(crc=0), self.config)
 
+    def test_missing_intact_records_are_not_a_hardware_failure(self):
+        self.assertIn('incomplete', decode_kernel_console(b'', self.config)['retained_evidence'])
+        self.assertEqual(decode_kernel_console(self.frame(phase=0xe7), self.config)['retained_evidence'],
+                         'explicit failure frame')
+
     def test_disk_requires_both_transfer_and_bsd_path_proof(self):
         self.assertFalse(decode_kernel_console(self.frame(), self.config)['readonly_disk_verified'])
         self.assertFalse(decode_kernel_console(self.frame(phase=0x30), self.config)['readonly_disk_verified'])

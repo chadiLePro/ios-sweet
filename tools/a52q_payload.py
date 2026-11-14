@@ -245,6 +245,13 @@ def validate_payload(data, manifest):
         raise ValueError('only one UFS root layout may be selected')
     ios_root = manifest.get('ufs_ios_root')
     ufs_root = manifest.get('ufs_diagnostic_root') or ios_root
+    command = data[0x48:0x2a8].split(b'\0', 1)[0].split()
+    development = [v for v in command if v.startswith(b'unentitled_ios_sim_launch=')]
+    if manifest.get('ios_exec_development'):
+        if not ios_root or development != [b'unentitled_ios_sim_launch=1']:
+            raise ValueError('iOS development platform gate requires full UFS root and exactly one enabled boot argument')
+    elif development:
+        raise ValueError('iOS development platform gate must be explicitly declared')
     if roots or ufs_root:
         if len(roots) != 1 or not ufs_root or not ufs_test or manifest.get('environment') != 'SM-A525F/DS hardware candidate':
             raise ValueError('UFS root must be hardware-bound with a physical selftest and exactly one ADT node')
@@ -259,7 +266,6 @@ def validate_payload(data, manifest):
         validate_config(ufs_root, ufs_test)
         if roots[0].props != adt_node(ufs_root).props:
             raise ValueError('UFS root ADT differs from validated proof configuration')
-        command = data[0x48:0x2a8].split(b'\0', 1)[0].split()
         if [v for v in command if v.startswith(b'rd=')] != [b'rd=a52ios0' if ios_root else b'rd=a52root0'] or any(
                 v.startswith((b'rootrw=', b'ufsrw=')) for v in command):
             raise ValueError('disk root needs exactly its selected rd=a52root0 or rd=a52ios0 and no writable-root flags')
@@ -350,6 +356,8 @@ def main():
     p.add_argument('--ufs-selftest-log', type=Path, help='matching CRC-checked physical read console')
     p.add_argument('--ufs-diagnostic-root', type=Path, help='small QEMU-proven HFS fixture for read-only BOOT padding')
     p.add_argument('--ufs-ios-root-plan', type=Path, help='stream-verified 16 GiB full-root plan; root stays on UFS, never embedded in BOOT/RAM')
+    p.add_argument('--ios-exec-development', action='store_true',
+                   help='full UFS root only: enable the DEVELOPMENT kernel iOS-platform gate; AMFI pins unchanged, no entitlements granted')
     p.add_argument('--ufs-root-qemu-proof', type=Path, help='same kernel/HFS fixture must have reached PID1 in QEMU')
     p.add_argument('--ufs-root-gpt-capture', type=Path, help='CRC-checked captured GPT and live sysfs bounds')
     p.add_argument('--display-selftest-build', type=Path, help='successful standalone physical display build.json')
@@ -365,6 +373,9 @@ def main():
             raise ValueError('output exists or invalid memory budget (128..1024 MiB, multiple of 32)')
         kernel = a.kernel.read_bytes()
         validate_kernel(kernel)
+        if a.ios_exec_development and (not a.ufs_ios_root_plan or
+                b'unentitled_ios_sim_launch' not in kernel or b'Allowing spawn of iOS binary' not in kernel):
+            raise ValueError('iOS exec development option needs full root and the compiled XNU development platform gate')
         display_test = None
         display_args = (a.display_selftest_build, a.display_selftest_log, a.display_register_sources)
         if any(display_args):
@@ -470,7 +481,8 @@ def main():
                                                    ufs_test=ufs_test, display_test=display_test, ufs_root=ufs_root)))
         payload, info = mkpayload.build(str(a.kernel), str(tree_path),
                                        'debug=0xc serial=3 cpus=1 keepsyms=1 -v -noprogress rd=' +
-                                       ('a52ios0' if a.ufs_ios_root_plan else 'a52root0' if ufs_root else 'md0'),
+                                       ('a52ios0' if a.ufs_ios_root_plan else 'a52root0' if ufs_root else 'md0') +
+                                       (' unentitled_ios_sim_launch=1' if a.ios_exec_development else ''),
                                        ramdisk_path=str(root_path) if root_path else None)
         report = {'target': 'A52Q', 'status': 'bootstrap payload; physical RAM access not yet verified',
                   'environment': environment,
@@ -497,6 +509,9 @@ def main():
                 report['root_filesystem'] = 'read-only HFS diagnostic fixture in BOOT tail, no RAM root or Apple userland'
         if display_test:
             report['display_selftest'] = display_test
+        if a.ios_exec_development:
+            report['ios_exec_development'] = True
+            report['exec_platform_mode'] = 'XNU development iOS-platform gate; AMFI hash pins and page checks remain; no entitlements granted'
         validate_payload(payload, report)
         a.out.write_bytes(payload)
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')
