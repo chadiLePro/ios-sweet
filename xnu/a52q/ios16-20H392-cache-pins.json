@@ -1,0 +1,494 @@
+{
+  "build": "20H392",
+  "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
+  "source_file_checksums_verified": 44,
+  "all_code_page_hashes_verified": true,
+  "entitlements_granted": false,
+  "cms_trust_authenticated": false,
+  "files": [
+    {
+      "file": "dyld_shared_cache_arm64",
+      "sha256": "76874e8375252ee643011ff8063f0cce12355f05cf5f9897a34e5679667a65aa",
+      "code_directories": [
+        {
+          "cdhash": "2e6af99c2bbd9042f6b658b58739b6265cb3c46d",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.01",
+      "sha256": "5c9760038d878e4b45bea3b95ffb7b614c6daff1a73a498f6e196c83f2bb1563",
+      "code_directories": [
+        {
+          "cdhash": "137f323405f3fe1558084d3a77e7664a60beb0f8",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.02",
+      "sha256": "7051aebc295458ea1cc48b271b7e072c38c83c2e1c565f3b4cd68318a7a83298",
+      "code_directories": [
+        {
+          "cdhash": "80f7be76cf65fd656dfd7edbb80c384bb8967165",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.03",
+      "sha256": "511377c04e3054b905fcfb83bb2d1e6ffdb3b838ae21969fd1962dbfcab9880b",
+      "code_directories": [
+        {
+          "cdhash": "2c911e4dcd7f639b68ba1e14c34733ed85e5c133",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.04",
+      "sha256": "e2088a13f4215a85c4a69524026b56f096438c8e98b34038f54c7de189b9a192",
+      "code_directories": [
+        {
+          "cdhash": "84426be763c860f74b9eb97783c8b5b42a228704",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.05",
+      "sha256": "7e8c9229d31f849118075d8f33936bd277a8db34b93713905c6dc0499340ade0",
+      "code_directories": [
+        {
+          "cdhash": "c39d1ed667368168204580dc2502585e922793c5",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.06",
+      "sha256": "f0059d4271bd0defee561c33c7efbfb2867406d874586d6d61d0ac13fe6fdab6",
+      "code_directories": [
+        {
+          "cdhash": "c5c169d7a1202a1283ca3db61a219989aea14be9",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.07",
+      "sha256": "2be4a311e29fd92ad881b933b8212905f3a9784bcc3fa6f0d05d785d374fa39a",
+      "code_directories": [
+        {
+          "cdhash": "aaa35f6e703859933acf81afe2b1a4d781fbc003",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.08",
+      "sha256": "253ddb4dc5978044d3a41306ba45b3ed9a32b6de1341fdd307d0cced0fd78c49",
+      "code_directories": [
+        {
+          "cdhash": "d4adb922f88007f4449dcc60c107b599dd7bc21d",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.09",
+      "sha256": "abc1f19a5c58cafeba244c0d82bb5aabe4cb1a3546ee07da553181c7f3ea4ad7",
+      "code_directories": [
+        {
+          "cdhash": "abbb60e161ec4daca35dfcc66c98946edf86408a",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.10",
+      "sha256": "ed06cc2794a7de39bb25c9cb3c12c875202220256f249806d3db0d6ceefb6b42",
+      "code_directories": [
+        {
+          "cdhash": "468b3b52f2908fb6231ce4c6957cd199f6f35ba4",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.11",
+      "sha256": "4d6a4641435b157c08c1b7bdb5a5e9e4fc5ed549356514df25a0d3b46d9676e7",
+      "code_directories": [
+        {
+          "cdhash": "5a362eef20afdb47e40454adeb473a74f902b15f",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.12",
+      "sha256": "b49c6c50fdf8a322426ece36973b8ea986c4a6571afcc992a5ba3a0eb764585c",
+      "code_directories": [
+        {
+          "cdhash": "fda39278791c70e3b14086bec50d2c5c36af1890",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.13",
+      "sha256": "6340141bab750b7ab8a8f4e5d77ad2d9da15dde79d8a4d84182d51d49a660734",
+      "code_directories": [
+        {
+          "cdhash": "5e13d0be77a9f43bc78ad5d320105a62a768f03a",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.14",
+      "sha256": "3fa73c2764ed190c3094c273e7ddf4e3617a336a5aa03c9c031134341bd4fda2",
+      "code_directories": [
+        {
+          "cdhash": "0a34dac2fce314120d974feb2e4ac7621e5e8c2e",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.15",
+      "sha256": "d1bd6b1db6087199955f7ea475af4c2537da25d4b588011664c518a13ae666f6",
+      "code_directories": [
+        {
+          "cdhash": "89a11ffca3da275c06279966ea3bcd18455f94c4",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.16",
+      "sha256": "5e4cb3bc3e719dc4fe90e6cc5eae50732195f9a17f4c54d6658bae272ce98209",
+      "code_directories": [
+        {
+          "cdhash": "da28d27d87eaf3f95875a3480e50c5b05b0d6ae6",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.17",
+      "sha256": "ee5f594f4f825489516badf7ac51c6877e749d18ebf25e4320435961227207c0",
+      "code_directories": [
+        {
+          "cdhash": "7596772004ee929928ba6ece28ed2e644ac49caf",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.18",
+      "sha256": "07ce974cdbfadf5f7010f48467d1743d841635c457c21319d54648087e027aab",
+      "code_directories": [
+        {
+          "cdhash": "cffd10c8bf663d7e32ae0cfe1ebc1a81daf60038",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.19",
+      "sha256": "11030e9e744fd976e487f4ef18e215da32271cc8e422cbbc47b5727b9bf3b0f1",
+      "code_directories": [
+        {
+          "cdhash": "c121e23634306a9fcade58e090ec720ca695f7ea",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.20",
+      "sha256": "81bd83286103d00bcd02481803cb63b5ad8d2f67d850697eee1f39ed5251edc0",
+      "code_directories": [
+        {
+          "cdhash": "6228f35f0d6272a10e99a6ac656f50d83abea2af",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.21",
+      "sha256": "2f30d9a7e954f4f9aac6feee71da395e09b34544183a040ae38161e9e007222f",
+      "code_directories": [
+        {
+          "cdhash": "524be8905e314385f5529a588d91287d6bd0796a",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.22",
+      "sha256": "b97acab200f7832852be39edafdf282f211a3e43397d5914f7862e97f1aa196b",
+      "code_directories": [
+        {
+          "cdhash": "60a14ff521ed80613a923e605ca2df98e31cbd25",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.23",
+      "sha256": "85cc3e0f962d055895c72aac80768a9b575e19812d3c0efa9ee85049170eddcf",
+      "code_directories": [
+        {
+          "cdhash": "462cd618fb08f8c26ccfa2ec0e9b2762eef5981a",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.24",
+      "sha256": "4a5a96a471e404645cbf6e6fa8d3a9d980db468554a08faf34bc05941d6b3753",
+      "code_directories": [
+        {
+          "cdhash": "8554e05a62cb078b8fa45eb8c5ebd4786b32cbe4",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.25",
+      "sha256": "d871019b58cd52c9923d3368689c30463a57ded847fcb192fe6574560f2a7cfc",
+      "code_directories": [
+        {
+          "cdhash": "7ecc56914cfd1e10de095fad74aed8a760282bc5",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.26",
+      "sha256": "a9f06a29c86272db6458f7dad4e7d8d0fd26ebcb64a499c442fc178ef797f607",
+      "code_directories": [
+        {
+          "cdhash": "d1693162d542d2d8f96637252979c647c8464eaa",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.27.dylddata",
+      "sha256": "56ea7d32a488a66ca6e21a253997b5980e3225dae8bfbe8ef4efe356033656f1",
+      "code_directories": [
+        {
+          "cdhash": "17a42a0621e9ea1c020a88dcc1c5b12535b15c9a",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.28.dyldlinkedit",
+      "sha256": "b325a2bd189e2af7bcd0df108e706344768c9c762a4d4bb86737a86742108061",
+      "code_directories": [
+        {
+          "cdhash": "a83ab02e8831d44655008ceb42661c4e5fc48a1c",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.29",
+      "sha256": "1e9869d33e9d8618a9063307796a019307a1da0e825a82e9a7ecc00a8e9ed496",
+      "code_directories": [
+        {
+          "cdhash": "a272a5edf54f62b9dfd947bbb9e9339fe978f110",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.30",
+      "sha256": "aaa7cad385a1129891a1715fb74a5406921894ab538af21a71dc3029cd06fd61",
+      "code_directories": [
+        {
+          "cdhash": "726f25bd5b71cea1f678bcb55939798b15676049",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.31",
+      "sha256": "8eb35d0f660a22d88b05fb5bd37d2230cb27d024f989643c934b484518841944",
+      "code_directories": [
+        {
+          "cdhash": "f2e212c7f244a66be3fc58a25621efb8704213de",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.32",
+      "sha256": "fade5873e5e254e44583884fd9bc8ea47d3f7ae4e0c88c70d9793ab5a3b805c5",
+      "code_directories": [
+        {
+          "cdhash": "dcc4a4fb789e798394d2ea72e03768e3842eda86",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.33",
+      "sha256": "6f4cc076827a0e8bafc9a6e4f0ccc431945ee8cc35cd48ac6319ae4d1c7ffb51",
+      "code_directories": [
+        {
+          "cdhash": "ee46b4abf994d244f8ca4cccaa118160f28eb9b2",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.34",
+      "sha256": "2f68116a856bd8a6e5441cc2d304c387a6118d3b802c4bcab6f012da3cd1a0c4",
+      "code_directories": [
+        {
+          "cdhash": "8f0966232f11ecb31c9922870879014b34d69f1d",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.35",
+      "sha256": "328b405d252b770a4f0a40431b157cb4e6510eae4a11e45e40c7f5e5d43ac1bd",
+      "code_directories": [
+        {
+          "cdhash": "a3b1c21a71bb33527524e1c6b867bff0058095ad",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.36",
+      "sha256": "7bf0331a6e5fd065bb3cd0e98d5d70e65d3b868e009e2f648739ff52e4ff5808",
+      "code_directories": [
+        {
+          "cdhash": "02b2e2d2de666e0e3ced925253a9f33b03cbe6d0",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.37",
+      "sha256": "175b4d682616c3700972b8deebc7b2953edb39d80489f79dbb15075b95ce9dc2",
+      "code_directories": [
+        {
+          "cdhash": "25c8afa5e4ca916a4202feb50df4cbc9f85dadf9",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.38",
+      "sha256": "81ce34cfa7a3acf16e16c243783b48276ae21073dfad1f89235df0f08cba44b5",
+      "code_directories": [
+        {
+          "cdhash": "3a910dca34f3a8bd4b2b2088e609708423e77955",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.39",
+      "sha256": "f0166a5a4f874c59fe770278b5df06e132863a8dbaf0a969af0253cb9f0f851d",
+      "code_directories": [
+        {
+          "cdhash": "a5ea9ee88c6c1c260505922a2ff23fe31292ff4b",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.40",
+      "sha256": "3b7082cca19a19cca6853553cdff7c4b0144dbc1dc87b772d8a0de030b1bd281",
+      "code_directories": [
+        {
+          "cdhash": "b256beade2900f4b7480d17a5fba4698d341a776",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.41.dylddata",
+      "sha256": "eb9f190819f8b6974db2250dafa06fd67f83097995503f7a37e690cca2f048ca",
+      "code_directories": [
+        {
+          "cdhash": "a1c6a31a1f8c6da2c0c7e06027a0ff1f6c35ac8e",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.42.dyldlinkedit",
+      "sha256": "28f6ec279c37bbe57303395835cab2d054c1a305c33890b425817eff92f04059",
+      "code_directories": [
+        {
+          "cdhash": "97080b5b97c0f82d88744a20978f574115a9e0f1",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    },
+    {
+      "file": "dyld_shared_cache_arm64.symbols",
+      "sha256": "e763b0eadab7aaa283e3075fc4ebcd9e824d35c834101e4dd99554265126b308",
+      "code_directories": [
+        {
+          "cdhash": "4775552f865b6683fe7886db6c0d203d3901505d",
+          "identifier": "com.apple.dyld.cache.arm64.universal",
+          "code_page_bytes": 16384
+        }
+      ]
+    }
+  ]
+}

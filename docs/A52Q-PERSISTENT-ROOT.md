@@ -69,6 +69,30 @@ deny access; no platform status or Apple AMFI service is fabricated. Other
 executables and the shared cache are not automatically accepted. This is an
 instrumented next-stage experiment, not a policy sufficient for SpringBoard.
 
+The second full-root trial passed the platform gate. Apple dyld/libignition ran
+as PID1, printed `hello from launchd.1`, and failed registering the shared cache:
+
+```text
+dyld cache '(null)' not loaded: code signature registration for shared cache failed
+Library not loaded: /usr/lib/libSystem.B.dylib
+```
+
+The source policy accepted only launchd/dyld. The cache is present, and its
+index contains libSystem, libobjc, Foundation and SpringBoard.framework. The
+fix is an exact cache-CodeDirectory allowlist, not a fabricated libSystem file.
+`tools/a52q_cache_audit.py` verified all 44 original cache file checksums and all
+CodeDirectory executable-page hashes in the checksum-identical native staging
+source. The measured hashes are in `xnu/a52q/ios16-20H392-cache-pins.json`; the
+kernel permits only those entitlement-free cache signatures on the full UFS
+root. Other executables remain rejected. No CMS trust/platform status is granted.
+
+Libignition also attempted APFS preboot lookup at level5 and received ENOTTY25.
+The actual dyld binary recognizes `ignition_level`, and the existing HFS producer
+documents the level1 layout. The explicit full-root-only `--ios-ignition-level 1`
+option selects that mode for the already copied cryptex/cache directories. Both
+fixes preserve the installed filesystem. Apple launchd main and its services
+remain unproven until a new trial. This is not a visible SpringBoard milestone.
+
 ## Concrete storage layout
 
 Captured primary/backup GPT CRCs and Linux sysfs agree on 4 KiB UFS blocks.

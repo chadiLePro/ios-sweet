@@ -121,6 +121,13 @@ class PersistentRootTests(unittest.TestCase):
             validate_payload(data, manifest)
         with self.assertRaisesRegex(ValueError, 'explicitly declared'): check()
         manifest['ios_exec_development'] = True; check()
+        ignition_command = command + b' ignition_level=1'
+        data[0x48:0x2a8] = ignition_command + bytes(608 - len(ignition_command))
+        with self.assertRaisesRegex(ValueError, 'ignition level must be explicitly declared'): check()
+        manifest['ios_ignition_level'] = 1; check()
+        manifest['ios_ignition_level'] = 5
+        with self.assertRaisesRegex(ValueError, 'ignition level 1 requires'): check()
+        del manifest['ios_ignition_level']
         data[0x48:0x2a8] = b'rd=a52ios0' + bytes(608 - len(b'rd=a52ios0'))
         with self.assertRaisesRegex(ValueError, 'exactly one'): check()
         data[0x48:0x2a8] = command + bytes(608 - len(command))

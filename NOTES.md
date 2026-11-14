@@ -2,6 +2,35 @@
 
 ## A52Q handoff — 2026-11-14: full UFS root mounted; BOOT restored; platform fix ready
 
+CACHE FIX READY FOR BUILD: audited all44 cache files against original SHA list
+AND every CodeDirectorypagehash, via native readonlystaging+bounded mmap. Result
+E:/A52-iOS16/cache-code-signatures-v1.json;44uniqueCDs,no XML/DERentitlements.
+Source xnu/a52q/a52q_amfi.c adds onlythose44hashes onfullroot; metadata JSON
+xnu/a52q/ios16-20H392-cache-pins.json contains hashes only, noApple binaries.
+New audittool/test +dataset/Cconsistency test;114Python tests PASS. Both69file
+A52overlays apply to actual81patch source, filesystemonly config difference.
+Adding explicit fullroot --ios-ignition-level1 mode toavoid observedAPFSpreboot
+ENOTTY25; actualdyldcontainsflagstring and mkiosroot docs specifylevel1layout.
+Needs AMFI-only relink from43596004630/base2d2cd0c, exactnewkernelQEMUfixture,
+new kernel-boundfullrootplan and BOOTcandidate; NO rootfs rewrite required.
+Native WSL A52-HakiOS-Build-20261107 terminated after audit tofreehostRAM.
+
+SECOND FULL-ROOT TRIAL FINISHED: ORIGINAL BOOT RESTORED AND VERIFIED.
+backup/a52q/ios-ufs-v2/receipt.json requires_restore=false, original_boot_restored=true.
+Watcher14480 finished, original BOOT/protectedSHA verified.3CRCrootwindowframes.
+Platform gate passed. Real Apple loader/libignition executes on full UFS root:
+"libignition: 1: hello: hello from launchd.1"; ignition5 prebootlookupfails25,
+then "dyld cache '(null)' not loaded: code signature registration for shared cache failed"
+and "Library not loaded: /usr/lib/libSystem.B.dylib". No launchd main/services/UI.
+Maincache index was independently verified to contain libSystem/libobjc/Foundation/
+SpringBoard.framework; do NOT fabricate/replace missing dylib. AMFI policy denies
+cache CDs (currently only owninit +2Appleexec pins). Next targetedfix: inspect
+all cacheCodeDirectories from validatedmaster, allowexactmeasuredentitlement-free
+cachepins only onfullroot. ActualerrorKERN_DENIED53 ->EPERM1 registration failure.
+Need inspectsupported ignition_level=1 mode toskipunavailableAPFSprebootstage.
+NO restoration pending; phoneTWRP. Installedroot0f4 remainsread-only and no new
+userdatawrite performed. Do NOT run Android control/format. User stillbesidephone.
+
 FIRST FULL-ROOT TRIAL FINISHED. NO BOOT RESTORATION PENDING.
 backup/a52q/ios-ufs-v1/receipt.json requires_restore=false, original_boot_restored=true.
 Watcher148 finished with full BOOT/protected hashes. Fresh recovery BOOT SHA

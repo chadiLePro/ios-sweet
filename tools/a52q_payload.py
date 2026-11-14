@@ -252,6 +252,14 @@ def validate_payload(data, manifest):
             raise ValueError('iOS development platform gate requires full UFS root and exactly one enabled boot argument')
     elif development:
         raise ValueError('iOS development platform gate must be explicitly declared')
+    ignition = [v for v in command if v.startswith(b'ignition_level=')]
+    level = manifest.get('ios_ignition_level')
+    if level is not None:
+        if (not ios_root or manifest.get('ios_exec_development') is not True or type(level) is not int or
+                level != 1 or ignition != [b'ignition_level=1']):
+            raise ValueError('ignition level 1 requires explicit full-root development mode and matching boot argument')
+    elif ignition:
+        raise ValueError('ignition level must be explicitly declared')
     if roots or ufs_root:
         if len(roots) != 1 or not ufs_root or not ufs_test or manifest.get('environment') != 'SM-A525F/DS hardware candidate':
             raise ValueError('UFS root must be hardware-bound with a physical selftest and exactly one ADT node')
@@ -358,6 +366,8 @@ def main():
     p.add_argument('--ufs-ios-root-plan', type=Path, help='stream-verified 16 GiB full-root plan; root stays on UFS, never embedded in BOOT/RAM')
     p.add_argument('--ios-exec-development', action='store_true',
                    help='full UFS root only: enable the DEVELOPMENT kernel iOS-platform gate; AMFI pins unchanged, no entitlements granted')
+    p.add_argument('--ios-ignition-level', type=int, choices=[1],
+                   help='full-root development only: use preflattened HFS cryptex/cache layout instead of APFS preboot mounting')
     p.add_argument('--ufs-root-qemu-proof', type=Path, help='same kernel/HFS fixture must have reached PID1 in QEMU')
     p.add_argument('--ufs-root-gpt-capture', type=Path, help='CRC-checked captured GPT and live sysfs bounds')
     p.add_argument('--display-selftest-build', type=Path, help='successful standalone physical display build.json')
@@ -376,6 +386,8 @@ def main():
         if a.ios_exec_development and (not a.ufs_ios_root_plan or
                 b'unentitled_ios_sim_launch' not in kernel or b'Allowing spawn of iOS binary' not in kernel):
             raise ValueError('iOS exec development option needs full root and the compiled XNU development platform gate')
+        if a.ios_ignition_level is not None and (not a.ufs_ios_root_plan or not a.ios_exec_development):
+            raise ValueError('ignition level 1 requires full-root development mode')
         display_test = None
         display_args = (a.display_selftest_build, a.display_selftest_log, a.display_register_sources)
         if any(display_args):
@@ -482,7 +494,8 @@ def main():
         payload, info = mkpayload.build(str(a.kernel), str(tree_path),
                                        'debug=0xc serial=3 cpus=1 keepsyms=1 -v -noprogress rd=' +
                                        ('a52ios0' if a.ufs_ios_root_plan else 'a52root0' if ufs_root else 'md0') +
-                                       (' unentitled_ios_sim_launch=1' if a.ios_exec_development else ''),
+                                       (' unentitled_ios_sim_launch=1' if a.ios_exec_development else '') +
+                                       (' ignition_level=1' if a.ios_ignition_level is not None else ''),
                                        ramdisk_path=str(root_path) if root_path else None)
         report = {'target': 'A52Q', 'status': 'bootstrap payload; physical RAM access not yet verified',
                   'environment': environment,
@@ -512,6 +525,8 @@ def main():
         if a.ios_exec_development:
             report['ios_exec_development'] = True
             report['exec_platform_mode'] = 'XNU development iOS-platform gate; AMFI hash pins and page checks remain; no entitlements granted'
+        if a.ios_ignition_level is not None:
+            report['ios_ignition_level'] = a.ios_ignition_level
         validate_payload(payload, report)
         a.out.write_bytes(payload)
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')
