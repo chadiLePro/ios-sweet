@@ -1,6 +1,9 @@
-/* Minimal diagnostic interface for XNU's unconditional AMFI query callers.
+/* Minimal bring-up interface for XNU's unconditional AMFI query callers.
  * No entitlements, platform binaries, trust caches or Apple validation service.
- * Only our exact entitlement-free ad-hoc init may attach a signature context.
+ * Diagnostic mode permits only our exact entitlement-free ad-hoc init.
+ * The separate full UFS root may also attempt the two audited 20H392 launch
+ * executables below. Their entitlements remain unavailable and queries fail;
+ * this is an experimental hash allowlist, not Apple's AMFI/trust service.
  * Core XNU signature structure and executable-page hashes remain checked.
  */
 #include <kern/debug.h>
@@ -51,6 +54,27 @@ static kern_return_t a52q_with_monitor(void *ent __unused, const CEQueryContext_
 }
 static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
 {
+    extern int a52q_ufs_root_named(const char *name);
+    /* SHA256 CodeDirectory cdhash20, extracted from the validated full master.
+     * launchd file SHA256 12370e5e...cac61c; dyld 58068345...33757.
+     * Host audit verified every executable-page hash. CMS trust is NOT claimed.
+     * Core XNU continues checking CodeDirectory structure, special slots and
+     * executable pages. No global CS_VALID/platform/entitlement bypass. */
+    static const uint8_t apple_pins[2][CS_CDHASH_LEN] = {
+        {0xb6,0x5c,0x36,0xc9,0xf5,0xb2,0x87,0xa6,0xa8,0xf5,
+         0xca,0x83,0xd9,0x42,0x7f,0xb5,0x5e,0xf0,0x4f,0x4e},
+        {0x68,0x4d,0x84,0x7c,0x40,0xe6,0xe8,0x73,0xee,0xae,
+         0xc6,0x93,0x01,0x1d,0x4d,0x99,0x7a,0x86,0x9d,0x2a}
+    };
+    if (blob && !ent && a52q_ufs_root_named("a52ios0")) {
+        for (unsigned i = 0; i < 2; i++) {
+            if (!memcmp(blob->csb_cdhash, apple_pins[i], CS_CDHASH_LEN)) {
+                printf("A52Q exec policy: pinned 20H392 %s accepted; entitlements UNAVAILABLE, not an execution proof\n",
+                    i ? "dyld" : "launchd");
+                return KERN_SUCCESS;
+            }
+        }
+    }
     static const uint8_t pin[CS_CDHASH_LEN] = {
         0xa8, 0xa6, 0xba, 0x5e, 0x16, 0x2a, 0x5c, 0x73, 0x96, 0x6e,
         0x22, 0x70, 0x0c, 0x1b, 0xa0, 0xa7, 0x38, 0x6b, 0x35, 0xa2

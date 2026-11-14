@@ -6,8 +6,21 @@ checker. The image producer must separately run fsck.hfsplus after unmounting.
 It deliberately supplies no Samsung storage or physical-memory placement.
 """
 import struct
+import stat
 
 MAX_BYTES = 32 << 20
+
+
+def read_test_root(path):
+    """Bound memory use before reading: a full iOS root is not a test fixture."""
+    size = path.stat()
+    if not stat.S_ISREG(size.st_mode) or not 8 << 20 <= size.st_size <= MAX_BYTES or size.st_size % 16384:
+        raise ValueError('HFS test root must be a regular 8..32 MiB file')
+    with path.open('rb') as stream:
+        data = stream.read(MAX_BYTES + 1)
+    if len(data) != size.st_size:
+        raise ValueError('HFS test root changed size during bounded read')
+    return data
 
 
 def validate_readonly_hfs_root(data):
@@ -54,7 +67,13 @@ def hardware_root_proof(report, kernel_hash, root_hash):
 def validate_hfs_test_root(data):
     if not 8 << 20 <= len(data) <= MAX_BYTES or len(data) % 16384:
         raise ValueError('HFS test root must be 8..32 MiB and 16 KiB aligned')
-    header = data[1024:1536]
+    return validate_volume_headers(data[1024:1536], data[-1024:-512], len(data))
+
+
+def validate_volume_headers(header, alt, size):
+    """Size-independent header check; no file reads or filesystem integrity claim."""
+    if len(header) != 512 or len(alt) != 512:
+        raise ValueError('truncated HFS volume headers')
     signature, version, attributes, _, journal = struct.unpack_from('>HHIII', header)
     if (signature, version) not in ((0x482b, 4), (0x4858, 5)):
         raise ValueError('need a raw HFS+/HFSX volume, not a wrapper or partition image')
@@ -62,10 +81,9 @@ def validate_hfs_test_root(data):
         raise ValueError('HFS test root is not cleanly unmounted')
     block, total, free = struct.unpack_from('>III', header, 40)
     if (not 512 <= block <= 65536 or block & (block - 1) or
-            total * block != len(data) or free > total or journal >= total):
+            total * block != size or free > total or journal >= total):
         raise ValueError('invalid HFS test volume geometry')
-    alt = data[-1024:-512]
-    if alt[:4] != header[:4] or alt[40:48] != header[40:48]:
+    if alt[:16] != header[:16] or alt[40:48] != header[40:48]:
         raise ValueError('HFS alternate volume header geometry differs')
     for offset in range(112, 512, 80):
         logical, _, blocks = struct.unpack_from('>QII', header, offset)
@@ -80,5 +98,5 @@ def validate_hfs_test_root(data):
         if allocated > blocks:
             raise ValueError('HFS metadata extents exceed fork allocation')
     return {'signature': hex(signature), 'version': version, 'block_size': block,
-            'total_blocks': total, 'bytes': len(data), 'journaled': bool(attributes & (1 << 13)),
+            'total_blocks': total, 'bytes': size, 'journaled': bool(attributes & (1 << 13)),
             'scope': 'volume geometry only; not a substitute for fsck or a boot test'}

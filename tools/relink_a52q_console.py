@@ -37,6 +37,16 @@ AMFI_OVERLAY_ADDITION = (
 ROOT_MEDIA_BASE_SHA256 = '3e97419a2ce90729537e65cd5de200887e7eaddebd01e90502f05a485efbe7a3'
 
 
+def amfi_wrapper(text):
+    guard = '#if defined(ARM64_BOARD_CONFIG_SWEET)'
+    addition = '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_amfi.c"\n#endif\n'
+    if text.count(guard) != 1 or text.count(addition) > 1:
+        raise ValueError('diagnostic AMFI wrapper differs')
+    # Recent full A52 builds already contain the include. Adding it again
+    # recompiles every static definition twice and breaks a later leaf rebuild.
+    return text if addition in text else text.replace(guard, addition + guard)
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--artifact', required=True, type=Path)
@@ -131,12 +141,7 @@ def main():
         source = work / 'xnu' / Path(unit).parent / name
         source.write_bytes((root / 'xnu/a52q' / name).read_bytes())
         wrapper = work / 'xnu' / unit
-        old_guard = '#if defined(ARM64_BOARD_CONFIG_SWEET)'
-        text = wrapper.read_text()
-        if text.count(old_guard) != 1:
-            raise SystemExit('diagnostic AMFI wrapper differs')
-        wrapper.write_text(text.replace(old_guard,
-            '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_amfi.c"\n#endif\n' + old_guard))
+        wrapper.write_text(amfi_wrapper(wrapper.read_text()))
     elif a.leaf == 'static-init':
         import importlib.util
         source = work / 'xnu' / unit

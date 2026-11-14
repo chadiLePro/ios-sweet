@@ -115,7 +115,10 @@ def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None
         from a52q_display_selftest import adt_node
         result.children.append(adt_node(display_test))
     if ufs_root:
-        from a52q_ufs_root import adt_node, validate_config
+        if ufs_root.get('layout_kind') == 2:
+            from a52q_persistent_root import adt_node, validate_config
+        else:
+            from a52q_ufs_root import adt_node, validate_config
         if not ufs_test: raise ValueError('UFS root requires the physical UFS selftest configuration')
         validate_config(ufs_root, ufs_test)
         result.children.append(adt_node(ufs_root))
@@ -238,20 +241,28 @@ def validate_payload(data, manifest):
         if fb < phys + memory + PANIC and phys < fb + size:
             raise ValueError('display reservation overlaps kernel RAM/panic log')
     roots = [c for c in tree.children if c.name == 'a52q-ufs-root']
-    ufs_root = manifest.get('ufs_diagnostic_root')
+    if manifest.get('ufs_diagnostic_root') and manifest.get('ufs_ios_root'):
+        raise ValueError('only one UFS root layout may be selected')
+    ios_root = manifest.get('ufs_ios_root')
+    ufs_root = manifest.get('ufs_diagnostic_root') or ios_root
     if roots or ufs_root:
         if len(roots) != 1 or not ufs_root or not ufs_test or manifest.get('environment') != 'SM-A525F/DS hardware candidate':
             raise ValueError('UFS root must be hardware-bound with a physical selftest and exactly one ADT node')
-        from a52q_ufs_root import adt_node, validate_config
-        from a52q_hfs_root import hardware_root_proof
+        if ios_root:
+            from a52q_persistent_root import adt_node, validate_config
+            if ios_root['kernel_sha256'] != manifest.get('kernel_sha256'):
+                raise ValueError('full root plan kernel hash differs')
+        else:
+            from a52q_ufs_root import adt_node, validate_config
+            from a52q_hfs_root import hardware_root_proof
+            hardware_root_proof(ufs_root['qemu_boot_proof'], manifest.get('kernel_sha256'), ufs_root['sha256'])
         validate_config(ufs_root, ufs_test)
-        hardware_root_proof(ufs_root['qemu_boot_proof'], manifest.get('kernel_sha256'), ufs_root['sha256'])
         if roots[0].props != adt_node(ufs_root).props:
             raise ValueError('UFS root ADT differs from validated proof configuration')
         command = data[0x48:0x2a8].split(b'\0', 1)[0].split()
-        if [v for v in command if v.startswith(b'rd=')] != [b'rd=a52root0'] or any(
+        if [v for v in command if v.startswith(b'rd=')] != [b'rd=a52ios0' if ios_root else b'rd=a52root0'] or any(
                 v.startswith((b'rootrw=', b'ufsrw=')) for v in command):
-            raise ValueError('diagnostic disk root needs exactly rd=a52root0 and no writable-root flags')
+            raise ValueError('disk root needs exactly its selected rd=a52root0 or rd=a52ios0 and no writable-root flags')
     chosen = next(c for c in tree.children if c.name == 'chosen')
     if chosen.prop('dram-base') != u64(phys) or chosen.prop('dram-size') != u64(memory):
         raise ValueError('ADT RAM differs from loader RAM')
@@ -338,6 +349,7 @@ def main():
     p.add_argument('--ufs-selftest-build', type=Path, help='successful physical shim one-block-read build.json')
     p.add_argument('--ufs-selftest-log', type=Path, help='matching CRC-checked physical read console')
     p.add_argument('--ufs-diagnostic-root', type=Path, help='small QEMU-proven HFS fixture for read-only BOOT padding')
+    p.add_argument('--ufs-ios-root-plan', type=Path, help='stream-verified 16 GiB full-root plan; root stays on UFS, never embedded in BOOT/RAM')
     p.add_argument('--ufs-root-qemu-proof', type=Path, help='same kernel/HFS fixture must have reached PID1 in QEMU')
     p.add_argument('--ufs-root-gpt-capture', type=Path, help='CRC-checked captured GPT and live sysfs bounds')
     p.add_argument('--display-selftest-build', type=Path, help='successful standalone physical display build.json')
@@ -379,16 +391,26 @@ def main():
                     b'A52Q UFS diagnostic root: bounded read-only BOOT tail' not in kernel):
                 raise ValueError('disk root needs new kernel, UFS proof, GPT capture, QEMU root proof and no RAM root')
             from a52q_ufs_root import configuration as root_configuration
-            ufs_root = root_configuration(a.ufs_root_gpt_capture, ufs_test, a.ufs_diagnostic_root.read_bytes(),
+            from a52q_hfs_root import read_test_root
+            ufs_root = root_configuration(a.ufs_root_gpt_capture, ufs_test, read_test_root(a.ufs_diagnostic_root),
                 hashlib.sha256(kernel).hexdigest(), json.loads(a.ufs_root_qemu_proof.read_text()))
+        if a.ufs_ios_root_plan:
+            if (any(root_args) or a.qemu_dtb or not ufs_test or a.bootstrap_init or a.hfs_test_root or
+                    b'A52Q UFS iOS root: bounded read-only userdata window' not in kernel):
+                raise ValueError('full disk root needs new kernel, physical UFS proof and no diagnostic/RAM root')
+            from a52q_persistent_root import validate_config
+            ufs_root = json.loads(a.ufs_ios_root_plan.read_text())
+            validate_config(ufs_root, ufs_test)
+            if ufs_root['kernel_sha256'] != hashlib.sha256(kernel).hexdigest():
+                raise ValueError('full root plan kernel hash differs')
         if a.hfs_qemu_proof and (not a.hfs_test_root or a.qemu_dtb):
             raise ValueError('HFS QEMU proof is only for a physical HFS diagnostic root')
         root_path = a.bootstrap_init or a.hfs_test_root
         if a.hfs_test_root:
             if a.bootstrap_init or (not a.qemu_dtb and not a.hfs_qemu_proof):
                 raise ValueError('HFS diagnostic excludes mockfs init and requires QEMU mode or matching boot proof')
-            from a52q_hfs_root import validate_hfs_test_root
-            init_data = a.hfs_test_root.read_bytes()
+            from a52q_hfs_root import validate_hfs_test_root, read_test_root
+            init_data = read_test_root(a.hfs_test_root)
             hfs_root = {'sha256': hashlib.sha256(init_data).hexdigest(), 'bytes': len(init_data),
                         'volume': validate_hfs_test_root(init_data)}
             if a.hfs_qemu_proof:
@@ -450,7 +472,7 @@ def main():
                                                    ufs_test=ufs_test, display_test=display_test, ufs_root=ufs_root)))
         payload, info = mkpayload.build(str(a.kernel), str(tree_path),
                                        'debug=0xc serial=3 cpus=1 keepsyms=1 -v -noprogress rd=' +
-                                       ('a52root0' if ufs_root else 'md0'),
+                                       ('a52ios0' if a.ufs_ios_root_plan else 'a52root0' if ufs_root else 'md0'),
                                        ramdisk_path=str(root_path) if root_path else None)
         report = {'target': 'A52Q', 'status': 'bootstrap payload; physical RAM access not yet verified',
                   'environment': environment,
@@ -469,8 +491,12 @@ def main():
         if ufs_test:
             report['ufs_selftest'] = ufs_test
         if ufs_root:
-            report['ufs_diagnostic_root'] = ufs_root
-            report['root_filesystem'] = 'read-only HFS diagnostic fixture in BOOT tail, no RAM root or Apple userland'
+            if a.ufs_ios_root_plan:
+                report['ufs_ios_root'] = ufs_root
+                report['root_filesystem'] = 'read-only full HFS image on userdata; Apple launchd attempt, not an execution claim'
+            else:
+                report['ufs_diagnostic_root'] = ufs_root
+                report['root_filesystem'] = 'read-only HFS diagnostic fixture in BOOT tail, no RAM root or Apple userland'
         if display_test:
             report['display_selftest'] = display_test
         validate_payload(payload, report)

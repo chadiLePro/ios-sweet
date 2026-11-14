@@ -2,6 +2,25 @@
 
 ## A52Q handoff — 2026-11-14: disk-root v2 mounted; PHONE SAFE
 
+
+Full HFS kernel build43596004630/source2d2cd0c343a9567673f95bbc712e2c951c264582
+PASSED; kernel e40f1facea620524799430374428ab13949cbfd8423e761f6a7228d6d2f3d06f.
+All69sourcefiles/archive hashes matched reviewed overlay. HostCI43596004755 PASS.
+User NOW explicitly waived userdata backup: "delete android no problem dont backup".
+Do not repeat backup prerequisite, but present exact root write/candidate and
+request concrete approval per current user instruction BEFORE userdata writes.
+No userdata write yet. Full master fresh hash readback PASS. Separate4GiBvar
+hostimage E:/A52-iOS16/storage-data-v1/a52q-ios-var.hfs.img, fsck/checksum-rsyncPASS,
+SHAefa03fd497c0ecf2b1c5915a925fbc27979319094b663611f11e3abf860b8a36.
+Its write/mount kernel path NOT implemented; no writable storage claim.
+Master executable auditv2 PASS3original SHA+allCodeDirectorypagehashes, plainarm64.
+launchd cdhash b65c36c9f5b287a6a8f5ca83d9427fb55ef04f4e; dyld684d847c40e6e873eeaec693011d4d997a869d2a.
+Implementing full-root-only two-executable pin allowlist, no entitlement/platform
+or CMS-trust claim. Requires isolated AMFI rebuild from newfullbase, thenQEMU.
+107Python tests PASS; repo81patches/39Python/7shell PASS with Gitbash onPATH.
+Fullroot tools use streamingread; small RAM/BOOTroot tools now reject16GiBbefore
+allocation. Source/packaging fullrootplan never embedsroot inBOOT orRAM.
+
 Original BOOT restored by watcher; fresh ADB full-partition SHA256 readback
 matches d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
 backup/a52q/ufs-root-v2/receipt.json requires_restore=false; protected hashes

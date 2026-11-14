@@ -59,6 +59,7 @@ def main():
     p.add_argument('--mkbootimg', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--ufs-diagnostic-root', type=Path, help='exact QEMU-proven HFS fixture selected by payload')
+    p.add_argument('--ufs-ios-root-plan', type=Path, help='matching full-root plan; full filesystem is packaged separately from BOOT')
     p.add_argument('--ufs-root-gpt-capture', type=Path, help='matching captured GPT/sysfs evidence')
     a = p.parse_args()
     try:
@@ -85,6 +86,10 @@ def main():
         build = json.loads((a.build / 'build.json').read_text())
         payload = build.get('embedded_payload', {})
         root_config = payload.get('ufs_diagnostic_root')
+        ios_config = payload.get('ufs_ios_root')
+        if (bool(a.ufs_ios_root_plan) != bool(ios_config) or
+                (ios_config and (root_config or json.loads(a.ufs_ios_root_plan.read_text()) != ios_config))):
+            raise ValueError('full-root plan missing or differs from payload')
         if bool(a.ufs_diagnostic_root) != bool(root_config) or bool(a.ufs_root_gpt_capture) != bool(root_config):
             raise ValueError('BOOT root requires payload configuration, exact fixture and GPT evidence together')
         if build.get('embedded_payload', {}).get('environment', '') not in ('', 'SM-A525F/DS hardware candidate'):
@@ -94,7 +99,7 @@ def main():
                 hashlib.sha256(raw).hexdigest() != build['image_sha256'] or
                 raw[56:60] != b'ARM\x64' or struct.unpack_from('<Q', raw, 8)[0] != contract['text_offset']):
             raise ValueError('diagnostic build is not bound to this evidence/template')
-        if root_config:
+        if root_config or ios_config:
             from a52q_payload import validate_payload
             symbols = {w[2]: int(w[0], 16) for line in (a.build / 'symbols.txt').read_text().splitlines()
                        if len(w := line.split()) == 3}
@@ -146,7 +151,8 @@ def main():
             root_plan = None
             if root_config:
                 from a52q_ufs_root import validate_packaging
-                root_data = a.ufs_diagnostic_root.read_bytes()
+                from a52q_hfs_root import read_test_root
+                root_data = read_test_root(a.ufs_diagnostic_root)
                 root_plan = validate_packaging(root_config, payload['ufs_selftest'], root_data,
                                                a.ufs_root_gpt_capture, len(packed))
                 offset = root_plan['offset_in_boot_bytes']
@@ -169,6 +175,9 @@ def main():
                                 'ramoops retention across reset', 'integrity-checked diagnostic record in TWRP']}
         if root_plan:
             report['ufs_diagnostic_root'] = dict(root_config, packed_layout=root_plan)
+        if ios_config:
+            report['ufs_ios_root'] = ios_config
+            report['root_installation'] = 'NOT performed: root must be separately installed after explicit userdata-write approval'
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
         p.exit(1, f'packaging refused: {exc}\n')
