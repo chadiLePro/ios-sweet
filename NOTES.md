@@ -1,6 +1,22 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V17 controlled loader retry — BOOT RESTORATION PENDING
+## ACTIVE: V17 RESTORED; loader admitted then SIGABRT; capture exit reason next
+
+V17 guard collected and restored automatically on first attempt. Receipt
+requires_restore=false/original_boot_restored=true; protected hashes unchanged,
+3CRC entry records, bounded read-only UFS root verified. Fresh whole phone BOOT
+SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016 matches.
+Phone TWRP; NO restoration pending. Saved backup/a52q/ios-ufs-v17/console.txt.
+
+Exact launchd_cache_loader admission now observed; it passes spawn and exits
+SIGABRT, then launchd panics for required task failure. No successful boot-cache
+registration/submission or services proof. Existing console omits the child's
+abort reason; writable var/logger absent. Do NOT infer missing AMFI or cache
+failure from SIGABRT alone. Next source audit: loader's static abort paths plus
+minimal A52-only fatal-exit reason logging into existing RAM console, without
+changing signals, admission, storage, display, reserved RAM or userland bytes.
+
+## Historical: V17 controlled loader retry — restored above
 
 Fresh user readiness received. research/start_cache_loader_retry.py completed
 the full installed16GiB root hash/protected partition checks; wrote/read back
