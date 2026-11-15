@@ -17,6 +17,20 @@ as recorded below; next admit only its exact signed identity on same RO root.
 Retain original binary/cache and no fabricated AMFI trust response. Need observe
 loader's actual next operation before adding a cache-registration/provider fix.
 
+Next loader admission committed b4414cd2ca2624e2ccd7f1345502974b4e958d4a.
+72,336-byte loader SHA e1f0b581b73222465a36778af0c3260d7f52ab0e24c374b9111c599830b1e00f;
+CDhash 24edfda4520d9f9b246a0c6c91facbd9f0954a38; 13 code pages+signed slots pass,
+XML390/DER152. New exact helper checks CS_VALID/getter hashes+sizes/same ROroot;
+local platform classification only, no trust-cache/IOKit entitlement context.
+120 local tests+repo checks PASS; host CI43715378805 SUCCESS. Isolated AMFI build
+43715378760 running, full base43705321913; redundant full43715378796 cancelled.
+research/finish_cache_loader_artifacts.py session42571, stdout
+research/cache-loader-build-package.log will verify isolated rebuild provenance,
+run exact-kernel diagnostic QEMU then rehash master/package plan-v11/hardware-v13.
+No new phone write. V15 retained result E:/A52-iOS16/dirs-v15-result.json:
+console69640B SHAc81ec593b98390e34258aa17f34020327675dc7b5dd56ebf2cdb435551904b7e,
+3CRC entries, bounded ROroot proof. Original BOOT restored.
+
 ## Historical: V15 directory-cleanup trial — restored above
 
 User freshly confirmed readiness. research/start_dirs_trial.py completed the
