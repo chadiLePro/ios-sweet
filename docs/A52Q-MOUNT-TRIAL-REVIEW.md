@@ -447,3 +447,12 @@ unprotected text, not new CRC records. It changes no signal, exit reason,
 crash-report decision, signing policy, memory reservation, display or storage.
 The Redmi guard and its diagnostic remain intact. A full kernel build is required;
 isolated leaf rebuilds reject an old or changed fatal-exit transform.
+
+The diagnostic source passed 120 host tests and repository checks. Full HFS
+kernel build `43729112746` and Linux CI `43729112245` passed; all 73 archived
+overlay files matched the independently expected source hashes. Exact-kernel
+diagnostic QEMU passed three valid entry records and seven diagnostic PID1
+heartbeats. This fixture does not execute the new fatal-exit hook or Apple
+userland. The master root rehash matched before packaging the 96 MiB BOOT image
+`2b87d713355a005a79870fd44c20f9ae57feb3bf8b861276dcc492f19a513cea`.
+The child's actual abort description remains a physical-test question.

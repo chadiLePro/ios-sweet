@@ -41,6 +41,29 @@ Static main audit E:/A52-iOS16/cache-loader-main-static-v1.txt shows fopen NULL
 is handled, so logging EROFS alone does not explain abort; multiple earlier/
 later abort branches exist. No AMFI/cache/graphics stub justified without reason.
 
+Exit-trace host pipeline COMPLETE: full HFS build43729112746 SUCCESS; host
+CI43729112245 SUCCESS. All73 overlay file hashes match independently expected
+base+two-C-file deltas, and archived source/SHA256SUMS verified. New full kernel
+SHA13c2016875672cf6578605db98cdcdf7180956074fab87607c20bed3948e3a3a;
+init SHAaaacee08d03b7f0d93b0b34aa1d2436b0c3798b370ebf1e623732c5739c4473e.
+E:/A52-iOS16/builds/43729112746/{artifact,verified-build.json}. Exact-kernel
+diagnostic QEMU passed3CRC entries/7 PID1 heartbeats; fatal-exit hook/Apple
+userland NOT exercised by this fixture. Whole16GiB master rehash passed.
+plan-v12/hardware-v14 96MiB candidate SHA
+2b87d713355a005a79870fd44c20f9ae57feb3bf8b861276dcc492f19a513cea;
+no RAMdisk/diagnostic root. Root remains unchangedRO; new trace not phone-proven.
+
+V18 runners prepared using robust guard: research/start_exit_trace_trial.py,
+watch_ios_ufs_v18_restore.py, C:backup/a52q/ios-ufs-v18. Helper binds plan-v12.
+Fresh readiness received; starter session59391 RUNNING PREFLIGHT, check receipt
+before claiming phone BOOT state. User told five-minute timer starts at confirmed
+USB departure, not preflight. No new kernel compatibility policy/hardware change.
+Independent static IO ABI audit cache-loader-io-abort-static-v1.txt finds
+user-client type0, method selector6, one scalar=1 and variable structure input;
+no output buffers. This is NOT proof that path was reached. Common helper
+abort_with_reason passes namespace7/LIBXPC, code1, flags0, caller reason string;
+see cache-loader-abort-imports-static-v1.txt. Await actual reason before any stub.
+
 ## Historical: V17 controlled loader retry — restored above
 
 Fresh user readiness received. research/start_cache_loader_retry.py completed
