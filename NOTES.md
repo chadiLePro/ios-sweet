@@ -1,6 +1,46 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V16 cache-loader trial — BOOT RESTORATION PENDING
+## ACTIVE: V16 RESTORED; no XNU console; unchanged loader retry prepared
+
+V16 30min watcher expired before recovery return. Manual collect-restore first
+captured console.txt (65 bytes: missing console-ramoops-0 error) and dmesg,
+then USB dropped after RAM staging push, before BOOT restoration. User replugged
+USB; new helper phase restore-only preserved saved captures and restored BOOT.
+Receipt requires_restore=false/original_boot_restored=true; protected hashes
+unchanged. Fresh whole phone BOOT SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016
+matches. Phone TWRP. NO restoration pending. V16 is inconclusive: no XNU entry
+frames/root/loader proof. Preserve V15 as last usable boot console.
+
+User's quoted dirs_cleaner signature error is V14, already corrected and tested
+in V15. docs/A52Q-DIRS-CLEANER.md now traces exact headers/actual caller/rejection:
+XNU8796.141.3 EBADEXEC85 != EROFS30; AMFI KERN_DENIED53 -> ubc EPERM1 ->
+loader LOAD_FAILURE4 -> exec EBADEXEC85. Actual measured launchd boot call is
+posix_spawnp at unslid0x10003fe1c, saves returned w0/x0 in x22, sends SAME value
+to strerror and posix_spawn():%d:%s; no fresh global errno. Private static audit
+launchd-spawn-reporting-v2.json and launchd-spawn-reporting-boot-error.txt.
+V1 direct-posix_spawn-only disassembly found an unrelated assertion call;
+use V2/boot-error evidence for the actual boot-task path.
+
+V15 dirs_cleaner executed, launchd advanced, but mkdir /private/var/dirs_cleaner
+EROFS30 and logger EROFS30 remain. Additional dc_reset error strings are bit-
+corrupted: no exact errno inferred. Apple cleaner source's normal main path
+returns0 after logging errors; do NOT report successful cleanup or writable var.
+Next usable-log fatal remains launchd_cache_loader signature rejection. Kernel
+fix b4414cd already host checked; do not reapply/revert dirs admission.
+
+Prepared V17 unchanged hardware-v13/plan-v11, same BOOT786b...4cbbdee/kernel2663...cc9e.
+research/start_cache_loader_retry.py preserves V15 fallback (V16 is NOT a usable
+baseline). New research/watch_ios_ufs_v17_restore.py delegates to generic
+watch_pending_boot_restore.py:30min soft warning, keeps waiting, retries USB
+failure, preserves first capture through restore-only, refuses unknown current
+BOOT contents. C:backup/a52q/ios-ufs-v17 new receipt/logs. No trial started yet;
+fresh physical readiness question pending. New guard transport simulation PASS:
+late return+failed restore/retry preserves evidence; unknown BOOT denies without
+backend; completed receipt exits without commands. Syntax checks PASS.
+Current git AMFI bytes match built commit after CRLF normalization; exact96MiB
+candidate hash reverified. No new kernel/root/storage/display changes or rebuild.
+
+## Historical: V16 cache-loader trial — restored above
 
 Fresh user readiness received. research/start_cache_loader_trial.py completed
 the full installed 16 GiB root hash and protected partition checks, wrote and
