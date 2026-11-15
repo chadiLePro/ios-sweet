@@ -1,6 +1,24 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V15 RESTORED; cleanup ran; launchd_cache_loader exec rejected
+## ACTIVE: V16 cache-loader trial — BOOT RESTORATION PENDING
+
+Fresh user readiness received. research/start_cache_loader_trial.py completed
+the full installed 16 GiB root hash and protected partition checks, wrote and
+read back only BOOT, then confirmed recovery USB departure with native reboot
+adb. Candidate 786b089cc723c2510f902e4054af0d9a24c4b2b1470586ad565ceb6814cbbdee;
+kernel 266393446ff34fed174c6789545ced43b3f272bbae0408fb7e7fa59b3b06cc9e.
+Root stays read-only/unchanged. Physical loader result still UNKNOWN.
+
+backup/a52q/ios-ufs-v16/receipt.json requires_restore=true/original_boot_restored=false.
+C: watcher PID4920 research/watch_ios_ufs_v16_restore.py waits up to30min for
+TWRP; logs backup/a52q/ios-ufs-v16/{watcher.log,watcher.err.log}. User asked to
+wait five full minutes from actual reboot confirmation, then return to TWRP
+and leave USB connected. Collect logs, restore C:original BOOT and freshly
+verify complete phone SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Do not leave restoration pending after recovery reconnects. Never select
+System or format data. No other storage write, no writable data volume.
+
+## Previous: V15 RESTORED; cleanup ran; launchd_cache_loader exec rejected
 
 V15 watcher collected/restored automatically. Receipt requires_restore=false,
 original_boot_restored=true; protected hashes unchanged and recovery boot ID
