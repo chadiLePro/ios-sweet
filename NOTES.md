@@ -35,6 +35,22 @@ research/dirs-build-package.log: verify downloaded source/kernel provenance,
 exact kernel diagnostic QEMU, master rehash plan-v10, package hardware-v12.
 No new phone write/trial yet. Current original BOOT remains restored.
 
+Directory-task host pipeline COMPLETE: isolated rebuild 43713827487 and host
+CI 43713815679 SUCCESS; redundant full 43713815644 cancelled. New kernel SHA
+13b6eda1e0525add11cd4f986bfd02b4a764c9d0b007d220729dfcf959249766;
+AMFI SHA 3c022a0c13c481685389740fb04262641a193ab96901ba2e5730fd2bcdc9f3b6.
+E:/A52-iOS16/builds/43713827487/{artifact,combined,verified-build.json} verified.
+Exact-kernel QEMU diagnostic: 3 CRC entry frames, 7 diagnostic PID1 heartbeats;
+not Apple full-root or cleanup execution. Whole 16 GiB master rehash passed.
+E:/A52-iOS16/ios-root-plan-v10.json; hardware-v12 packaged 96 MiB candidate SHA
+bc50a99b72cbb6fe862eacfadb5d69cb8e163d8c3fd4412a77651029c96ffa8f.
+Payload verified no RAM disk/diagnostic root. Physical dirs_cleaner result UNPROVEN.
+Prepared research/start_dirs_trial.py and watch_ios_ufs_v15_restore.py; new C:
+backup/a52q/ios-ufs-v15 receipts/logs, 30-minute restoration watcher. Helper now
+binds plan-v10. Runners NOT started. Fresh physical readiness question pending.
+V14 saved result E:/A52-iOS16/fips-v14-result.json; console SHA
+6c4dccd9e0fc3d72e42edb83be3625501b7243afa78bde899bcd53a671307109.
+
 ## Historical: V14 FIPS execution trial — restoration completed above
 
 V14 started 2026-11-15 11:50:31 UTC after fresh user readiness. Receipt

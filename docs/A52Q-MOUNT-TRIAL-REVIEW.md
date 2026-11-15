@@ -366,3 +366,13 @@ the master/root, display code and pstore intact. Tests exercise twenty changed
 identities, invalid signed slots, wrong lengths, missing metadata, wrong or
 writable roots and forbidden capability queries. Services and SpringBoard
 remain unproven.
+
+Host validation for this cleanup admission passed: 120 local tests, repository
+integrity checks, Linux CI `43713815679`, and isolated kernel build `43713827487`.
+The exact new kernel also passed the diagnostic QEMU baseline with three CRC
+entry records and seven diagnostic PID1 heartbeats. This does not emulate
+Apple's cleanup task. The original 16 GiB master rehash matched before packaging.
+The checked 96 MiB BOOT candidate is
+`bc50a99b72cbb6fe862eacfadb5d69cb8e163d8c3fd4412a77651029c96ffa8f`;
+physical cleanup execution is still unproven. No new phone write is included in
+these host checks; original BOOT remains restored while readiness is pending.
