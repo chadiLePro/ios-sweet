@@ -1,6 +1,6 @@
 /* Minimal bring-up interface for XNU's unconditional AMFI query callers.
- * No general entitlement context, trust caches or Apple validation service. The exact fsck
- * and mount boot tasks have local development platform classifications only.
+ * No general entitlement context, trust caches or Apple validation service.
+ * Measured boot tasks have local development platform classifications only.
  * Diagnostic mode permits only our exact entitlement-free ad-hoc init.
  * The separate full UFS root may also attempt the two audited 20H392 launch
  * executables and the audited entitlement-free shared caches below. Only the
@@ -245,6 +245,23 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
             blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
             blob->csb_platform_binary = 1;
             printf("A52Q boot policy: exact 20H392 fsck admitted as local development platform task; no entitlements\n");
+            return KERN_SUCCESS;
+        }
+        /* V13 reaches mandatory launchd fips task, but exec rejects this exact
+         * entitlement-free binary. Its nine signed pages match the untouched
+         * master/native source. Admit execution; do not disable POST tests,
+         * change their arguments or manufacture a successful test result. */
+        static const uint8_t fips_pin[CS_CDHASH_LEN] = {
+            0x6d,0xf1,0x8c,0x1a,0x69,0x31,0x5d,0xaf,0xea,0x6f,
+            0x81,0x25,0xbf,0xa4,0xd7,0x34,0x63,0xda,0x80,0xf0
+        };
+        if ((blob->csb_flags & CS_VALID) && !blob->csb_entitlements &&
+            !blob->csb_entitlements_blob && !blob->csb_der_entitlements_blob &&
+            !memcmp(blob->csb_cdhash, fips_pin, sizeof(fips_pin)) &&
+            a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) {
+            blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
+            blob->csb_platform_binary = 1;
+            printf("A52Q boot policy: exact 20H392 cc_fips_test admitted; execution and POST result not yet proven\n");
             return KERN_SUCCESS;
         }
         /* Observed mount-phase-1 boot task. Retain its signed metadata; only

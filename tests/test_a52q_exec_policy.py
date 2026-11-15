@@ -24,6 +24,8 @@ class ExecPolicyTests(unittest.TestCase):
         entries = ',\n'.join('{' + ','.join(str(b) for b in pin) + '}' for pin in pins)
         boot_pin = json.loads((root / 'xnu/a52q/ios16-20H392-boot-task-pin.json').read_text())
         fsck_bytes = bytes.fromhex(boot_pin['directories'][0]['cdhash'])
+        fips_meta = json.loads((root / 'xnu/a52q/ios16-20H392-fips-pin.json').read_text())
+        fips_bytes = bytes.fromhex(fips_meta['directories'][0]['cdhash'])
         mount_meta = json.loads((root / 'xnu/a52q/ios16-20H392-mount-pin.json').read_text())
         mount_bytes = bytes.fromhex(mount_meta['directories'][0]['cdhash'])
         prefix = r'''
@@ -165,6 +167,31 @@ int main(void) {
  assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_vnode=NULL;
  assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+ /* Mandatory FIPS task gets the same RO-root, entitlement-free admission;
+    its test outcome remains the real executable's responsibility. */
+ static const uint8_t fips_hash[20] = {FIPS_EXPECTED};
+ memset(&blob,0,sizeof(blob));memcpy(blob.csb_cdhash,fips_hash,20);
+ blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=&task;
+ assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
+ assert(blob.csb_platform_binary && (blob.csb_flags & (CS_SIGNED|CS_PLATFORM_BINARY))==(CS_SIGNED|CS_PLATFORM_BINARY));
+ struct fake_proc fips_process={CS_VALID|CS_SIGNED,&blob};
+ assert(a52q_bool_proc(&fips_process,"com.apple.private.bindfs-allow")==KERN_DENIED);
+ for(unsigned byte=0;byte<20;byte++) {
+  blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_platform_binary=0;
+  blob.csb_cdhash[byte]^=1;
+  assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+  assert(!blob.csb_platform_binary && !(blob.csb_flags&(CS_SIGNED|CS_PLATFORM_BINARY)));
+  blob.csb_cdhash[byte]^=1;
+ }
+ full_root=0;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);full_root=1;
+ ro.flags=MNT_ROOTFS;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);ro.flags=MNT_RDONLY|MNT_ROOTFS;
+ task.mount=&other;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);task.mount=&ro;
+ blob.csb_entitlements_blob=(void*)1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_entitlements_blob=NULL;
+ blob.csb_der_entitlements_blob=(void*)1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_der_entitlements_blob=NULL;
+ blob.csb_entitlements=(void*)1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_entitlements=NULL;
+ blob.csb_flags=CS_ADHOC;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+ blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=NULL;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+ assert(a52q_without_monitor((void*)1,&blob)==KERN_DENIED);
  /* The observed mount task retains signed XML/DER. */
  static const uint8_t mount_hash[20] = {MOUNT_EXPECTED};
  CS_GenericBlob xml = {0}, der = {0};
@@ -245,7 +272,7 @@ int main(void) {
  puts("PASS: exact kernel policy, all 44 cache pins and 880 changed hashes");
  return 0;
 }
-'''.replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
+'''.replace('FIPS_EXPECTED', ','.join(str(v) for v in fips_bytes)).replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'policy.c'; path.write_text(prefix + function + body)
             executable = Path(directory) / ('policy.exe' if os.name == 'nt' else 'policy')

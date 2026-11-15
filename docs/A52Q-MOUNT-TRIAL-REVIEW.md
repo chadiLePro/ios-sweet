@@ -287,3 +287,44 @@ The new watcher waits up to 30 minutes for recovery; original BOOT restoration
 remains pending until its complete readback is confirmed. New logs use a
 separate `backup/a52q/ios-ufs-v13` directory; the V12 computer copies are preserved.
 No new kernel, root, signing, memory or display change is involved in this retry.
+
+## Physical V13 result: both mount phases advanced
+
+V13 returned to TWRP, and its watcher collected the log and restored original
+BOOT with full readback. A fresh subsequent whole-partition hash also matched.
+Three valid kernel-entry frames survive. Unlike V12, this controlled retry
+reached UFS and Apple launchd; the incomplete earlier capture is not evidence
+of a deterministic regression in the unchanged candidate.
+
+The log advances past both mount phases. Bindfs reaches source-path lookup
+(ENOENT), rather than rejecting the entitlement with EPERM. The missing optional
+preboot firmware, Pearl and factory-data paths are tolerated. This demonstrates
+advancement of the mount tasks, not a writable data volume: the log still reports
+the data volume absent. Persistent Apple services and SpringBoard remain unproven.
+
+The next required failure is:
+
+```text
+proc 9: load code signature error 4 for file "cc_fips_test"
+Boot task failed: fips - posix_spawn: 85: Bad executable (or shared library)
+```
+
+Apple launchd's embedded boot-task XML specifies `/usr/libexec/cc_fips_test`
+with both RequireRun and RequireSuccess. Earlier signature rejections for
+seputil, mobile_obliterator and MSUEarlyBootTask were nonfatal; they are not
+included in the next admission change.
+
+The exact master FIPS executable is 52,208 bytes, plain arm64, and matches the
+native staged source. All nine signed pages pass; there are no XML/DER
+entitlements. Its only direct dylib is libSystem.B; imports include the real
+`fipspost_post` and trace interface. Metadata is in
+`xnu/a52q/ios16-20H392-fips-pin.json`; extracted files remain private.
+
+The next AMFI-only change admits that exact entitlement-free identity on the
+same read-only root, with the local boot-task classification needed by launchd.
+It grants no capabilities, changes no launch arguments or binary bytes, and
+does not set the executable's test-disable option or force a successful POST.
+Admission and future execution/POST results must be reported separately; neither
+constitutes FIPS certification. Native tests cover twenty mutated hashes,
+wrong/writable roots, invalid signatures and entitlement-bearing variants; the
+FIPS task cannot query mount's bindfs capability.

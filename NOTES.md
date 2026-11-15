@@ -1,6 +1,42 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V13 controlled unchanged retry — BOOT RESTORATION REQUIRED
+## ACTIVE: V13 RESTORED; both mount phases advanced; FIPS exec rejected
+
+V13watchercollected/restoredautomatically. Receipt backup/a52q/ios-ufs-v13/receipt.json
+requires_restore=false/original_boot_restored=true, protectedhashesunchanged,
+changedrecoverybootID and3CRCentryframes. FreshwholephoneBOOT SHA d6bf...4b016
+matchedagain. PhoneTWRP; no restoration pending. PreserveallV12/V13hostlogs.
+
+Controlledunchangedb1b3BOOT/b505kernelretryreachedAppleuserland, soV12earlycapture
+doesnotestablishdeterministicregression. V13advancedpastmount-phase-1 and2;
+bindfsreachedsource lookup(return2/ENOENT)ratherthanEPERM. Optionalmissingpreboot
+firmware/Pearl/factorydatapathswere tolerated. Data volume is stillabsent; this
+doesNOTproveRWvar/data mounting. Nextmandatoryfatal:
+proc9 loadcodesignatureerror4 filecc_fips_test, thenfips posix_spawn85/PANIC.
+Otheroptionaljobs seputil/mobile_obliterator/MSUEarlyBootTaskwererejected and
+didnotcausepanic; do notadmitunneededdestructive/updaterhelpers.
+ConsoleSHA542b8c2de25c27386d072836fd8e08006d279f740a13c05c25e826f93233b794,
+48200bytes. NoApplepersistentservices/SpringBoardproofyet.
+
+Next: exact/usr/libexec/cc_fips_test pathconfirmedfromactualApplelaunchdembedded
+boot-taskXML. Extract/auditmasterbinary +stagedchecksum, allcodepages/entitlements,
+dependencies andactualtestbehavior. Admitonlythatverifiedrequiredtest onROroot,
+thenrunrealtest; neverreplaceitsresultwithfakepass orclaimFIPScertification.
+AMFIonlychange canuseexistingisolatedrelinkworkflowbase_run43705321913 leafamfi;
+newCPPbridgeisalreadyinthatfullbase. Preserveglobal/pagechecks. ThenQEMU/packaging
+andBOOT-onlytrialwithnewreadiness. Root/masterstillRO/unchanged,var4GiBnotinstalled.
+
+FIPS audit COMPLETE: E:/A52-iOS16/master-fips-audit-v1/audit.json and extracted
+usr_libexec_cc_fips_test. 52208bytes SHAa62ff42e7a024ee3c1af62e5bc8ba87af3634724ca492ca83020199dcf4bd5bc;
+matchesnativeOSsource. Nine signed4Kpages match; noXML/DERentitlements; CDhash
+6df18c1a69315dafea6f8125bfa4d73463da80f0. OnlydirectdyliblibSystem, realfipspost_post
+import/traceinterface. Binaryhasdocumentedtest-disableoption; DO NOTselectit or
+setfakePOSTresult. EmbeddedlaunchdXMLrequiresbothRunandSuccessfortheexactpath.
+PreparedAMFIbranchadmitsonlythatidentityonverifiedROroot aslocalplatformSIGNEDtask;
+newmetadataJSONandactualnativepolicytestscover20mutants/otherroots/noent/signature
+guards anddenyFIPSbindfscapability. No othersoftware/hardware/root changes.
+
+## Historical: V13 controlled unchanged retry — completed and restored
 
 Userconfirmedreadyfortimedretryafteraccidentalreboot. V13 uses unchangedchecked
 b1b3bc6569b79772dd9162db54432df655a407a7c5fcd369b5ad1325a5ec9f27 BOOTcandidate,

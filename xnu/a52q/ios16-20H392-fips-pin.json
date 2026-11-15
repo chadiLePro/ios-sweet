@@ -1,0 +1,26 @@
+{
+  "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
+  "path": "/usr/libexec/cc_fips_test",
+  "bytes": 52208,
+  "sha256": "a62ff42e7a024ee3c1af62e5bc8ba87af3634724ca492ca83020199dcf4bd5bc",
+  "staged_source_sha256_matches": true,
+  "directories": [
+    {
+      "slot": 0,
+      "identifier": "com.apple.cc_fips_test",
+      "version": "0x20400",
+      "flags": "0x2",
+      "hash_type": 2,
+      "platform": 0,
+      "page_bytes": 4096,
+      "pages": 9,
+      "executable_page_hashes_match": true,
+      "cdhash": "6df18c1a69315dafea6f8125bfa4d73463da80f0"
+    }
+  ],
+  "entitlement_keys": [],
+  "cms_present": true,
+  "cms_trust_authenticated": false,
+  "entitlements_granted": false,
+  "development_role": "exact required local platform boot task on the read-only full A52 root; signature identity only, not a FIPS POST result or certification"
+}
