@@ -36,6 +36,24 @@ PreparedAMFIbranchadmitsonlythatidentityonverifiedROroot aslocalplatformSIGNEDta
 newmetadataJSONandactualnativepolicytestscover20mutants/otherroots/noent/signature
 guards anddenyFIPSbindfscapability. No othersoftware/hardware/root changes.
 
+Committedc23fbd3ef6f740612ea0a032e8f09c157a9bedbe. IsolatedAMFIrebuild43710208735
+SUCCESS usingfullbase43705321913/5c34a04/b505kernel; hostCI43710209003 SUCCESS,
+120localtests+repo81patch/41Python/7shellvalidatorPASS, nativepolicyLinux/WindowsPASS.
+Redundantauto-full43710208939 cancelled. Newkernel
+233c149eba8affd917f169ea7e7a08f4bfa282f897fa9d5d351a57a1d4533c53;
+AMFISHAcaacd24f6c92f4dfe3403e6219d25676f580387492772fb7b2e822f8777f9c9b.
+Artifact E:/A52-iOS16/builds/43710208735/{artifact,combined,verified-build.json}.
+Hostpipeline research/finish_fips_artifacts.py/session96259 stdout
+research/fips-build-package.log verifiesrelinkprovenance, exactkernelQEMU then
+masterrehashplan-v9 andpackagehardware-v11. QEMUrunexit0; inspectfinalproof before
+phoneuse. No phonewritesforthisnewkernel; V13restored.
+
+Preparednotstarted research/start_fips_trial.py and watch_ios_ufs_v14_restore.py
+use C: backup/a52q/ios-ufs-v14, hardware-v11,30minwatcher,lastV13consolefallback.
+Private devicehelper nowexpectsplan-v9, restorationphasehasnoE:dependency.
+Aftercandidatechecks, freshreadinessforfive-minute BOOT-onlytrial+restore.
+PrivateV13proof E:/A52-iOS16/mount-contract-v13-result.json retained.
+
 ## Historical: V13 controlled unchanged retry — completed and restored
 
 Userconfirmedreadyfortimedretryafteraccidentalreboot. V13 uses unchangedchecked
