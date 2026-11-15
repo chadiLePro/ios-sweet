@@ -220,6 +220,29 @@ static int a52q_verified_dirs_cleaner_blob(struct cs_blob *blob)
         xml_size == 256 && der_size == 60;
 }
 
+/* V15 rejects the required launchd_cache_loader before exec. Its signed
+ * metadata is retained, not converted to an AMFI/IOKit entitlement context.
+ * This admits only the measured executable, not its future cache requests. */
+static int a52q_verified_launchd_cache_loader_blob(struct cs_blob *blob)
+{
+    static const uint8_t pin[CS_CDHASH_LEN] = {
+        0x24,0xed,0xfd,0xa4,0x52,0x0d,0x9f,0x9b,0x24,0x6a,
+        0x0c,0x6c,0x91,0xfa,0xcb,0xd9,0xf0,0x95,0x4a,0x38
+    };
+    extern vnode_t rootvnode;
+    if (!blob || !(blob->csb_flags & CS_VALID) || blob->csb_entitlements ||
+        !blob->csb_entitlements_blob || !blob->csb_der_entitlements_blob ||
+        memcmp(blob->csb_cdhash, pin, sizeof(pin)) ||
+        !a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) return 0;
+    void *xml = NULL;
+    const CS_GenericBlob *der = NULL;
+    size_t xml_size = 0, der_size = 0;
+    return !csblob_get_entitlements(blob, &xml, &xml_size) &&
+        !csblob_get_der_entitlements(blob, &der, &der_size) &&
+        xml == blob->csb_entitlements_blob && der == blob->csb_der_entitlements_blob &&
+        xml_size == 390 && der_size == 152;
+}
+
 /* Called only for a missing SF_RESTRICTED flag, after root ownership checks.
  * Registered CodeDirectory identity + the actual RO root mount replace that
  * one missing filesystem flag. Ordinary range/page checks run afterwards. */
@@ -291,6 +314,12 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
             blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
             blob->csb_platform_binary = 1;
             printf("A52Q boot policy: exact 20H392 dirs_cleaner admitted; signed XML/DER checked, no capabilities granted, cleanup result unproven\n");
+            return KERN_SUCCESS;
+        }
+        if (a52q_verified_launchd_cache_loader_blob(blob)) {
+            blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
+            blob->csb_platform_binary = 1;
+            printf("A52Q boot policy: exact 20H392 launchd_cache_loader admitted; signed XML/DER checked, no AMFI or IOKit capabilities granted, cache loading unproven\n");
             return KERN_SUCCESS;
         }
         /* Observed mount-phase-1 boot task. Retain its signed metadata; only

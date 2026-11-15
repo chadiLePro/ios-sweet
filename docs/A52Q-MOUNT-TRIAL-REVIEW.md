@@ -376,3 +376,38 @@ The checked 96 MiB BOOT candidate is
 `bc50a99b72cbb6fe862eacfadb5d69cb8e163d8c3fd4412a77651029c96ffa8f`;
 physical cleanup execution is still unproven. No new phone write is included in
 these host checks; original BOOT remains restored while readiness is pending.
+
+## Physical V15 result: cleanup executed; boot-cache loader rejected
+
+Original BOOT was restored automatically, protected hashes were unchanged, and
+a fresh whole-partition BOOT readback matched the original. Three valid entry
+records survive. The 69,640-byte retained console SHA256 is
+`c81ec593b98390e34258aa17f34020327675dc7b5dd56ebf2cdb435551904b7e`.
+
+```text
+dc_prep_temp_dir: mkdir(/private/var/dirs_cleaner/, 0700) failed with errno=30: Read-only file system
+Boot task failed: launchd_cache_loader - posix_spawn: 85: Bad executable (or shared library)
+```
+
+The authentic cleanup executable ran and launchd continued. This does not prove
+cleanup succeeded: the log reports the failed directory creation, and the system
+logger also cannot bind its socket on the read-only filesystem. A writable data
+volume is still absent. This trial enables no UFS write or root modification.
+
+The next required boot task is now demonstrably rejected before execution.
+`launchd_cache_loader` from the master is 72,336 bytes and matches staged source;
+all 13 signed code pages and its XML/DER slots pass. The exact pin is recorded in
+`xnu/a52q/ios16-20H392-launchd-cache-loader-pin.json`. The narrow admission change
+checks that identity, CS_VALID, signed slot getters/pointers/lengths and the same
+read-only root, then supplies the local boot-task classification. It creates no
+entitlement context, AMFI provider or trust-cache response; it grants neither
+`can-check-trust-cache` nor an IOKit user-client capability. Tests retain changed
+hash, invalid/missing signed metadata, wrong-root and forbidden-capability cases
+for both signed helper identities. Other optional helpers remain denied.
+
+Independent read-only host inspection also extracted the original
+`/System/Library/xpc/launchd.plist` and its detached signature. All 356 code pages
+pass both the SHA1 and SHA256 CodeDirectories (version 0x20500). Neither CMS trust,
+kernel admission of that data cache, cache-loader execution nor submission to
+launchd is established. Observe the next actual failure before implementing any
+cache/provider change. Persistent services and SpringBoard remain unproven.

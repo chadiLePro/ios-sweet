@@ -1,0 +1,41 @@
+{
+  "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
+  "path": "/usr/libexec/launchd_cache_loader",
+  "bytes": 72336,
+  "sha256": "e1f0b581b73222465a36778af0c3260d7f52ab0e24c374b9111c599830b1e00f",
+  "staged_source_sha256_matches": true,
+  "directories": [
+    {
+      "slot": 0,
+      "identifier": "com.apple.launchd_cache_loader",
+      "version": "0x20400",
+      "flags": "0x2",
+      "hash_type": 2,
+      "platform": 0,
+      "page_bytes": 4096,
+      "pages": 13,
+      "executable_page_hashes_match": true,
+      "cdhash": "24edfda4520d9f9b246a0c6c91facbd9f0954a38"
+    }
+  ],
+  "signed_entitlement_keys": [
+    "com.apple.private.amfi.can-check-trust-cache",
+    "com.apple.security.iokit-user-client-class"
+  ],
+  "entitlement_blobs": {
+    "5": {
+      "bytes": 390,
+      "sha256": "580c6697bb51b1d4ab2612adec7dac7ea52f6b7707753ded3c195afd3074a0d4",
+      "special_slot_hashes_match": true
+    },
+    "7": {
+      "bytes": 152,
+      "sha256": "5930fc5dcf53cc729f3e951d06596f7f7278c67a80c540f3f209b9dc7f5d4330",
+      "special_slot_hashes_match": true
+    }
+  },
+  "cms_present": true,
+  "cms_trust_authenticated": false,
+  "entitlements_granted": false,
+  "development_role": "exact required local platform task on read-only full A52 root; neither trust-cache nor IOKit capability granted; cache verification/result unchanged"
+}

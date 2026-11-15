@@ -28,6 +28,8 @@ class ExecPolicyTests(unittest.TestCase):
         fips_bytes = bytes.fromhex(fips_meta['directories'][0]['cdhash'])
         dirs_meta = json.loads((root / 'xnu/a52q/ios16-20H392-dirs-cleaner-pin.json').read_text())
         dirs_bytes = bytes.fromhex(dirs_meta['directories'][0]['cdhash'])
+        loader_meta = json.loads((root / 'xnu/a52q/ios16-20H392-launchd-cache-loader-pin.json').read_text())
+        loader_bytes = bytes.fromhex(loader_meta['directories'][0]['cdhash'])
         mount_meta = json.loads((root / 'xnu/a52q/ios16-20H392-mount-pin.json').read_text())
         mount_bytes = bytes.fromhex(mount_meta['directories'][0]['cdhash'])
         prefix = r'''
@@ -197,19 +199,24 @@ int main(void) {
  assert(a52q_without_monitor((void*)1,&blob)==KERN_DENIED);
  /* The required cleanup task retains exact signed metadata but gets no
     capability: neither storage.tmp nor mount's bindfs entitlement is granted. */
- static const uint8_t dirs_hash[20] = {DIRS_EXPECTED};
+ static const uint8_t signed_tasks[][20] = {{DIRS_EXPECTED},{LOADER_EXPECTED}};
+ static const size_t signed_xml_bytes[]={256,390}, signed_der_bytes[]={60,152};
+ for(unsigned task_index=0;task_index<2;task_index++) {
  CS_GenericBlob dirs_xml={0}, dirs_der={0};
- memset(&blob,0,sizeof(blob));memcpy(blob.csb_cdhash,dirs_hash,20);
+ memset(&blob,0,sizeof(blob));memcpy(blob.csb_cdhash,signed_tasks[task_index],20);
  blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=&task;
  blob.csb_entitlements_blob=&dirs_xml;blob.csb_der_entitlements_blob=&dirs_der;
- xml_bytes=256;der_bytes=60;
+ xml_bytes=signed_xml_bytes[task_index];der_bytes=signed_der_bytes[task_index];
  assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
  assert(blob.csb_platform_binary && (blob.csb_flags&(CS_SIGNED|CS_PLATFORM_BINARY))==(CS_SIGNED|CS_PLATFORM_BINARY));
  struct fake_proc dirs_process={CS_VALID|CS_SIGNED,&blob};
  assert(a52q_bool_proc(&dirs_process,"com.apple.private.bindfs-allow")==KERN_DENIED);
  assert(a52q_bool_proc(&dirs_process,"com.apple.private.security.storage.tmp")==KERN_DENIED);
+ assert(a52q_bool_proc(&dirs_process,"com.apple.private.amfi.can-check-trust-cache")==KERN_DENIED);
  void *dirs_object=(void*)1;
  assert(a52q_object_proc(&dirs_process,"com.apple.private.bindfs-allow",&dirs_object)==KERN_NOT_FOUND && dirs_object==NULL);
+ dirs_object=(void*)1;
+ assert(a52q_object_proc(&dirs_process,"com.apple.security.iokit-user-client-class",&dirs_object)==KERN_NOT_FOUND && dirs_object==NULL);
  for(unsigned byte=0;byte<20;byte++) {
   blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_platform_binary=0;
   blob.csb_cdhash[byte]^=1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
@@ -230,6 +237,7 @@ int main(void) {
  blob.csb_flags=CS_ADHOC;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=NULL;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  blob.csb_vnode=&task;assert(a52q_without_monitor((void*)1,&blob)==KERN_DENIED);
+ }
  xml_bytes=472;der_bytes=222;
  /* The observed mount task retains signed XML/DER. */
  static const uint8_t mount_hash[20] = {MOUNT_EXPECTED};
@@ -311,7 +319,7 @@ int main(void) {
  puts("PASS: exact kernel policy, all 44 cache pins and 880 changed hashes");
  return 0;
 }
-'''.replace('DIRS_EXPECTED', ','.join(str(v) for v in dirs_bytes)).replace('FIPS_EXPECTED', ','.join(str(v) for v in fips_bytes)).replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
+'''.replace('LOADER_EXPECTED', ','.join(str(v) for v in loader_bytes)).replace('DIRS_EXPECTED', ','.join(str(v) for v in dirs_bytes)).replace('FIPS_EXPECTED', ','.join(str(v) for v in fips_bytes)).replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'policy.c'; path.write_text(prefix + function + body)
             executable = Path(directory) / ('policy.exe' if os.name == 'nt' else 'policy')
