@@ -86,6 +86,27 @@ native caller-policy testPASS. Do not flash basef22e kernel. New corrected kerne
 requires provenance, exactQEMU/provider registration, master hash/plan13 packaging,
 then fresh readiness before V19. Old host pipelines26818/64879 are stopped/ended.
 
+Corrected AMFI isolated rebuild43737148277 SUCCESS (head2ada3d9ca8ee8181d0be6486c1ef227ead8cafb7),
+base full43735227285/33ba1d9/f22e...2005, header/shared-leaf guards passed.
+HostCI43737147920 SUCCESS; redundant full43737147935 cancelled. Actual corrected
+kernel SHA d164a51d9e4476e94068bf40f91a3ca66ba5fb8851dd5854718ea5f1d417a48c,
+AMFI implementation SHA52ee76a41c6108c7b1c9f3753e7b21347440b6f1dff1d41afb87eb52f18e9079.
+E:/A52-iOS16/builds/43737148277/{artifact,combined,verified-build.json} verified.
+research/finish_local_amfi_corrected_artifacts.py session51197 COMPLETE;
+research/local-amfi-corrected-build-package.log. Exact corrected kernel QEMU
+shim/out/a52q-local-amfi-qemu-v3/run/result.json:3CRC entries,7 diagnostic PID1
+heartbeats, local provider registration log observed. This does NOT exercise
+Apple loader/client/file measurement. Whole16GiB master rehash still0f4...312149.
+Corrected plan-v13/hardware-v15 96MiB candidate SHA
+664360e93f7ab6e454d646cb2c0dbd21590a9a4165991e076de1c1543cd37389,
+payload verified noRAMdisk/diagnostic root and kernel/manifest binding matches.
+Compile-only f22e base was NEVER packaged/flashed. Old V1/V2 packaging stopped.
+V19 start_local_amfi_trial.py/watch_ios_ufs_v19_restore.py already prepared,
+helperbindsplan13,robustguard/C:backups. NOT started; fresh physical readiness
+question pending. Phone TWRP, original BOOT restored, NO restoration pending.
+Next phone log must establish actual owner/caller auth, measurement query,
+detached registration/cache submission or first new failure; no services/UI proof.
+
 ## Historical: V18 fatal-exit diagnostic — restored above
 
 Fresh readiness received; research/start_exit_trace_trial.py completed full

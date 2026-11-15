@@ -78,8 +78,18 @@ measurement reads use ordinary `UIO_READ`, not a recursive locked-vnode read.
   actual policy; reject mutated hashes/digests, malformed arguments, changed
   metadata, wrong/writable roots, wrong callers and unrelated capabilities.
 
-121 local host tests and repository integrity checks pass. These tests cover
-policy boundaries, not a live VFS/IOKit exchange. The new service still requires
-a full kernel build, exact-kernel diagnostic QEMU and a recoverable phone trial.
+121 local host tests, repository integrity and Linux CI pass. These tests cover
+policy boundaries, not a live VFS/IOKit exchange. Full HFS baseline `43735227285`
+compiled after correcting the ARM header staging path; its 75 source hashes
+were independently verified. The raw-process-platform check was corrected to
+use the actual signature blob, then AMFI-only rebuild `43737148277` passed with
+that verified baseline. The compile-only baseline was never packaged or flashed.
+
+The corrected kernel passed diagnostic QEMU: provider registration was logged,
+three entry records checked and diagnostic PID1 emitted seven heartbeats. This
+does not exercise Apple's client or the real cache query. The unchanged master
+root was rehashed before packaging 96 MiB BOOT candidate
+`664360e93f7ab6e454d646cb2c0dbd21590a9a4165991e076de1c1543cd37389`.
+Physical caller/query/registration and successful cache submission remain unproven.
 Storage drivers, display, reserved RAM and fatal-exit/pstore logging are intact.
 The full root/master stays read-only and unchanged; writable var is not installed.

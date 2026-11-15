@@ -456,3 +456,12 @@ heartbeats. This fixture does not execute the new fatal-exit hook or Apple
 userland. The master root rehash matched before packaging the 96 MiB BOOT image
 `2b87d713355a005a79870fd44c20f9ae57feb3bf8b861276dcc492f19a513cea`.
 The child's actual abort description remains a physical-test question.
+
+V18 subsequently retained the same description three times: LIBXPC namespace7,
+code1, `Unable to find AMFI`. Original BOOT restoration and fresh full readback
+passed. The measured loader reached its IOKit service lookup; this identifies
+the next failure rather than inferring it from SIGABRT. The scoped software
+query and read-only boot-cache measurement change is documented in
+[A52Q-LOCAL-AMFI.md](A52Q-LOCAL-AMFI.md). Its corrected kernel passed compile,
+provenance, policy and diagnostic QEMU checks. A physical service/query result
+is still pending; the stored root is unchanged and no writable var is installed.
