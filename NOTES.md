@@ -1,6 +1,25 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V17 RESTORED; loader admitted then SIGABRT; capture exit reason next
+## ACTIVE: V18 fatal-exit diagnostic — BOOT RESTORATION PENDING
+
+Fresh readiness received; research/start_exit_trace_trial.py completed full
+installed16GiB root and protected partition hash checks, wrote/read back only
+BOOT, confirmed native reboot adb USB departure. Candidate
+2b87d713355a005a79870fd44c20f9ae57feb3bf8b861276dcc492f19a513cea;
+kernel13c2016875672cf6578605db98cdcdf7180956074fab87607c20bed3948e3a3a.
+Root read-only/unchanged; no other storage write. Actual new result UNKNOWN.
+
+backup/a52q/ios-ufs-v18/receipt.json requires_restore=true/original_boot_restored=false.
+C: watcher wrapper PID2488 invokes robust watch_pending_boot_restore.py, keeps
+waiting beyond30min, retries USB interruptions, preserves first capture, rejects
+unknown BOOT content. Logs same folder watcher.log/watcher.err.log. User told
+five full minutes from actual reboot confirmation, then return to TWRP and
+leave USB connected. Collect fatal-exit details, verify guard restoration and
+fresh full phone BOOT SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Do not leave restoration pending after recovery reconnects. Never select System
+or format data. Keep V17 as last usable baseline until new retained evidence.
+
+## Previous: V17 RESTORED; loader admitted then SIGABRT; capture exit reason next
 
 V17 guard collected and restored automatically on first attempt. Receipt
 requires_restore=false/original_boot_restored=true; protected hashes unchanged,
