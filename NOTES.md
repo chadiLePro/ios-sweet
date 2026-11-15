@@ -17,6 +17,17 @@ check full phone SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc
 Do not leave restoration pending after recovery reconnects. Do not select
 System or format data. New physical cleanup result still UNKNOWN.
 
+Independent RO host audit while waiting: master-launchd-cache-loader-audit-v1
+verifies exact staged-source match, 13 signed pages and XML/DER slots for next
+required launchd_cache_loader; it is NOT admitted or executed. Strings reference
+AMFI user-client trust lookup and /System/Library/xpc/launchd.plist(.sig).
+Read-only master-launchd-plist-v1 export completed: cache 1456980 bytes SHA
+810070302b5c4d7c5f00bdc8df20aaea2dd33cd8342d2402fcdf7ff6397d374c;
+signature 19006 bytes SHA d20a1d313a2dd8e779995cfb9a4e70c6863dc4cea0ee0720c8987b6bebcd1e5a.
+signature-audit.json verifies all356 code pages for BOTH SHA1 and SHA256
+CodeDirectories (version20500); no entitlements. No CMS authentication, trust
+admission or cache-loader execution claim. Do not patch until new logs justify.
+
 ## Previous: V14 RESTORED; real FIPS POST passed; dirs_cleaner exec rejected
 
 V14 watcher collected the new log and restored original BOOT automatically.
