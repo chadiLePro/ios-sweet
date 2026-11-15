@@ -16,6 +16,31 @@ failure from SIGABRT alone. Next source audit: loader's static abort paths plus
 minimal A52-only fatal-exit reason logging into existing RAM console, without
 changing signals, admission, storage, display, reserved RAM or userland bytes.
 
+Diagnostic source committed f478e2df9cb747fca1c3c308633feb0c650bb5bd: new
+xnu/a52q/exit_trace.py + apply.py hook print existing current-process fatal
+signal/exception/reason (bounded192B description, 3 copies) before corpse
+notification. Copies are unprotected text, NOT CRC-protected. Termination,
+reason, crash flags and all hardware/policy implementations unchanged.
+tools/relink_a52q_console.py now rejects missing/changed fatal-exit transform
+in an old base; this requires full build.120 local tests/repo integrity PASS,
+actual target transform exact-delta/repeated/wrong-source checks PASS;
+hostCI43729112245 SUCCESS. Full HFS build43729112746 RUNNING; auto mockfs
+43729112242 cancelled. No new phone write; original BOOT remains restored.
+
+research/finish_exit_trace_artifacts.py session3297, stdout
+research/exit-trace-build-package.log waits for full build, verifies expected
+overlay+archive, exact-kernel diagnostic QEMU, master rehash plan-v12 then
+packages hardware-v14. Full-build expected overlay prepared independently
+from verified full base43705321913: all hashes same except kern_exit (trace)
+and a52q_amfi.c (already-tested subsequent pins). Strict source-diff and apply
+normalization checks PASS; E:/A52-iOS16/exit-trace-expected-overlay.json.
+Pipeline remains HOST ONLY. V17 result E:/A52-iOS16/cache-loader-v17-result.json,
+70023B console SHA469a10f0fae29ffe5dba2b1c4a1b780cb560bcd74353ed524a8b8694591a7432.
+Loader main entry is NOT proven by SIGABRT/process start.
+Static main audit E:/A52-iOS16/cache-loader-main-static-v1.txt shows fopen NULL
+is handled, so logging EROFS alone does not explain abort; multiple earlier/
+later abort branches exist. No AMFI/cache/graphics stub justified without reason.
+
 ## Historical: V17 controlled loader retry — restored above
 
 Fresh user readiness received. research/start_cache_loader_retry.py completed
