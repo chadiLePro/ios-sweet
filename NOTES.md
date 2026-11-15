@@ -1,6 +1,25 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V19 measured-cache service trial — BOOT RESTORATION PENDING
+## ACTIVE: V19 RESTORED; cache query/registration passed; xpcproxy rejected
+
+V19 guard collected/restored first attempt. Receipt requires_restore=false,
+original_boot_restored=true, protected hashes unchanged, changed recovery boot
+ID,3CRC entries,actual boundedROroot verified. Fresh full phone BOOT SHA
+d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016 matches.
+Phone TWRP. NO restoration pending. Retain backup/a52q/ios-ufs-v19/console.txt.
+
+Actual log: exact cache-loader connection opened; measured20H392 cache identity
+recognized; original detached signature admitted, core loaded launchd.plist
+range0:0x164000 flags0x10003. Parent then `Early boot complete. Continuing system
+boot.` and imports system/user501 service definitions (including SpringBoard).
+No successful persistent service or UI proof. Next failure: proc22 load signature
+error4 filexpcproxy; later `Could not spawn process /usr/libexec/xpcproxy:85`.
+Root var/logger EROFS30 persists. Audit exact xpcproxy from master/native source,
+headers/dependencies/entitlements before admission; do not blanket-admit daemons.
+Capture262132B ends mid-message amid mass-spawn logging: inspect console capacity
+before interpreting last timestamp as a kernel hang. Preserve all old captures.
+
+## Historical: V19 measured-cache service trial — restored above
 
 Fresh readiness received. research/start_local_amfi_trial.py completed full
 installed16GiB root/protected partition hash checks, wrote/read back only BOOT,
