@@ -1,0 +1,52 @@
+{
+  "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
+  "path": "/System/Library/xpc/launchd.plist",
+  "bytes": 1456980,
+  "sha256": "810070302b5c4d7c5f00bdc8df20aaea2dd33cd8342d2402fcdf7ff6397d374c",
+  "signature_path": "/System/Library/xpc/launchd.plist.sig",
+  "signature_bytes": 19006,
+  "signature_sha256": "d20a1d313a2dd8e779995cfb9a4e70c6863dc4cea0ee0720c8987b6bebcd1e5a",
+  "directories": [
+    {
+      "slot": 0,
+      "identifier": "launchd-a2860ed79a66912d97249baf441f412d6ac3a69a",
+      "version": "0x20500",
+      "flags": "0x10002",
+      "hash_type": 1,
+      "platform": 0,
+      "page_bytes": 4096,
+      "pages": 356,
+      "executable_page_hashes_match": true,
+      "cdhash": "58ec4f1a2252068d884c5d823013d6cf73f6ac27"
+    },
+    {
+      "slot": 4096,
+      "identifier": "launchd-a2860ed79a66912d97249baf441f412d6ac3a69a",
+      "version": "0x20500",
+      "flags": "0x10002",
+      "hash_type": 2,
+      "platform": 0,
+      "page_bytes": 4096,
+      "pages": 356,
+      "executable_page_hashes_match": true,
+      "cdhash": "17f4f2e748701d9e2d79ec16fdfd96a76e528bc2"
+    }
+  ],
+  "cms_present": true,
+  "cms_trust_authenticated": false,
+  "entitlements_granted": false,
+  "platform_status_granted": false,
+  "query": {
+    "service": "AppleMobileFileIntegrity",
+    "client": "AppleMobileFileIntegrityUserClient",
+    "type": 0,
+    "selector": 6,
+    "scalar_input": [
+      1
+    ],
+    "structure_input": "exact 20-byte SHA1 or SHA256 CodeDirectory cdhash",
+    "output_scalars": 0,
+    "output_structure_bytes": 0
+  },
+  "development_role": "local measured identity query and exact read-only data-cache registration; full cache/signature SHA256 checked; not Apple trust authentication"
+}

@@ -30,6 +30,9 @@ class ExecPolicyTests(unittest.TestCase):
         dirs_bytes = bytes.fromhex(dirs_meta['directories'][0]['cdhash'])
         loader_meta = json.loads((root / 'xnu/a52q/ios16-20H392-launchd-cache-loader-pin.json').read_text())
         loader_bytes = bytes.fromhex(loader_meta['directories'][0]['cdhash'])
+        cache_meta = json.loads((root / 'xnu/a52q/ios16-20H392-launchd-cache-pin.json').read_text())
+        boot_cache_entries = ','.join('{' + ','.join(str(b) for b in bytes.fromhex(d['cdhash'])) + '}'
+                                     for d in cache_meta['directories'])
         mount_meta = json.loads((root / 'xnu/a52q/ios16-20H392-mount-pin.json').read_text())
         mount_bytes = bytes.fromhex(mount_meta['directories'][0]['cdhash'])
         prefix = r'''
@@ -37,6 +40,7 @@ class ExecPolicyTests(unittest.TestCase):
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include "a52q_boot_cache_policy.h"
 typedef int kern_return_t;
 #define CS_CDHASH_LEN 20
 #define CS_ADHOC 2
@@ -74,6 +78,13 @@ typedef struct fake_mount *mount_t;
 struct fake_vnode { mount_t mount; int type; struct cs_blob *blob; };
 typedef struct fake_vnode *vnode_t;
 vnode_t rootvnode;
+static vnode_t measured_cache_vnode;
+static int measured_files_valid = 1;
+static proc_t caller;
+static proc_t current_proc(void) { return caller; }
+static int a52q_boot_cache_files_verified(vnode_t required) {
+ return measured_files_valid && (!required || required == measured_cache_vnode);
+}
 static mount_t vnode_mount(vnode_t vp) { return vp->mount; }
 static uint64_t vfs_flags(mount_t mp) { return mp->flags; }
 static int vnode_vtype(vnode_t vp) { return vp->type; }
@@ -146,6 +157,27 @@ int main(void) {
  struct fake_vnode root = {&ro, 2, NULL}, task = {&ro, VREG, &blob};
  static const uint8_t fsck[20] = {BOOT_TASK_EXPECTED};
  rootvnode=&root; full_root=1;
+ /* The data-cache signature is not an executable/platform identity. Both
+    CodeDirectories require actual RO-root file identity and measurements. */
+ static const uint8_t boot_cache_pins[][20]={BOOT_CACHE_EXPECTED};
+ struct fake_vnode boot_cache={&ro,VREG,&blob};measured_cache_vnode=&boot_cache;
+ for(unsigned i=0;i<2;i++) {
+  memset(&blob,0,sizeof(blob));memcpy(blob.csb_cdhash,boot_cache_pins[i],20);
+  blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=&boot_cache;
+  assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
+  assert(!(blob.csb_flags&(CS_PLATFORM_BINARY|CS_SIGNED)) && !blob.csb_platform_binary);
+  for(unsigned byte=0;byte<20;byte++) {
+   blob.csb_cdhash[byte]^=1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_cdhash[byte]^=1;
+  }
+  measured_files_valid=0;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);measured_files_valid=1;
+  blob.csb_vnode=&task;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_vnode=&boot_cache;
+  ro.flags=MNT_ROOTFS;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);ro.flags=MNT_ROOTFS|MNT_RDONLY;
+  full_root=0;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);full_root=1;
+  blob.csb_flags=CS_ADHOC;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_flags=CS_ADHOC|CS_VALID;
+  blob.csb_entitlements=(void*)1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_entitlements=NULL;
+  blob.csb_entitlements_blob=(void*)1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_entitlements_blob=NULL;
+  blob.csb_der_entitlements_blob=(void*)1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_der_entitlements_blob=NULL;
+ }
  memset(&blob,0,sizeof(blob)); memcpy(blob.csb_cdhash,fsck,20);
  blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_vnode=&task;
  assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
@@ -209,6 +241,24 @@ int main(void) {
  xml_bytes=signed_xml_bytes[task_index];der_bytes=signed_der_bytes[task_index];
  assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
  assert(blob.csb_platform_binary && (blob.csb_flags&(CS_SIGNED|CS_PLATFORM_BINARY))==(CS_SIGNED|CS_PLATFORM_BINARY));
+ struct fake_proc query_process={CS_VALID|CS_SIGNED|CS_PLATFORM_BINARY,&blob};
+ caller=&query_process;
+ assert(a52q_boot_cache_client_allowed()==(task_index==1));
+ assert(a52q_boot_cache_query(boot_cache_pins[1],20)==(task_index==1));
+ if(task_index==1) {
+  uint8_t changed_hash[20];memcpy(changed_hash,boot_cache_pins[1],20);changed_hash[0]^=1;
+  assert(!a52q_boot_cache_query(changed_hash,20));
+  assert(!a52q_boot_cache_query(NULL,20));assert(!a52q_boot_cache_query(boot_cache_pins[1],19));
+  measured_files_valid=0;assert(!a52q_boot_cache_query(boot_cache_pins[1],20));measured_files_valid=1;
+  const unsigned required_flags[]={CS_VALID,CS_SIGNED,CS_PLATFORM_BINARY};
+  for(unsigned j=0;j<3;j++) {
+   query_process.flags^=required_flags[j];assert(!a52q_boot_cache_client_allowed());query_process.flags^=required_flags[j];
+  }
+  xml_error=1;assert(!a52q_boot_cache_client_allowed());xml_error=0;
+  der_error=1;assert(!a52q_boot_cache_client_allowed());der_error=0;
+  blob.csb_platform_binary=0;assert(!a52q_boot_cache_client_allowed());blob.csb_platform_binary=1;
+ }
+ caller=NULL;assert(!a52q_boot_cache_client_allowed());
  struct fake_proc dirs_process={CS_VALID|CS_SIGNED,&blob};
  assert(a52q_bool_proc(&dirs_process,"com.apple.private.bindfs-allow")==KERN_DENIED);
  assert(a52q_bool_proc(&dirs_process,"com.apple.private.security.storage.tmp")==KERN_DENIED);
@@ -319,11 +369,11 @@ int main(void) {
  puts("PASS: exact kernel policy, all 44 cache pins and 880 changed hashes");
  return 0;
 }
-'''.replace('LOADER_EXPECTED', ','.join(str(v) for v in loader_bytes)).replace('DIRS_EXPECTED', ','.join(str(v) for v in dirs_bytes)).replace('FIPS_EXPECTED', ','.join(str(v) for v in fips_bytes)).replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
+'''.replace('BOOT_CACHE_EXPECTED', boot_cache_entries).replace('LOADER_EXPECTED', ','.join(str(v) for v in loader_bytes)).replace('DIRS_EXPECTED', ','.join(str(v) for v in dirs_bytes)).replace('FIPS_EXPECTED', ','.join(str(v) for v in fips_bytes)).replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'policy.c'; path.write_text(prefix + function + body)
             executable = Path(directory) / ('policy.exe' if os.name == 'nt' else 'policy')
-            compiled = subprocess.run([compiler, '-std=c11', '-Wall', '-Wextra', '-Werror', str(path), '-o', str(executable)],
+            compiled = subprocess.run([compiler, '-std=c11', '-Wall', '-Wextra', '-Werror', '-I', str(root / 'xnu/a52q'), str(path), '-o', str(executable)],
                                       capture_output=True, text=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr)
             result = subprocess.run([str(executable)], check=True, capture_output=True, text=True)

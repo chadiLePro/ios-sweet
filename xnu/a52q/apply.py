@@ -63,6 +63,8 @@ def apply(root, filesystem='mockfs'):
     replace('bsd/kern/sweet_amfi.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
             '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_amfi.c"\n#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
     changes['bsd/kern/a52q_amfi.c'] = (HERE / 'a52q_amfi.c').read_text()
+    for destination in ('bsd/kern', 'iokit/Kernel'):
+        changes[destination + '/a52q_boot_cache_policy.h'] = (HERE / 'a52q_boot_cache_policy.h').read_text()
     replace('bsd/dev/sweet_ufs.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
             '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_ufs.c"\n#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
     changes['bsd/dev/a52q_ufs.c'] = (HERE / 'a52q_ufs.c').read_text()

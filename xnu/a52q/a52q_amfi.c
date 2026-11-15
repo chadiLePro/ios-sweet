@@ -5,7 +5,9 @@
  * The separate full UFS root may also attempt the two audited 20H392 launch
  * executables and the audited entitlement-free shared caches below. Only the
  * exact admitted mount task may query its verified signed bindfs Boolean;
- * this is an experimental hash allowlist, not Apple's AMFI/trust service.
+ * A local IOKit query also recognizes the exact measured launchd data cache
+ * for the exact loader. No entitlement context or Apple trust is fabricated;
+ * this is an experimental hash policy, not Apple's AMFI/trust service.
  * Core XNU signature structure and executable-page hashes remain checked.
  */
 #include <kern/debug.h>
@@ -19,6 +21,73 @@
 #include <sys/vnode.h>
 #include <sys/systm.h>
 #include <sys/ubc_internal.h>
+#include <sys/vnode_internal.h>
+#include <sys/uio.h>
+#include <sys/errno.h>
+#include <libkern/crypto/sha2.h>
+#include "a52q_boot_cache_policy.h"
+
+static int a52q_readonly_root_vnode(vnode_t vp, vnode_t root);
+
+/* Hash ordinary read-only vnode data, never a write or a trust-cache upload.
+ * ubc_cs_blob_add invokes this policy before taking vnode_lock. */
+static int a52q_measure_boot_file(const char *path, size_t bytes, uint8_t digest[32],
+    vfs_context_t context, vnode_t required)
+{
+    extern vnode_t rootvnode;
+    vnode_t vp = NULL;
+    int error = vnode_lookup(path, 0, &vp, context);
+    if (error) return error;
+    if ((required && vp != required) || !a52q_readonly_root_vnode(vp, rootvnode)) {
+        error = EPERM;
+        goto done;
+    }
+    struct vnode_attr attributes;
+    VATTR_INIT(&attributes);
+    VATTR_WANTED(&attributes, va_data_size);
+    error = vnode_getattr(vp, &attributes, context);
+    if (error) goto done;
+    if (!VATTR_IS_SUPPORTED(&attributes, va_data_size) || attributes.va_data_size != bytes) {
+        error = EINVAL;
+        goto done;
+    }
+    SHA256_CTX hash;
+    SHA256_Init(&hash);
+    for (size_t offset = 0; offset < bytes;) {
+        uint8_t data[1024];
+        int count = (int)MIN(sizeof(data), bytes - offset), residual = 0;
+        error = vn_rdwr(UIO_READ, vp, (caddr_t)data, count, (off_t)offset,
+            UIO_SYSSPACE, 0, vfs_context_ucred(context), &residual, vfs_context_proc(context));
+        if (error || residual) { if (!error) error = EIO; goto done; }
+        SHA256_Update(&hash, data, (size_t)count);
+        offset += (size_t)count;
+    }
+    SHA256_Final(digest, &hash);
+    if (!a52q_readonly_root_vnode(vp, rootvnode)) error = EPERM;
+done:
+    vnode_put(vp);
+    return error;
+}
+
+static int a52q_boot_cache_files_verified(vnode_t required)
+{
+    uint8_t code[32] = {0}, signature[32] = {0};
+    vfs_context_t context = vfs_context_create(NULL);
+    if (!context) return 0;
+    int error = a52q_measure_boot_file("/System/Library/xpc/launchd.plist",
+        A52Q_BOOT_CACHE_BYTES, code, context, required);
+    if (!error) error = a52q_measure_boot_file("/System/Library/xpc/launchd.plist.sig",
+        A52Q_BOOT_CACHE_SIGNATURE_BYTES, signature, context, NULL);
+    vfs_context_rele(context);
+    if (error) {
+        printf("A52Q boot cache: read-only measurement failed error=%d\n", error);
+        return 0;
+    }
+    int matches = a52q_boot_cache_measurements_match(code, A52Q_BOOT_CACHE_BYTES,
+        signature, A52Q_BOOT_CACHE_SIGNATURE_BYTES);
+    if (!matches) printf("A52Q boot cache: cache/signature SHA256 mismatch; rejected\n");
+    return matches;
+}
 
 static void a52q_ent_invalidate(void *ent)
 {
@@ -256,6 +325,30 @@ int a52q_cache_root_mapping_allowed(vnode_t vp, vnode_t root)
     return 1;
 }
 
+int a52q_boot_cache_client_allowed(void);
+int a52q_boot_cache_client_allowed(void)
+{
+    proc_t proc = current_proc();
+    if (!proc || (proc_getcsflags(proc) & (CS_VALID | CS_SIGNED | CS_PLATFORM_BINARY)) !=
+        (CS_VALID | CS_SIGNED | CS_PLATFORM_BINARY)) return 0;
+    struct cs_blob *blob = csproc_get_blob(proc);
+    return a52q_verified_launchd_cache_loader_blob(blob) && blob->csb_platform_binary &&
+        (blob->csb_flags & (CS_SIGNED | CS_PLATFORM_BINARY)) == (CS_SIGNED | CS_PLATFORM_BINARY);
+}
+
+int a52q_boot_cache_query(const uint8_t *hash, size_t bytes);
+int a52q_boot_cache_query(const uint8_t *hash, size_t bytes)
+{
+    if (!a52q_boot_cache_client_allowed()) return 0;
+    if (a52q_boot_cache_hash_index(hash, bytes) < 0) {
+        printf("A52Q local AMFI: unapproved boot-cache hash/length rejected\n");
+        return 0;
+    }
+    if (!a52q_boot_cache_files_verified(NULL)) return 0;
+    printf("A52Q local AMFI: measured 20H392 boot-cache identity recognized; not Apple CMS trust\n");
+    return 1;
+}
+
 static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
 {
     extern int a52q_ufs_root_named(const char *name);
@@ -271,6 +364,18 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
          0xc6,0x93,0x01,0x1d,0x4d,0x99,0x7a,0x86,0x9d,0x2a}
     };
     if (blob && !ent && a52q_ufs_root_named("a52ios0")) {
+        extern vnode_t rootvnode;
+        /* The observed loader queries this exact data cache before mapping it.
+         * Accept neither arbitrary detached signatures nor executable status.
+         * All ordinary signature/page validation continues after this callback. */
+        if ((blob->csb_flags & CS_VALID) && !blob->csb_entitlements &&
+            !blob->csb_entitlements_blob && !blob->csb_der_entitlements_blob &&
+            a52q_boot_cache_hash_index(blob->csb_cdhash, CS_CDHASH_LEN) >= 0 &&
+            a52q_readonly_root_vnode(blob->csb_vnode, rootvnode) &&
+            a52q_boot_cache_files_verified(blob->csb_vnode)) {
+            printf("A52Q boot cache: measured original detached signature admitted; no platform status or entitlements\n");
+            return KERN_SUCCESS;
+        }
         /* Actual launchd boot task checks CS_OPS_STATUS bit26. This exact
          * entitlement-free fsck was read from the unchanged validated master,
          * compared with staged source and all13 code pages verified. This is
@@ -280,7 +385,6 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
             0xe1,0xa3,0xf1,0x2f,0xb8,0xbe,0x72,0xd6,0xe9,0xa4,
             0xe4,0x17,0x8e,0xbe,0x15,0x25,0x13,0xbc,0x59,0x9a
         };
-        extern vnode_t rootvnode;
         if ((blob->csb_flags & CS_VALID) && !blob->csb_entitlements &&
             !blob->csb_entitlements_blob && !blob->csb_der_entitlements_blob &&
             !memcmp(blob->csb_cdhash, fsck_pin, sizeof(fsck_pin)) &&
