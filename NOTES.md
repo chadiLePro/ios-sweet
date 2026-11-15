@@ -1,6 +1,26 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V16 RESTORED; no XNU console; unchanged loader retry prepared
+## ACTIVE: V17 controlled loader retry — BOOT RESTORATION PENDING
+
+Fresh user readiness received. research/start_cache_loader_retry.py completed
+the full installed16GiB root hash/protected partition checks; wrote/read back
+only BOOT, confirmed USB departure using native reboot adb. Same checked BOOT
+786b089cc723c2510f902e4054af0d9a24c4b2b1470586ad565ceb6814cbbdee;
+kernel266393446ff34fed174c6789545ced43b3f272bbae0408fb7e7fa59b3b06cc9e.
+Root read-only/unchanged, no other storage write. New physical result UNKNOWN.
+
+backup/a52q/ios-ufs-v17/receipt.json requires_restore=true/original_boot_restored=false.
+C: watcher wrapper PID9488 invokes watch_pending_boot_restore.py; 30min soft
+warning, keeps waiting, retries interrupted restore, preserves first capture,
+rejects unrecognized BOOT contents. Logs same folder watcher.log/watcher.err.log.
+User instructed to wait five full minutes from actual departure confirmation,
+then return to TWRP and leave USB connected. On return verify collection and
+restoration completed, then fresh full BOOT SHA
+d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Do not leave restoration pending after recovery reconnects. Do not select
+System or format data. Keep V15 as last usable baseline until new logs prove more.
+
+## Previous: V16 RESTORED; no XNU console; unchanged loader retry prepared
 
 V16 30min watcher expired before recovery return. Manual collect-restore first
 captured console.txt (65 bytes: missing console-ramoops-0 error) and dmesg,
