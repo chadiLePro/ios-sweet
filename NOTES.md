@@ -17,6 +17,24 @@ First inspect the exact required dirs_cleaner binary/arguments and filesystem
 effects before admitting it. Do not blanket-admit optional/destructive helpers.
 No data volume is installed, no services/SpringBoard/display-composition proof.
 
+Next fix committed 79dce98332253169f04d56a1bfdaea327962f4af: exact dirs_cleaner
+pin guarded by CS_VALID, signed XML/DER getter checks (256/60 bytes), same RO
+root vnode, no entitlement context/capability. Host audit master-dirs-audit-v1
+matches staged source; 54144 bytes, SHA f9ee81f822c5577cf013182d11cfd730c4e7c803b5945d91dccc44661934e10f,
+CDhash a93c2cbaed304f83e3df51faa21f961037f7c0ad; nine signed pages and XML/DER
+slots pass. Actual launchd XML requires dirs_cleaner /tmp /var/run. Apple source
+diskdev_cmds-701.100.2/dirs_cleaner.c uses mutation/cleanup, may log failures then
+return 0; do not treat spawn/task continuation as clean RW data. Root stays RO.
+
+120 local tests PASS (including C policy mutated hashes, signed metadata API
+failures/lengths, wrong roots and denied capabilities), repo integrity PASS.
+Isolated AMFI rebuild 43713827487 running on full base 43705321913; host CI
+43713815679 running; redundant automatic full 43713815644 cancellation requested.
+Host pipeline research/finish_dirs_artifacts.py session74524, stdout
+research/dirs-build-package.log: verify downloaded source/kernel provenance,
+exact kernel diagnostic QEMU, master rehash plan-v10, package hardware-v12.
+No new phone write/trial yet. Current original BOOT remains restored.
+
 ## Historical: V14 FIPS execution trial — restoration completed above
 
 V14 started 2026-11-15 11:50:31 UTC after fresh user readiness. Receipt
