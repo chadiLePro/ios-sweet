@@ -328,3 +328,41 @@ Admission and future execution/POST results must be reported separately; neither
 constitutes FIPS certification. Native tests cover twenty mutated hashes,
 wrong/writable roots, invalid signatures and entitlement-bearing variants; the
 FIPS task cannot query mount's bindfs capability.
+
+## Physical V14 result: real FIPS test passed
+
+The unchanged full UFS root supplied the verified Apple FIPS executable. Its
+retained console reports the real corecrypto subtests and:
+
+```text
+fipspost_post:206: all tests PASSED (183 ms)
+Boot task failed: dirs_cleaner - posix_spawn: 85: Bad executable (or shared library)
+```
+
+Original BOOT was automatically restored and its complete hash matched again
+in a fresh readback. Protected partitions were unchanged. The 51,944-byte saved
+console SHA256 is `6c4dccd9e0fc3d72e42edb83be3625501b7243afa78bde899bcd53a671307109`.
+Some ordinary console text has known bit corruption; no corrupted bytes were
+silently corrected. These actual test results do not constitute certification.
+
+Apple launchd next requires `/usr/libexec/dirs_cleaner /tmp /var/run`. The exact
+master executable matches the staged source, all nine code pages pass, and the
+signed XML/DER slots pass. It carries `com.apple.private.security.storage.tmp`.
+The pin and slot sizes/hashes are recorded in
+`xnu/a52q/ios16-20H392-dirs-cleaner-pin.json`.
+
+The [Apple 701.100.2 cleanup source](https://github.com/apple-oss-distributions/diskdev_cmds/blob/diskdev_cmds-701.100.2/dirs_cleaner/dirs_cleaner.c)
+uses filesystem mutations for temporary-directory cleanup. This motivates
+retaining all existing storage read-only guards, rather than enabling writes
+for an untested task. A successful spawn alone will not establish cleanup or a
+writable data volume. The source's ordinary main path logs cleanup errors then
+returns zero; report any such errors even if launchd proceeds.
+
+The next policy change admits only this exact valid identity with its verified
+signed slot geometry on the same read-only root, classified locally as a boot
+task. No entitlement context or storage.tmp/bindfs capability is granted. It
+changes neither cleanup arguments nor results, enables no writes, and leaves
+the master/root, display code and pstore intact. Tests exercise twenty changed
+identities, invalid signed slots, wrong lengths, missing metadata, wrong or
+writable roots and forbidden capability queries. Services and SpringBoard
+remain unproven.

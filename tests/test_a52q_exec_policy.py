@@ -26,6 +26,8 @@ class ExecPolicyTests(unittest.TestCase):
         fsck_bytes = bytes.fromhex(boot_pin['directories'][0]['cdhash'])
         fips_meta = json.loads((root / 'xnu/a52q/ios16-20H392-fips-pin.json').read_text())
         fips_bytes = bytes.fromhex(fips_meta['directories'][0]['cdhash'])
+        dirs_meta = json.loads((root / 'xnu/a52q/ios16-20H392-dirs-cleaner-pin.json').read_text())
+        dirs_bytes = bytes.fromhex(dirs_meta['directories'][0]['cdhash'])
         mount_meta = json.loads((root / 'xnu/a52q/ios16-20H392-mount-pin.json').read_text())
         mount_bytes = bytes.fromhex(mount_meta['directories'][0]['cdhash'])
         prefix = r'''
@@ -75,13 +77,14 @@ static uint64_t vfs_flags(mount_t mp) { return mp->flags; }
 static int vnode_vtype(vnode_t vp) { return vp->type; }
 static struct cs_blob *csvnode_get_blob(vnode_t vp, long offset) { assert(offset == 0); return vp->blob; }
 static int xml_error, der_error, wrong_output;
+static size_t xml_bytes=472, der_bytes=222;
 /* Native policy harness models the kernel API return contract; the actual
    XML/DER hash algorithm is checked independently by the host auditor. */
 static int csblob_get_entitlements(struct cs_blob *blob, void **out, size_t *size) {
- *out = wrong_output ? NULL : (void*)blob->csb_entitlements_blob; *size = 472; return xml_error;
+ *out = wrong_output ? NULL : (void*)blob->csb_entitlements_blob; *size = xml_bytes; return xml_error;
 }
 static int csblob_get_der_entitlements(struct cs_blob *blob, const CS_GenericBlob **out, size_t *size) {
- *out = blob->csb_der_entitlements_blob; *size = wrong_output ? 0 : 222; return der_error;
+ *out = blob->csb_der_entitlements_blob; *size = wrong_output ? 0 : der_bytes; return der_error;
 }
 static int full_root;
 int a52q_ufs_root_named(const char *name) { return full_root && !strcmp(name, "a52ios0"); }
@@ -192,6 +195,42 @@ int main(void) {
  blob.csb_flags=CS_ADHOC;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=NULL;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  assert(a52q_without_monitor((void*)1,&blob)==KERN_DENIED);
+ /* The required cleanup task retains exact signed metadata but gets no
+    capability: neither storage.tmp nor mount's bindfs entitlement is granted. */
+ static const uint8_t dirs_hash[20] = {DIRS_EXPECTED};
+ CS_GenericBlob dirs_xml={0}, dirs_der={0};
+ memset(&blob,0,sizeof(blob));memcpy(blob.csb_cdhash,dirs_hash,20);
+ blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=&task;
+ blob.csb_entitlements_blob=&dirs_xml;blob.csb_der_entitlements_blob=&dirs_der;
+ xml_bytes=256;der_bytes=60;
+ assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
+ assert(blob.csb_platform_binary && (blob.csb_flags&(CS_SIGNED|CS_PLATFORM_BINARY))==(CS_SIGNED|CS_PLATFORM_BINARY));
+ struct fake_proc dirs_process={CS_VALID|CS_SIGNED,&blob};
+ assert(a52q_bool_proc(&dirs_process,"com.apple.private.bindfs-allow")==KERN_DENIED);
+ assert(a52q_bool_proc(&dirs_process,"com.apple.private.security.storage.tmp")==KERN_DENIED);
+ void *dirs_object=(void*)1;
+ assert(a52q_object_proc(&dirs_process,"com.apple.private.bindfs-allow",&dirs_object)==KERN_NOT_FOUND && dirs_object==NULL);
+ for(unsigned byte=0;byte<20;byte++) {
+  blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_platform_binary=0;
+  blob.csb_cdhash[byte]^=1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+  assert(!blob.csb_platform_binary && !(blob.csb_flags&(CS_SIGNED|CS_PLATFORM_BINARY)));
+  blob.csb_cdhash[byte]^=1;
+ }
+ xml_error=1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);xml_error=0;
+ der_error=1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);der_error=0;
+ wrong_output=1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);wrong_output=0;
+ xml_bytes--;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);xml_bytes++;
+ der_bytes--;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);der_bytes++;
+ blob.csb_entitlements=(void*)1;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_entitlements=NULL;
+ blob.csb_entitlements_blob=NULL;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_entitlements_blob=&dirs_xml;
+ blob.csb_der_entitlements_blob=NULL;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);blob.csb_der_entitlements_blob=&dirs_der;
+ full_root=0;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);full_root=1;
+ ro.flags=MNT_ROOTFS;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);ro.flags=MNT_RDONLY|MNT_ROOTFS;
+ task.mount=&other;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);task.mount=&ro;
+ blob.csb_flags=CS_ADHOC;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+ blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=NULL;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+ blob.csb_vnode=&task;assert(a52q_without_monitor((void*)1,&blob)==KERN_DENIED);
+ xml_bytes=472;der_bytes=222;
  /* The observed mount task retains signed XML/DER. */
  static const uint8_t mount_hash[20] = {MOUNT_EXPECTED};
  CS_GenericBlob xml = {0}, der = {0};
@@ -272,7 +311,7 @@ int main(void) {
  puts("PASS: exact kernel policy, all 44 cache pins and 880 changed hashes");
  return 0;
 }
-'''.replace('FIPS_EXPECTED', ','.join(str(v) for v in fips_bytes)).replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
+'''.replace('DIRS_EXPECTED', ','.join(str(v) for v in dirs_bytes)).replace('FIPS_EXPECTED', ','.join(str(v) for v in fips_bytes)).replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'policy.c'; path.write_text(prefix + function + body)
             executable = Path(directory) / ('policy.exe' if os.name == 'nt' else 'policy')

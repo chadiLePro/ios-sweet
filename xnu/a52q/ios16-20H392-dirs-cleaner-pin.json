@@ -1,0 +1,39 @@
+{
+  "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
+  "path": "/usr/libexec/dirs_cleaner",
+  "bytes": 54144,
+  "sha256": "f9ee81f822c5577cf013182d11cfd730c4e7c803b5945d91dccc44661934e10f",
+  "staged_source_sha256_matches": true,
+  "directories": [
+    {
+      "slot": 0,
+      "identifier": "com.apple.dirs_cleaner",
+      "version": "0x20400",
+      "flags": "0x2",
+      "hash_type": 2,
+      "platform": 0,
+      "page_bytes": 4096,
+      "pages": 9,
+      "executable_page_hashes_match": true,
+      "cdhash": "a93c2cbaed304f83e3df51faa21f961037f7c0ad"
+    }
+  ],
+  "signed_entitlement_keys": ["com.apple.private.security.storage.tmp"],
+  "entitlement_blobs": {
+    "5": {
+      "bytes": 256,
+      "sha256": "feca28581056da1ab278caf5eb1b0a5258c8c7cd59c2e652bd179d3fc8cf59e9",
+      "special_slot_hashes_match": true
+    },
+    "7": {
+      "bytes": 60,
+      "sha256": "c937d7c87fca7e03fdc09bebd481192881cf5b1f10d7228358f5f6fdb897a244",
+      "special_slot_hashes_match": true
+    }
+  },
+  "cms_present": true,
+  "cms_trust_authenticated": false,
+  "entitlements_granted": false,
+  "boot_task_arguments": ["dirs_cleaner", "/tmp", "/var/run"],
+  "development_role": "exact required local platform boot task on the read-only full A52 root; original cleanup behavior/results unchanged, no storage writes enabled"
+}

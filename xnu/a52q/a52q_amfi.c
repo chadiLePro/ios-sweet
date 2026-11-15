@@ -197,6 +197,29 @@ static int a52q_verified_mount_blob(struct cs_blob *blob)
         xml_size == 472 && der_size == 222;
 }
 
+/* V14 reaches launchd's mandatory dirs_cleaner task. Preserve its original
+ * signed storage.tmp metadata without granting an entitlement context or
+ * capabilities. Actual cleanup arguments/results and RO storage stay intact. */
+static int a52q_verified_dirs_cleaner_blob(struct cs_blob *blob)
+{
+    static const uint8_t pin[CS_CDHASH_LEN] = {
+        0xa9,0x3c,0x2c,0xba,0xed,0x30,0x4f,0x83,0xe3,0xdf,
+        0x51,0xfa,0xa2,0x1f,0x96,0x10,0x37,0xf7,0xc0,0xad
+    };
+    extern vnode_t rootvnode;
+    if (!blob || !(blob->csb_flags & CS_VALID) || blob->csb_entitlements ||
+        !blob->csb_entitlements_blob || !blob->csb_der_entitlements_blob ||
+        memcmp(blob->csb_cdhash, pin, sizeof(pin)) ||
+        !a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) return 0;
+    void *xml = NULL;
+    const CS_GenericBlob *der = NULL;
+    size_t xml_size = 0, der_size = 0;
+    return !csblob_get_entitlements(blob, &xml, &xml_size) &&
+        !csblob_get_der_entitlements(blob, &der, &der_size) &&
+        xml == blob->csb_entitlements_blob && der == blob->csb_der_entitlements_blob &&
+        xml_size == 256 && der_size == 60;
+}
+
 /* Called only for a missing SF_RESTRICTED flag, after root ownership checks.
  * Registered CodeDirectory identity + the actual RO root mount replace that
  * one missing filesystem flag. Ordinary range/page checks run afterwards. */
@@ -262,6 +285,12 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
             blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
             blob->csb_platform_binary = 1;
             printf("A52Q boot policy: exact 20H392 cc_fips_test admitted; execution and POST result not yet proven\n");
+            return KERN_SUCCESS;
+        }
+        if (a52q_verified_dirs_cleaner_blob(blob)) {
+            blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
+            blob->csb_platform_binary = 1;
+            printf("A52Q boot policy: exact 20H392 dirs_cleaner admitted; signed XML/DER checked, no capabilities granted, cleanup result unproven\n");
             return KERN_SUCCESS;
         }
         /* Observed mount-phase-1 boot task. Retain its signed metadata; only
