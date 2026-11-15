@@ -1,6 +1,28 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V12 RESTORED; retained log safe; pre-UFS result inconclusive
+## ACTIVE: V13 controlled unchanged retry — BOOT RESTORATION REQUIRED
+
+Userconfirmedreadyfortimedretryafteraccidentalreboot. V13 uses unchangedchecked
+b1b3bc6569b79772dd9162db54432df655a407a7c5fcd369b5ad1325a5ec9f27 BOOTcandidate,
+kernelb5050403...106d3d9b,hardware-v10/plan-v8. Fullinstalled16GiBrootfreshly
+verifiedunchangedandprotectedhashesmatched, BOOT96MiBwritten/readbackverified.
+Native/system/bin/rebootadbconfirmedUSBdeparture. Receipt
+backup/a52q/ios-ufs-v13/receipt.json REQUIRES_RESTORE=true, originalNOTrestored.
+WatcherPID12116, C:backup/a52q/ios-ufs-v13/{install.log,watcher.log,watcher.err.log}.
+Newwatcherwaits30minutes; oldV12watchertimedoutafter10andrequiredmanualrestore.
+Useraskedfivefullminutesfromactualstart(about12:26Brussels),thenTWRP. Onreturn
+collect+restoreimmediatelyandverifywholeBOOTSHA d6bf...4b016. NoSystem/format.
+
+Thisisacontrolledsamebinaryretry: no kernel/root/display/memory/policychanges.
+FreshRAMconsolearchive+unlinkandnewrecoverybootIDpreventstaleattribution even
+thoughartifactnonceissame. SeparateV13folderpreservesallV12hostlogs+archive.
+V12wasrestoredandhashverifiedbeforethistrial. V12onlyprovedearlystartup, not
+bindfsfailureorsuccess. PriorV11provedroot-tableandApplelaunchdmain.
+No fulliOS/services/SpringBoardclaim. No data/var/GPT/otherpartitionwrite.
+Sourceinspectiononly: DEBUG_BSDINITiscompile-time0; IOKitRTCwaitbounded30s.
+If controlledretryagainstopspreUFS, instrumentactualstartupbeforechangingguards.
+
+## Historical: V12 RESTORED; retained log safe; pre-UFS result inconclusive
 
 V12 watcherexpiredafter10minutesbeforerecoveryreturned. Manualcollect-restore
 finishedsuccessfullywhenuserreportedTWRP. Receipt backup/a52q/ios-ufs-v12/receipt.json

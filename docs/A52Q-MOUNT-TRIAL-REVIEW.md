@@ -278,3 +278,12 @@ between buffer initialization and the A52 vfs/UFS hook, includes a bounded RTC
 resource wait. The saved log does not pinpoint a stall there. A controlled,
 fully timed retry of the unchanged checked candidate is needed before changing
 CPU initialization or treating this as a deterministic regression.
+
+V13 is a controlled retry of the same checked BOOT and unchanged root. After
+fresh readiness confirmation, the full installed root was rehashed, BOOT was
+written/read back, and native reboot confirmed USB departure. The user was
+asked to wait five full minutes from actual departure before returning to TWRP.
+The new watcher waits up to 30 minutes for recovery; original BOOT restoration
+remains pending until its complete readback is confirmed. New logs use a
+separate `backup/a52q/ios-ufs-v13` directory; the V12 computer copies are preserved.
+No new kernel, root, signing, memory or display change is involved in this retry.
