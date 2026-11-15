@@ -329,8 +329,10 @@ int a52q_boot_cache_client_allowed(void);
 int a52q_boot_cache_client_allowed(void)
 {
     proc_t proc = current_proc();
-    if (!proc || (proc_getcsflags(proc) & (CS_VALID | CS_SIGNED | CS_PLATFORM_BINARY)) !=
-        (CS_VALID | CS_SIGNED | CS_PLATFORM_BINARY)) return 0;
+    /* kern_exec's flag mask excludes CS_PLATFORM_BINARY. As in csops(),
+     * read platform classification from the verified cs_blob, not p_csflags. */
+    if (!proc || (proc_getcsflags(proc) & (CS_VALID | CS_SIGNED)) !=
+        (CS_VALID | CS_SIGNED)) return 0;
     struct cs_blob *blob = csproc_get_blob(proc);
     return a52q_verified_launchd_cache_loader_blob(blob) && blob->csb_platform_binary &&
         (blob->csb_flags & (CS_SIGNED | CS_PLATFORM_BINARY)) == (CS_SIGNED | CS_PLATFORM_BINARY);

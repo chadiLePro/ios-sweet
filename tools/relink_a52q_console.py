@@ -93,11 +93,13 @@ def main():
         raise SystemExit('full build required: base patch set changed')
     # A display-only rebuild must not silently retain stale shared pixel code
     # or storage implementations from the base archive. All leaves check these.
-    for name in ('shim/a52q/display_pattern.h', 'xnu/a52q/a52q_ufs.c',
+    for name in ('shim/a52q/display_pattern.h', 'xnu/a52q/a52q_boot_cache_policy.h', 'xnu/a52q/a52q_ufs.c',
                  'xnu/a52q/a52q_ufs_disk.c', 'xnu/a52q/a52q_ufs_bounds.h'):
         try:
             old = run('git', 'show', a.base_sha + ':' + name, cwd=root)
         except subprocess.CalledProcessError:
+            if name == 'xnu/a52q/a52q_boot_cache_policy.h':
+                raise SystemExit('full build required: base predates shared boot-cache policy')
             if a.leaf == 'display':
                 raise SystemExit('full build required: base predates guarded display implementation')
             continue  # Older console-only bases predate these implementations.

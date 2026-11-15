@@ -241,7 +241,9 @@ int main(void) {
  xml_bytes=signed_xml_bytes[task_index];der_bytes=signed_der_bytes[task_index];
  assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
  assert(blob.csb_platform_binary && (blob.csb_flags&(CS_SIGNED|CS_PLATFORM_BINARY))==(CS_SIGNED|CS_PLATFORM_BINARY));
- struct fake_proc query_process={CS_VALID|CS_SIGNED|CS_PLATFORM_BINARY,&blob};
+ /* Real exec omits platform bits from raw p_csflags; blob classification
+    remains mandatory and independently verified by the policy. */
+ struct fake_proc query_process={CS_VALID|CS_SIGNED,&blob};
  caller=&query_process;
  assert(a52q_boot_cache_client_allowed()==(task_index==1));
  assert(a52q_boot_cache_query(boot_cache_pins[1],20)==(task_index==1));
@@ -250,13 +252,14 @@ int main(void) {
   assert(!a52q_boot_cache_query(changed_hash,20));
   assert(!a52q_boot_cache_query(NULL,20));assert(!a52q_boot_cache_query(boot_cache_pins[1],19));
   measured_files_valid=0;assert(!a52q_boot_cache_query(boot_cache_pins[1],20));measured_files_valid=1;
-  const unsigned required_flags[]={CS_VALID,CS_SIGNED,CS_PLATFORM_BINARY};
-  for(unsigned j=0;j<3;j++) {
+  const unsigned required_flags[]={CS_VALID,CS_SIGNED};
+  for(unsigned j=0;j<2;j++) {
    query_process.flags^=required_flags[j];assert(!a52q_boot_cache_client_allowed());query_process.flags^=required_flags[j];
   }
   xml_error=1;assert(!a52q_boot_cache_client_allowed());xml_error=0;
   der_error=1;assert(!a52q_boot_cache_client_allowed());der_error=0;
   blob.csb_platform_binary=0;assert(!a52q_boot_cache_client_allowed());blob.csb_platform_binary=1;
+  blob.csb_flags&=~CS_PLATFORM_BINARY;assert(!a52q_boot_cache_client_allowed());blob.csb_flags|=CS_PLATFORM_BINARY;
  }
  caller=NULL;assert(!a52q_boot_cache_client_allowed());
  struct fake_proc dirs_process={CS_VALID|CS_SIGNED,&blob};

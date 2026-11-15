@@ -47,6 +47,34 @@ E:/A52-iOS16/cache-loader-v18-result.json,70470B console SHA
 Actual new service/query/registration unproven until phone trial. Do not call
 source/boundary tests a successful Apple userland or SpringBoard boot.
 
+Build correction IN PROGRESS: live compiler logs exposed header not found in
+iokit/Kernel/arm/A52PlatformExpert.cpp. fc942 staged it in iokit/Kernel. Fixed
+33ba1d9edc25e0fdcb9ebe56ffb5a30ecd40d643 to stage in actual ARM directory.
+43733904802 cancelled; no successful compile or candidate from that run.
+HFS full43735227285 RUNNING on corrected path; hostCI43735227516 SUCCESS.
+Corrected verifier research/verify_local_amfi_full_build_v2.py checks real ARM
+CPP/header paths and expected map length75 (old V1 map/path was wrong; do not use).
+Expected map E:/A52-iOS16/local-amfi-v2-expected-overlay.json prepared PASS.
+
+Further target-source audit found kern_exec.c:1388 mask excludes platform bit
+from p_csflags; kern_cs.c::csproc_get_platform_binary reads cs_blob. Corrected
+caller check locally: raw CS_VALID|CS_SIGNED plus exact verified blob's platform
+flag/field. Native policy test models real raw flags and still denies missing
+blob classification, signature metadata, wrong roots/caller. PASS. Shared-header
+guard added to isolated relinker to prohibit stale CPP/header combinations.
+Do NOT push this C-only correction while43735227285 full build is running:
+push would start auto full build/cancel baseline. Plan: verify successful base33,
+then push corrected AMFI source, cancel redundant auto-full, isolated leaf=amfi
+using base_run43735227285, verify new kernel, QEMU/package only corrected kernel.
+
+Stopped host V2 packaging waiter PID5420/session64879 before it could package
+the base with the incorrect raw-platform check. Original V1 waiter ended cancelled.
+No candidate/QEMU/plan-v13/hardware-v15 generated yet. research V2 host scripts
+must be superseded by corrected-leaf pipeline. V19 trial runners already prepared
+(start_local_amfi_trial.py,watch_ios_ufs_v19_restore.py), helper bindsplan-v13,
+but DO NOT RUN until corrected kernel checks and fresh physical readiness.
+Phone still TWRP, original BOOT restored; NO restoration pending.
+
 ## Historical: V18 fatal-exit diagnostic — restored above
 
 Fresh readiness received; research/start_exit_trace_trial.py completed full
