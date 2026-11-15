@@ -411,3 +411,11 @@ pass both the SHA1 and SHA256 CodeDirectories (version 0x20500). Neither CMS tru
 kernel admission of that data cache, cache-loader execution nor submission to
 launchd is established. Observe the next actual failure before implementing any
 cache/provider change. Persistent services and SpringBoard remain unproven.
+
+Loader admission host checks passed: 120 local tests, repository integrity,
+Linux CI `43715378805`, isolated kernel build `43715378760`, and exact-kernel
+diagnostic QEMU (three valid entry records, seven diagnostic PID1 heartbeats).
+The full master hash matched before packaging the 96 MiB BOOT candidate
+`786b089cc723c2510f902e4054af0d9a24c4b2b1470586ad565ceb6814cbbdee`.
+These checks do not execute Apple's loader; physical readiness is pending and
+original BOOT remains restored. The stored root stays read-only and unchanged.

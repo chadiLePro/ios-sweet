@@ -31,6 +31,22 @@ No new phone write. V15 retained result E:/A52-iOS16/dirs-v15-result.json:
 console69640B SHAc81ec593b98390e34258aa17f34020327675dc7b5dd56ebf2cdb435551904b7e,
 3CRC entries, bounded ROroot proof. Original BOOT restored.
 
+Loader candidate host pipeline COMPLETE: isolated build43715378760 SUCCESS,
+hostCI43715378805 SUCCESS; full43715378796 cancelled. Verified kernel SHA
+266393446ff34fed174c6789545ced43b3f272bbae0408fb7e7fa59b3b06cc9e;
+AMFI SHA22646db2c7c5c738a2ffd3c0c46f9330c4612be71954af3a66a9e431b0758946.
+E:/A52-iOS16/builds/43715378760/{artifact,combined,verified-build.json}.
+Exact-kernel QEMU passed 3CRC entry records/7 diagnostic PID1 heartbeats; this
+does NOT execute Apple's loader/full UFS root. Whole16GiB master rehash passed.
+plan-v11/hardware-v13 checked 96MiB BOOT SHA
+786b089cc723c2510f902e4054af0d9a24c4b2b1470586ad565ceb6814cbbdee.
+Payload has no RAMdisk/diagnostic root. Loader/cache submission still unproven.
+Prepared research/start_cache_loader_trial.py and watch_ios_ufs_v16_restore.py;
+C:backup/a52q/ios-ufs-v16 new logs/receipt, 30min watcher, C:original backup.
+Private helper expects plan-v11. Runners NOT started; fresh readiness pending.
+Original signed loader XML verified can-check-trust-cache=true and sole user
+client class AppleMobileFileIntegrityUserClient; neither capability granted.
+
 ## Historical: V15 directory-cleanup trial — restored above
 
 User freshly confirmed readiness. research/start_dirs_trial.py completed the
