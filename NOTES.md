@@ -1,6 +1,30 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## Active A52 handoff: V10 restored; enforcement negatives pass; RO fstab prepared
+## ACTIVE: V11 mount-contract phone trial — BOOT RESTORATION REQUIRED
+
+V11 installation completed on2026-11-15. Receipt backup/a52q/ios-ufs-v11/receipt.json
+currently requires_restore=true, original_boot_restored=false. Full installed16GiB
+root freshly rehashed unchanged before the96MiB BOOT-only write; BOOT candidate
+96e668f4343c40f616dd30af5e4784e54d36595c55702a7e0d76e149f8d6680c was read back.
+Native reboot adb confirmed USB departure. Watcher PID4656 started; logs/receipt
+all on C: backup/a52q/ios-ufs-v11. User confirmed ready and was asked for five
+minutes then TWRP, or leave TWRP open if it returns itself. Collect and restore
+immediately on return; full original BOOT SHA must match d6bf...4b016.
+Do NOT select System/Android or format. No other partition/root/var write included.
+
+Build43643720989/source67f6d6bd63ecd0bab0c42eec93fb40f7fe360780 SUCCESS.
+Kernel87b660ae13249c8281eaf618110899ff6d77249b5acf23ccf49a996865f3196e;
+all73 overlay files verified. Exact kernel diagnostic QEMU3entries/7heartbeats;
+does not emulate fulliOS/UFS. Fullmaster rehash plan-v7unchanged. HostCI43643867819
+SUCCESS,120tests. Preparedhardware-v9 with ROmounted-source fstab and measured
+unsealedbootnamespace. Display/earlyconsole/serial/boardoverlayhashes sameasb413build.
+Latest user requestedRWroot/globalAMFIbypass/hardwarestubs/UI; those are NOT
+implemented by this candidate, which tests the existing confirmed mount failure.
+Actual60HzIOMFB claim remains unsupported; source is opt-in guardedframe test.
+Primary target remains realuserlandfrompersistentUFS then visibleSpringBoard;
+no services/UI proof yet. See docs/A52Q-MOUNT-TRIAL-REVIEW.md for files/checks/scope.
+
+## Historical handoff: V10 restored; enforcement negatives pass; RO fstab prepared
 
 No restoration pending. V10 receipt backup/a52q/ios-ufs-v10/receipt.json has
 original_boot_restored=true, requires_restore=false, whole BOOT SHA d6bf...4b016,
