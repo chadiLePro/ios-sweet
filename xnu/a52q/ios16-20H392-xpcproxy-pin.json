@@ -1,0 +1,50 @@
+{
+  "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
+  "path": "/usr/libexec/xpcproxy",
+  "bytes": 96352,
+  "sha256": "a97bc59d024c3b7fcf293aa6ef2fa75b60ef7220b2546ab4382adcbe78ddbfec",
+  "staged_source_sha256_matches": true,
+  "directories": [
+    {
+      "slot": 0,
+      "identifier": "com.apple.xpc.proxy",
+      "version": "0x20400",
+      "flags": "0x2",
+      "hash_type": 2,
+      "platform": 0,
+      "page_bytes": 4096,
+      "pages": 19,
+      "executable_page_hashes_match": true,
+      "cdhash": "f7f090b0a9b94dc944026136fc6154372763c846"
+    }
+  ],
+  "signed_entitlement_keys": [
+    "com.apple.private.coreservices.canmanagebackgroundtasks",
+    "com.apple.private.security.storage.driverkitd",
+    "com.apple.private.spawn-driver",
+    "com.apple.private.spawn-panic-crash-behavior",
+    "com.apple.private.spawn-subsystem-root",
+    "com.apple.private.xpc.is.xpcproxy"
+  ],
+  "entitlement_blobs": {
+    "5": {
+      "bytes": 573,
+      "sha256": "a476d1efd3039b51e1352c4895715152de72f8ea59459a57242e067e57aa5ecd",
+      "special_slot_hashes_match": true
+    },
+    "7": {
+      "bytes": 306,
+      "sha256": "274897557f22e320419b13bf857012a3f7a59a5c85706fd6ccb6d177a5bd3ae8",
+      "special_slot_hashes_match": true
+    }
+  },
+  "cms_present": true,
+  "cms_trust_authenticated": false,
+  "entitlements_granted": false,
+  "development_role": "exact xpcproxy on actual read-only full A52 root; local platform classification only; no service-target admission or entitlement context",
+  "direct_dylibs_in_verified_cache_index": [
+    "/usr/lib/libSystem.B.dylib",
+    "/usr/lib/libobjc.A.dylib",
+    "/usr/lib/libcryptex_trampoline.dylib"
+  ]
+}

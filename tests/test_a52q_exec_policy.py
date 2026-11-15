@@ -30,6 +30,8 @@ class ExecPolicyTests(unittest.TestCase):
         dirs_bytes = bytes.fromhex(dirs_meta['directories'][0]['cdhash'])
         loader_meta = json.loads((root / 'xnu/a52q/ios16-20H392-launchd-cache-loader-pin.json').read_text())
         loader_bytes = bytes.fromhex(loader_meta['directories'][0]['cdhash'])
+        proxy_meta = json.loads((root / 'xnu/a52q/ios16-20H392-xpcproxy-pin.json').read_text())
+        proxy_bytes = bytes.fromhex(proxy_meta['directories'][0]['cdhash'])
         cache_meta = json.loads((root / 'xnu/a52q/ios16-20H392-launchd-cache-pin.json').read_text())
         boot_cache_entries = ','.join('{' + ','.join(str(b) for b in bytes.fromhex(d['cdhash'])) + '}'
                                      for d in cache_meta['directories'])
@@ -229,11 +231,11 @@ int main(void) {
  blob.csb_flags=CS_ADHOC;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=NULL;assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  assert(a52q_without_monitor((void*)1,&blob)==KERN_DENIED);
- /* The required cleanup task retains exact signed metadata but gets no
-    capability: neither storage.tmp nor mount's bindfs entitlement is granted. */
- static const uint8_t signed_tasks[][20] = {{DIRS_EXPECTED},{LOADER_EXPECTED}};
- static const size_t signed_xml_bytes[]={256,390}, signed_der_bytes[]={60,152};
- for(unsigned task_index=0;task_index<2;task_index++) {
+ /* Exact signed helpers retain metadata; xpcproxy gets no implicit admission
+    for its children, and only the cache loader can use the measured query. */
+ static const uint8_t signed_tasks[][20] = {{DIRS_EXPECTED},{LOADER_EXPECTED},{PROXY_EXPECTED}};
+ static const size_t signed_xml_bytes[]={256,390,573}, signed_der_bytes[]={60,152,306};
+ for(unsigned task_index=0;task_index<sizeof(signed_tasks)/sizeof(signed_tasks[0]);task_index++) {
  CS_GenericBlob dirs_xml={0}, dirs_der={0};
  memset(&blob,0,sizeof(blob));memcpy(blob.csb_cdhash,signed_tasks[task_index],20);
  blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=&task;
@@ -372,7 +374,7 @@ int main(void) {
  puts("PASS: exact kernel policy, all 44 cache pins and 880 changed hashes");
  return 0;
 }
-'''.replace('BOOT_CACHE_EXPECTED', boot_cache_entries).replace('LOADER_EXPECTED', ','.join(str(v) for v in loader_bytes)).replace('DIRS_EXPECTED', ','.join(str(v) for v in dirs_bytes)).replace('FIPS_EXPECTED', ','.join(str(v) for v in fips_bytes)).replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
+'''.replace('PROXY_EXPECTED', ','.join(str(v) for v in proxy_bytes)).replace('BOOT_CACHE_EXPECTED', boot_cache_entries).replace('LOADER_EXPECTED', ','.join(str(v) for v in loader_bytes)).replace('DIRS_EXPECTED', ','.join(str(v) for v in dirs_bytes)).replace('FIPS_EXPECTED', ','.join(str(v) for v in fips_bytes)).replace('MOUNT_EXPECTED', ','.join(str(v) for v in mount_bytes)).replace('BOOT_TASK_EXPECTED', ','.join(str(v) for v in fsck_bytes)).replace('EXPECTED', entries)
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'policy.c'; path.write_text(prefix + function + body)
             executable = Path(directory) / ('policy.exe' if os.name == 'nt' else 'policy')

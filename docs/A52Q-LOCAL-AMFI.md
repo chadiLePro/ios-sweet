@@ -90,6 +90,37 @@ three entry records checked and diagnostic PID1 emitted seven heartbeats. This
 does not exercise Apple's client or the real cache query. The unchanged master
 root was rehashed before packaging 96 MiB BOOT candidate
 `664360e93f7ab6e454d646cb2c0dbd21590a9a4165991e076de1c1543cd37389`.
-Physical caller/query/registration and successful cache submission remain unproven.
+V19 physically demonstrated the exact caller/query/registration path. Its saved
+console reports the measured identity, detached registration and launchd's
+`Early boot complete. Continuing system boot.` It then imports service definitions
+and rejects `/usr/libexec/xpcproxy` with signature load error 4 / spawn error 85.
+This establishes Apple launchd's early-boot completion, not persistent services
+or a rendered SpringBoard. Original BOOT was restored and independently rehashed.
+
+The V19 console reached its fixed 262132-byte capacity amid service-spawn logs.
+Its last timestamp cannot establish when execution stopped. The reserved console
+region and initial CRC records are preserved; no memory expansion or log wrapping
+is introduced.
 Storage drivers, display, reserved RAM and fatal-exit/pstore logging are intact.
 The full root/master stays read-only and unchanged; writable var is not installed.
+
+## Exact xpcproxy admission after V19
+
+`ios16-20H392-xpcproxy-pin.json` records the unmodified master/native-source
+identity: thin arm64, iOS executable, interpreter `/usr/lib/dyld`, 19 verified
+4 KiB code pages and signed XML/DER blobs of 573/306 bytes. All three direct
+dylib paths occur in the verified shared-cache index; this is availability
+evidence, not proof that they mapped or executed in xpcproxy.
+
+The policy checks the exact CodeDirectory, CS_VALID, signed metadata getters,
+pointer identities and lengths, and the actual read-only a52ios0 root. It assigns
+local platform status to this one measured executable. Original signed metadata
+is retained without fabricating a general entitlement context. Its six signed
+keys are not blanket-granted; only an observed, justified capability should be
+implemented later. It cannot access the cache loader's measured-query client or
+mount's bindfs capability. Every service executable remains independently checked.
+
+Native tests compile the actual policy and reject changed hashes, failed or
+substituted metadata, missing classification, wrong/writable roots and unrelated
+capabilities. The private master audit also rejects a changed xpcproxy entry page.
+Admission alone does not demonstrate xpcproxy main, successful service exec or UI.

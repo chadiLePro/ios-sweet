@@ -1,6 +1,27 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V19 RESTORED; cache query/registration passed; xpcproxy rejected
+## ACTIVE: V19 RESTORED; exact xpcproxy admission under host validation
+
+Fresh read-only recovery check2026-11-15T17:22Z confirms whole original BOOT
+SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016
+and protected hashes unchanged. No restoration pending, phone TWRP. V19 result
+E:/A52-iOS16/cache-loader-v19-result.json; console SHA671303c2044a0415c9017bdfbe6e6c9d4709ee17874bc4391754a81e287a7ce9.
+
+Master/native xpcproxy audit E:/A52-iOS16/master-xpcproxy-audit-v1/audit.json:
+96352B,SHAa97bc59d024c3b7fcf293aa6ef2fa75b60ef7220b2546ab4382adcbe78ddbfec,
+arm64/subtype0,19 verified4Kpages,CDhashf7f090b0a9b94dc944026136fc6154372763c846,
+original XML573/DER306 signed-slot hashes checked. Three direct dylibs present
+in SHA-verified cache index. Repeated audit rejects modified entry-page bytes.
+Policy change only a52q_amfi.c: exact helper on actual ROroot, original metadata,
+localplatform status,no entitlement context/callee wildcard. New public pinJSON,
+native actual-policy test covers60CDhash mutations and rejects wrongmetadata/root,
+denies mount capability and cachequery forproxy. Native policy test PASS.
+No changes to storage, display, reservedRAM, pstore or validated master.
+Need fullhost checks,commit/push, AMFI-only relink base43735227285, verify corrected
+leaf/provenance,QEMU and new plan14/hardware16 packaging. No V20 trial started.
+Preserve corrected blob-platform logic; compile-onlybasef22e must NEVER be flashed.
+
+## V19 RESTORED; cache query/registration passed; xpcproxy rejected
 
 V19 guard collected/restored first attempt. Receipt requires_restore=false,
 original_boot_restored=true, protected hashes unchanged, changed recovery boot

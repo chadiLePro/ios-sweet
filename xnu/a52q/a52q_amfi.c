@@ -312,6 +312,30 @@ static int a52q_verified_launchd_cache_loader_blob(struct cs_blob *blob)
         xml_size == 390 && der_size == 152;
 }
 
+/* V19 reaches service import, then rejects the original xpcproxy before exec.
+ * Its 19 code pages and both signed metadata slots match the validated master.
+ * Admit only this executable: service targets and entitlement queries remain
+ * independently checked. This does not create an entitlement context. */
+static int a52q_verified_xpcproxy_blob(struct cs_blob *blob)
+{
+    static const uint8_t pin[CS_CDHASH_LEN] = {
+        0xf7,0xf0,0x90,0xb0,0xa9,0xb9,0x4d,0xc9,0x44,0x02,
+        0x61,0x36,0xfc,0x61,0x54,0x37,0x27,0x63,0xc8,0x46
+    };
+    extern vnode_t rootvnode;
+    if (!blob || !(blob->csb_flags & CS_VALID) || blob->csb_entitlements ||
+        !blob->csb_entitlements_blob || !blob->csb_der_entitlements_blob ||
+        memcmp(blob->csb_cdhash, pin, sizeof(pin)) ||
+        !a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) return 0;
+    void *xml = NULL;
+    const CS_GenericBlob *der = NULL;
+    size_t xml_size = 0, der_size = 0;
+    return !csblob_get_entitlements(blob, &xml, &xml_size) &&
+        !csblob_get_der_entitlements(blob, &der, &der_size) &&
+        xml == blob->csb_entitlements_blob && der == blob->csb_der_entitlements_blob &&
+        xml_size == 573 && der_size == 306;
+}
+
 /* Called only for a missing SF_RESTRICTED flag, after root ownership checks.
  * Registered CodeDirectory identity + the actual RO root mount replace that
  * one missing filesystem flag. Ordinary range/page checks run afterwards. */
@@ -426,6 +450,12 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
             blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
             blob->csb_platform_binary = 1;
             printf("A52Q boot policy: exact 20H392 launchd_cache_loader admitted; signed XML/DER checked, no AMFI or IOKit capabilities granted, cache loading unproven\n");
+            return KERN_SUCCESS;
+        }
+        if (a52q_verified_xpcproxy_blob(blob)) {
+            blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
+            blob->csb_platform_binary = 1;
+            printf("A52Q boot policy: exact 20H392 xpcproxy admitted; signed XML/DER checked, service targets remain checked, no capabilities granted\n");
             return KERN_SUCCESS;
         }
         /* Observed mount-phase-1 boot task. Retain its signed metadata; only
