@@ -19,6 +19,34 @@ verified boot-cache signatures, retain all unknown/modified rejections and norma
 code-page checks. No global AMFI bypass, no Apple CMS/SEP/hardware claims.
 Inspect real IOUserClient security/lifecycle and VFS measurement APIs before code.
 
+Local measured query implemented/committed fc9421ee14514e21d15f5f65ed8be61c50f6d6b1.
+Files A52PlatformExpert.cpp/a52q_amfi.c/shared a52q_boot_cache_policy.h plus apply
+header staging, metadata JSON, tests and docs/A52Q-LOCAL-AMFI.md. Service has
+compatibility names but is NOT Apple's AMFI/CMS verifier. Legacy userclient type0,
+selector6,scalar1,20B recognized CDhash,no outputs/descriptors/async. Every open
+and method checks exact signed loader + actual ROroot + retained owning task.
+Other global entitlement/capability queries STILL denied. Code+detached sig are
+fully SHA256-read via UIO_READ from exact regular ROroot paths and lengths; data
+registration also binds actual vnode and CS_VALID/no ent metadata. No platform
+flag for data cache. All normal core signature/page checks remain on; no uploads,
+global bypass or storage/display/memory changes. XNU callback precedes vnode_lock.
+Native staged cache+sig hashes freshly matched master.121 local tests+repo checks
+PASS, including mutated hashes/digests/measurements, wrong caller/root/metadata,
+malformed method ABI and ungranted capabilities. HostCI43733904616 SUCCESS.
+
+Full HFS kernel43733904802 RUNNING; auto mockfs43733904688 cancelled. Host-only
+pipeline research/finish_local_amfi_artifacts.py session26818, stdout
+research/local-amfi-build-package.log: verify75-file expected overlay against
+full trace baseline43729112746 (only2existingCfiles+2newheader copies differ),
+archive/SHA checks, exact-kernel diagnostic QEMU/provider publication, master
+rehash plan-v13 and package hardware-v15. Independently prepared expected map
+E:/A52-iOS16/local-amfi-expected-overlay.json PASS; strict source/apply delta PASS.
+No new phone writes; Original BOOT restored. V18 result
+E:/A52-iOS16/cache-loader-v18-result.json,70470B console SHA
+0dbc408843842045a90137005ccde7af280f2b98a1bdcc964595e35eff3ae0da.
+Actual new service/query/registration unproven until phone trial. Do not call
+source/boundary tests a successful Apple userland or SpringBoard boot.
+
 ## Historical: V18 fatal-exit diagnostic — restored above
 
 Fresh readiness received; research/start_exit_trace_trial.py completed full
