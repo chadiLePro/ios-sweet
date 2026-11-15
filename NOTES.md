@@ -1,6 +1,36 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V20 xpcproxy trial RUNNING; original BOOT restoration PENDING
+## ACTIVE: V20 RESTORED; generalized measured root-code catalog in progress
+
+Guard collected/restored first attempt. V20 receipt requires_restore=false,
+original_boot_restored=true,protectedhashesunchanged,3CRCentryrecords,boundedROroot
+verified (1validrootrecord). Fresh completephoneBOOT hash matchesoriginal
+d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Phone TWRP, NO restoration pending. Console262132B SHA
+d3927d3804bd477f3ef84b17e489a70b2f14d522ddf5e6eeebd2d87451e377d9.
+E:/A52-iOS16/xpcproxy-v20-result.json. Exactproxy admitted, realchildren attempted
+callee exec: signature rejectsSpringBoard,backboardd,notifyd,configd,etc. Backboard
+line hascorruptbyte `load #ode`; retain original bytes, don'tquote repairedline.
+Missingpersona6 andROvar/logger errors30 persist; capturefillsfixedconsolecapacity.
+Persistentservices/UI remainunproven. OnlyRGBframebuffer physicallyverified;
+user'sworking60HzIOMFB/IOSurface claim remainsunsupported.
+
+User now explicitly requests admission of all20H392 rootMachO. Plan measured
+master-derived codeidentitycatalog, requireactualROroot+CS_VALID+originalsigned
+slot checks, retain normalpagechecking. Do NOT blindlysetCS_VALID/GET_TASK_ALLOW,
+acceptarbitrarypath/content or fabricatehardware/entitlementcontexts. First audit
+allrootMachO fromunchangedmaster. Existingfive-serviceaudit completed privately
+E:/A52-iOS16/master-early-services-audit-v1/report.json: actualmaster/nativehashes,
+signedpages/slotsverified forxpcroleaccountd,notifyd,configd,backboardd,SpringBoard.
+All directdylibs incache exceptbackboarddliblinkguard (inspectweakloadcommands).
+
+WSL now fails coldVMcreationERROR_NETNAME_DELETED (two attempts); nohostreboot.
+Alternativeindependenthostaudit: attach stopped distro E:/A52-HakiOS-tools/wsl/ext4.vhdx
+READONLY to existingLinuxappliance, mount ext4 ro,noload; chrootitsPython while
+rootmaster remainsseparateROvirtio/HFS. Injectionjob/script inRAMonly. No root
+catalog/policy implementation yet; noV21candidate or devicewrite started.
+
+## Historical V20 xpcproxy trial — restored above
 
 start_xpcproxy_trial.py completed successfully: full installed16GiB root/protected
 hashes checked, onlyBOOT written/readback, actual native reboot adb USBdeparture
