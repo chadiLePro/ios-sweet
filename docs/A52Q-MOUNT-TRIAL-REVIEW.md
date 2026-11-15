@@ -419,3 +419,31 @@ The full master hash matched before packaging the 96 MiB BOOT candidate
 `786b089cc723c2510f902e4054af0d9a24c4b2b1470586ad565ceb6814cbbdee`.
 These checks do not execute Apple's loader; physical readiness is pending and
 original BOOT remains restored. The stored root stays read-only and unchanged.
+
+## Physical V17 result: cache-loader admission passed, then SIGABRT
+
+The controlled retry retained three valid entry records and the bounded UFS-root
+proof. The recovery guard collected the log and restored original BOOT on its
+first attempt; protected hashes were unchanged and a fresh full BOOT hash matched.
+The 70,023-byte console SHA256 is
+`469a10f0fae29ffe5dba2b1c4a1b780cb560bcd74353ed524a8b8694591a7432`.
+
+```text
+A52Q boot policy: exact 20H392 launchd_cache_loader admitted; signed XML/DER checked, no AMFI or IOKit capabilities granted, cache loading unproven
+Boot task failed: launchd_cache_loader - exited due to SIGABRT
+```
+
+The process passed spawn; its main entry, successful cache registration/submission,
+persistent services and SpringBoard are not demonstrated. The child's abort
+description is absent. Static inspection shows several distinct early failure
+paths; writable logging is also unavailable. SIGABRT alone does not identify a
+missing AMFI service or a rejected cache. No compatibility stub is justified yet.
+
+The next patch adds A52-only fatal-exit diagnostics through
+`xnu/a52q/exit_trace.py` and its application hook. It observes the existing
+current-process fatal-exit context, printing bounded reason text and signal/
+exception metadata three times to the existing RAM console. These copies remain
+unprotected text, not new CRC records. It changes no signal, exit reason,
+crash-report decision, signing policy, memory reservation, display or storage.
+The Redmi guard and its diagnostic remain intact. A full kernel build is required;
+isolated leaf rebuilds reject an old or changed fatal-exit transform.

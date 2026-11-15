@@ -109,6 +109,16 @@ def main():
     if a.leaf != 'static-init' and (root / 'xnu/a52q/static_init.py').exists():
         if run('git', 'show', a.base_sha + ':xnu/a52q/static_init.py', cwd=root) != (root / 'xnu/a52q/static_init.py').read_bytes():
             raise SystemExit('full build required: unselected static-init policy changed')
+    # This transform changes kern_exit.o, outside every supported leaf. Never
+    # reuse an older archive or silently ignore a changed diagnostic hook.
+    exit_trace = root / 'xnu/a52q/exit_trace.py'
+    if exit_trace.exists():
+        try:
+            old = run('git', 'show', a.base_sha + ':xnu/a52q/exit_trace.py', cwd=root)
+        except subprocess.CalledProcessError:
+            raise SystemExit('full build required: base predates A52 fatal-exit trace')
+        if old != exit_trace.read_bytes():
+            raise SystemExit('full build required: changed A52 fatal-exit trace')
     report = json.loads((base / 'a52q-overlay.json').read_text())
     if report['target'] != 'A52Q':
         raise SystemExit('artifact is not an A52Q build')
