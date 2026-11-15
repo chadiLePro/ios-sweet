@@ -2,6 +2,19 @@
 #include <IOKit/IOPlatformExpert.h>
 #include <IOKit/IODeviceTreeSupport.h>
 #include <IOKit/IOLib.h>
+#include <libkern/c++/OSBoolean.h>
+
+/* C AMFI callback bridge. OSBoolean's public singleton API preserves the
+ * ownership/type expected by IOUserClient::copyClientEntitlement. This
+ * function makes no policy decision; the C caller checks the exact signed
+ * mount process, key and actual read-only root before calling it. */
+extern "C" void *a52q_copy_bindfs_true(void);
+extern "C" void *a52q_copy_bindfs_true(void)
+{
+    if (!kOSBooleanTrue) return nullptr;
+    kOSBooleanTrue->retain();
+    return kOSBooleanTrue;
+}
 
 class A52PlatformExpert : public IODTPlatformExpert {
     OSDeclareDefaultStructors(A52PlatformExpert);

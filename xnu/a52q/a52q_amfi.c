@@ -1,9 +1,10 @@
 /* Minimal bring-up interface for XNU's unconditional AMFI query callers.
- * No entitlements, trust caches or Apple validation service. The exact fsck
+ * No general entitlement context, trust caches or Apple validation service. The exact fsck
  * and mount boot tasks have local development platform classifications only.
  * Diagnostic mode permits only our exact entitlement-free ad-hoc init.
  * The separate full UFS root may also attempt the two audited 20H392 launch
- * executables and the audited entitlement-free shared caches below. Entitlement queries fail;
+ * executables and the audited entitlement-free shared caches below. Only the
+ * exact admitted mount task may query its verified signed bindfs Boolean;
  * this is an experimental hash allowlist, not Apple's AMFI/trust service.
  * Core XNU signature structure and executable-page hashes remain checked.
  */
@@ -170,6 +171,31 @@ static int a52q_readonly_root_vnode(vnode_t vp, vnode_t root)
         (vfs_flags(mp) & (MNT_RDONLY | MNT_ROOTFS)) == (MNT_RDONLY | MNT_ROOTFS);
 }
 
+/* The original 20H392 mount has bindfs-allow=true in its signed XML/DER.
+ * Recheck those signed slots both at admission and at capability queries.
+ * Exact CodeDirectory identity fixes the original value; no XML parser or
+ * general entitlement context is fabricated here. This is local development
+ * trust in measured content, not Apple CMS authentication. */
+static int a52q_verified_mount_blob(struct cs_blob *blob)
+{
+    static const uint8_t mount_pin[CS_CDHASH_LEN] = {
+        0xb6,0xa7,0x27,0x24,0x61,0xfc,0xe3,0x59,0xce,0xb4,
+        0x07,0x59,0x4e,0x7a,0xaf,0x4f,0xdf,0x49,0x49,0xf1
+    };
+    extern vnode_t rootvnode;
+    if (!blob || !(blob->csb_flags & CS_VALID) || blob->csb_entitlements ||
+        !blob->csb_entitlements_blob || !blob->csb_der_entitlements_blob ||
+        memcmp(blob->csb_cdhash, mount_pin, sizeof(mount_pin)) ||
+        !a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) return 0;
+    void *xml = NULL;
+    const CS_GenericBlob *der = NULL;
+    size_t xml_size = 0, der_size = 0;
+    return !csblob_get_entitlements(blob, &xml, &xml_size) &&
+        !csblob_get_der_entitlements(blob, &der, &der_size) &&
+        xml == blob->csb_entitlements_blob && der == blob->csb_der_entitlements_blob &&
+        xml_size == 472 && der_size == 222;
+}
+
 /* Called only for a missing SF_RESTRICTED flag, after root ownership checks.
  * Registered CodeDirectory identity + the actual RO root mount replace that
  * one missing filesystem flag. Ordinary range/page checks run afterwards. */
@@ -220,27 +246,12 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
             printf("A52Q boot policy: exact 20H392 fsck admitted as local development platform task; no entitlements\n");
             return KERN_SUCCESS;
         }
-        /* Observed mount-phase-1 rejection after fsck executes. Preserve the
-         * original XML/DER as signed metadata, validate their special slots
-         * through XNU, but create no entitlement context and grant no queries. */
-        static const uint8_t mount_pin[CS_CDHASH_LEN] = {
-            0xb6,0xa7,0x27,0x24,0x61,0xfc,0xe3,0x59,0xce,0xb4,
-            0x07,0x59,0x4e,0x7a,0xaf,0x4f,0xdf,0x49,0x49,0xf1
-        };
-        if ((blob->csb_flags & CS_VALID) && !blob->csb_entitlements &&
-            blob->csb_entitlements_blob && blob->csb_der_entitlements_blob &&
-            !memcmp(blob->csb_cdhash, mount_pin, sizeof(mount_pin)) &&
-            a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) {
-            void *xml = NULL;
-            const CS_GenericBlob *der = NULL;
-            size_t xml_size = 0, der_size = 0;
-            if (csblob_get_entitlements(blob, &xml, &xml_size) ||
-                csblob_get_der_entitlements(blob, &der, &der_size) ||
-                xml != blob->csb_entitlements_blob || der != blob->csb_der_entitlements_blob ||
-                xml_size != 472 || der_size != 222) return KERN_DENIED;
+        /* Observed mount-phase-1 boot task. Retain its signed metadata; only
+         * the guarded bindfs capability query below is implemented. */
+        if (a52q_verified_mount_blob(blob)) {
             blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
             blob->csb_platform_binary = 1;
-            printf("A52Q boot policy: exact 20H392 mount admitted as local development platform task; XML/DER hashes checked, entitlement queries denied\n");
+            printf("A52Q boot policy: exact 20H392 mount admitted as local development platform task; XML/DER hashes checked, bindfs-only capability available\n");
             return KERN_SUCCESS;
         }
         for (unsigned i = 0; i < 2; i++) {
@@ -271,7 +282,18 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
     return KERN_SUCCESS;
 }
 static kern_return_t a52q_bool(const void *ent __unused, const char *name __unused) { return KERN_DENIED; }
-static kern_return_t a52q_bool_proc(proc_t proc __unused, const char *name __unused) { return KERN_DENIED; }
+static int a52q_bindfs_task(proc_t proc, const char *name)
+{
+    if (!proc || !name || strcmp(name, "com.apple.private.bindfs-allow") ||
+        (proc_getcsflags(proc) & (CS_SIGNED | CS_VALID)) != (CS_SIGNED | CS_VALID)) return 0;
+    struct cs_blob *blob = csproc_get_blob(proc);
+    return a52q_verified_mount_blob(blob) && blob->csb_platform_binary &&
+        (blob->csb_flags & (CS_SIGNED | CS_PLATFORM_BINARY)) == (CS_SIGNED | CS_PLATFORM_BINARY);
+}
+static kern_return_t a52q_bool_proc(proc_t proc, const char *name)
+{
+    return a52q_bindfs_task(proc, name) ? KERN_SUCCESS : KERN_DENIED;
+}
 static kern_return_t a52q_string(const void *ent __unused, const char *name __unused,
     const char *value __unused) { return KERN_DENIED; }
 static kern_return_t a52q_string_proc(proc_t proc __unused, const char *name __unused,
@@ -283,9 +305,18 @@ static kern_return_t a52q_object(const void *ent __unused, const char *name __un
     }
     return KERN_NOT_FOUND;
 }
-static kern_return_t a52q_object_proc(proc_t proc __unused, const char *name, void **object)
+static kern_return_t a52q_object_proc(proc_t proc, const char *name, void **object)
 {
-    return a52q_object(NULL, name, object);
+    if (!object) return KERN_INVALID_ARGUMENT;
+    *object = NULL;
+    if (!a52q_bindfs_task(proc, name)) return KERN_NOT_FOUND;
+    /* Actual IOKit consumer expects a retained OSBoolean, not a C true value.
+     * Construct/copy it through C++ so no object/reference ABI is guessed. */
+    extern void *a52q_copy_bindfs_true(void);
+    *object = a52q_copy_bindfs_true();
+    if (!*object) return KERN_RESOURCE_SHORTAGE;
+    printf("A52Q bindfs capability: exact admitted mount, signed true Boolean copied; all other keys denied\n");
+    return KERN_SUCCESS;
 }
 static const amfi_t a52q_diagnostic_amfi = {
     .OSEntitlements_invalidate = a52q_ent_invalidate,
@@ -311,6 +342,6 @@ static const amfi_t a52q_diagnostic_amfi = {
 __startup_func static void a52q_register_diagnostic_amfi(void)
 {
     amfi_interface_register(&a52q_diagnostic_amfi);
-    printf("A52Q AMFI diagnostic interface registered: exact hash policy; entitlement queries denied\n");
+    printf("A52Q AMFI diagnostic interface registered: exact hash policy; only admitted mount bindfs capability\n");
 }
 STARTUP(EARLY_BOOT, STARTUP_RANK_MIDDLE, a52q_register_diagnostic_amfi);

@@ -1,6 +1,43 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V11 mount-contract phone trial — BOOT RESTORATION REQUIRED
+## ACTIVE: V11 RESTORED; root table works; bindfs entitlement denied
+
+Authoritative receipt backup/a52q/ios-ufs-v11/receipt.json now has
+requires_restore=false, original_boot_restored=true, protected hashes unchanged,
+changed recoverybootID and3validXNUentryframes. Fresh phone fullBOOT SHA matched
+d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016 after user returned.
+No restoration pending; phoneTWRP. Do not boot Android or format.
+
+V11 retained3Applelaunchd-main markers with system1/process1 enforcement.
+Both fs-table queries logged actualmountedROHFS source=root_device. OldEROFSroot
+upgrade and missingbootmanifest errors are absent. Next actualfailure:
+mount firmwarepreboot->/usr/standalone/firmware: Operationnotpermitted(1), then
+mount-phase-1 exit77. Logpath backup/a52q/ios-ufs-v11/console.txt. Text contains
+knownretentioncorruption; do not repairhash/pathbytes or infercontradictingregisters.
+
+Source confirms bind_vfsops.c checks com.apple.private.bindfs-allow before
+copyinstr/source lookup, returningEPERM. IOUserClient::copyClientEntitlement
+calls amfi->OSEntitlements.copyEntitlementAsOSObjectWithProc, which our current
+policyalwaysdenies. Mount's originalXML/DERhave the bindfs key (verifyboolvalue
+fromsignedblob beforegrant). Next fix: onlyexactverifiedRO-rootmountprocess,
+revalidateXML/DERsignedslots and requireadmittedsignedvalidtask; expose onlythat
+signedtruecapability as properOSBoolean throughC++bridge. No globalAMFIdisable,
+no otherentitlement grants, no fakeentitlementcontext. Do not inventC++objectABI.
+The exact measured mount's signed XML bool was verified true with host auditor
+E:/A52-iOS16/mount-bindfs-capability-v1.json; XML/DERhashslotchecks pass. Implemented
+sharedmountblobvalidator plus single-key proc/object query; requiresprocessSIGNED|
+VALID andadmittedblobSIGNED|PLATFORM_BINARY withplatformfield, ROroot andvalidslots.
+C++bridge usespublic kOSBooleanTrue->retain(), noC++reference/objectABIguessing.
+Nativeactualcallback tests extended withpositiveobjectcopy, allotherkeydenials,
+20mutatedhashes, invalidslots/flags/process/root andcopyfailure. Fullbuildneeded
+because bridgechangesplatformleaf aswellasAMFI. No phonewritesforthisnewpatch.
+
+Continue toward persistentAppleuserland thenSpringBoard. No services/UIproof.
+FilesystemrootstillRO/unchanged, host4GiBvarnotinstalled, newstoragerangewrite
+requiresconcretereview/approval. Display/console unchanged. Previousactive record
+below is historical; watcherfinished andoriginalBOOTrestored.
+
+## Historical: V11 mount-contract phone trial — completed and restored
 
 V11 installation completed on2026-11-15. Receipt backup/a52q/ios-ufs-v11/receipt.json
 currently requires_restore=true, original_boot_restored=false. Full installed16GiB

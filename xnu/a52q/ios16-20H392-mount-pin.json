@@ -39,6 +39,9 @@
     }
   },
   "cms_trust_authenticated": false,
-  "entitlements_granted": false,
-  "development_role": "exact local platform boot task; signed entitlement blobs hash-checked by XNU, queries denied; read-only full A52 root only"
+  "general_entitlement_context": false,
+  "signed_boolean_verified": {
+    "com.apple.private.bindfs-allow": true
+  },
+  "development_role": "exact local platform boot task; only its signed true bindfs capability may be queried after admitted execution; all other keys denied; read-only full A52 root only"
 }

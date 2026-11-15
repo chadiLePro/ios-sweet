@@ -148,3 +148,50 @@ BOOT from its C: backup and checks the complete partition against
 Remain in TWRP; restoring BOOT does not restore the previously overwritten
 Android userdata. The authoritative live trial/restoration state is the private
 `backup/a52q/ios-ufs-v11/receipt.json`, not this preparation document.
+
+## Physical V11 result and next correction
+
+V11 completed and original BOOT was restored. The receipt and a fresh complete
+BOOT readback matched the original hash; recovery/DTBO/vbmeta were unchanged.
+Three CRC-valid entry frames and three launchd-main markers survived with
+system/process signature enforcement enabled. Both filesystem-table queries
+reported the actual mounted read-only source `root_device`. The root-upgrade
+and missing-boot-hash failures are absent. The next retained error is:
+
+```text
+mount: failed to mount .../usr/standalone/firmware -> /usr/standalone/firmware - Operation not permitted(1)
+Boot task failed: mount-phase-1 - exited due to exit(77)
+```
+
+The source path in the unprotected console has retention corruption; its exact
+hash bytes are not reconstructed. This result proves advancement to the bind
+mount, not a completed mount phase or services/UI startup.
+
+XNU `bind_vfsops.c::bindfs_mount` checks `com.apple.private.bindfs-allow` before
+reading its source-path argument, returning EPERM when denied. The actual
+IOKit path calls AMFI's `copyEntitlementAsOSObjectWithProc`; our previous callback
+returned KERN_NOT_FOUND for every key. Inspection of the exact measured mount
+binary confirms the signed XML Boolean is true, after code-page and XML/DER
+special-slot verification.
+
+The next correction shares mount's existing signature/root validator between
+admission and queries. Only a signed, valid process with that exact admitted
+platform blob on the read-only root may query that one true Boolean. The C++
+bridge in `A52PlatformExpert.cpp` returns the real retained OSBoolean singleton
+through its public API. Other keys, contexts, signatures and roots are rejected.
+No C++ object layout/reference ABI is guessed, and no general entitlements
+dictionary is fabricated. This is an explicit local development capability,
+not Apple CMS authentication. Signature and executable-page enforcement remain.
+
+Native tests compile the actual callbacks and check the positive object/type
+contract, twenty changed-hash cases, process/blob flags, invalid XML/DER API
+results, wrong/writable roots, other entitlement names and copy failure. The
+underlying XML/DER hash algorithms retain their separate mutation tests.
+Physical bindfs capability consumption remains pending a new kernel trial.
+
+Additional inspected files: pinned XNU `libkern/c++/OSBoolean.cpp`,
+`libkern/libkern/c++/OSBoolean.h`, `bsd/sys/codesign.h`, `osfmk/mach/kern_return.h`,
+and the exact mount signature blobs. Modified for this next correction:
+`xnu/a52q/a52q_amfi.c`, `xnu/a52q/A52PlatformExpert.cpp`,
+`xnu/a52q/ios16-20H392-mount-pin.json`, `tests/test_a52q_exec_policy.py`, this
+review and `NOTES.md`. Display, logging and storage transport remain unchanged.

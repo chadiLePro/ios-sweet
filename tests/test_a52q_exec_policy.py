@@ -17,7 +17,7 @@ class ExecPolicyTests(unittest.TestCase):
         if not compiler: self.skipTest('native C compiler unavailable')
         source = (root / 'xnu/a52q/a52q_amfi.c').read_text()
         begin = source.index('static int a52q_cache_pin_index(')
-        end = source.index('\nstatic kern_return_t a52q_bool(', begin)
+        end = source.index('\nstatic const amfi_t a52q_diagnostic_amfi', begin)
         function = source[begin:end]
         report = json.loads((root / 'xnu/a52q/ios16-20H392-cache-pins.json').read_text())
         pins = [bytes.fromhex(d['cdhash']) for f in report['files'] for d in f['code_directories']]
@@ -42,6 +42,10 @@ typedef int kern_return_t;
 #define VREG 1
 #define KERN_SUCCESS 0
 #define KERN_DENIED 53
+#define KERN_NOT_FOUND 56
+#define KERN_INVALID_ARGUMENT 4
+#define KERN_RESOURCE_SHORTAGE 6
+#define __unused __attribute__((unused))
 #define printf(...) ((void)0)
 typedef struct { uint32_t magic, length; } CS_GenericBlob;
 struct cs_blob {
@@ -52,6 +56,13 @@ struct cs_blob {
  void *csb_entitlements;
  const CS_GenericBlob *csb_entitlements_blob, *csb_der_entitlements_blob;
 };
+typedef struct fake_proc { unsigned flags; struct cs_blob *blob; } *proc_t;
+static unsigned proc_getcsflags(proc_t proc) { return proc->flags; }
+static struct cs_blob *csproc_get_blob(proc_t proc) { return proc->blob; }
+static unsigned boolean_copies;
+static int copy_failure;
+static char boolean_true;
+void *a52q_copy_bindfs_true(void) { boolean_copies++; return copy_failure ? NULL : &boolean_true; }
 struct fake_mount { uint64_t flags; };
 typedef struct fake_mount *mount_t;
 struct fake_vnode { mount_t mount; int type; struct cs_blob *blob; };
@@ -154,7 +165,7 @@ int main(void) {
  assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
  blob.csb_flags=CS_VALID | CS_ADHOC; blob.csb_vnode=NULL;
  assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
- /* The observed mount task retains signed XML/DER, but grants no queries. */
+ /* The observed mount task retains signed XML/DER. */
  static const uint8_t mount_hash[20] = {MOUNT_EXPECTED};
  CS_GenericBlob xml = {0}, der = {0};
  memset(&blob,0,sizeof(blob)); memcpy(blob.csb_cdhash,mount_hash,20);
@@ -180,6 +191,57 @@ int main(void) {
  task.mount=&other; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); task.mount=&ro;
  full_root=0; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED); full_root=1;
  blob.csb_flags=0; assert(a52q_without_monitor(NULL,&blob)==KERN_DENIED);
+ /* Real IOKit capability callback: only the exact admitted signed mount may
+    read its verified true bindfs Boolean. No context/string/other keys. */
+ blob.csb_flags=CS_VALID|CS_ADHOC;
+ assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
+ struct fake_proc process={CS_VALID|CS_SIGNED,&blob};
+ const char *key="com.apple.private.bindfs-allow";
+ void *object=(void*)1;
+ assert(a52q_bool_proc(&process,key)==KERN_SUCCESS);
+ assert(a52q_object_proc(&process,key,&object)==KERN_SUCCESS && object==&boolean_true && boolean_copies==1);
+ assert(a52q_object_proc(&process,key,NULL)==KERN_INVALID_ARGUMENT);
+ assert(a52q_bool(NULL,key)==KERN_DENIED);
+ assert(a52q_string(NULL,key,"true")==KERN_DENIED);
+ assert(a52q_string_proc(&process,key,"true")==KERN_DENIED);
+ assert(a52q_object(NULL,key,&object)==KERN_NOT_FOUND && object==NULL);
+ assert(a52q_object(NULL,key,NULL)==KERN_NOT_FOUND);
+ assert(a52q_bool_proc(NULL,key)==KERN_DENIED);
+ assert(a52q_bool_proc(&process,NULL)==KERN_DENIED);
+ const char *unapproved[]={"com.apple.private.security.disk-device-access",
+  "com.apple.private.iokit.system-nvram-allow", "com.apple.private.bindfs-allow.extra", ""};
+ for(unsigned i=0;i<sizeof(unapproved)/sizeof(unapproved[0]);i++) {
+  assert(a52q_bool_proc(&process,unapproved[i])==KERN_DENIED);
+  object=(void*)1;
+  assert(a52q_object_proc(&process,unapproved[i],&object)==KERN_NOT_FOUND && object==NULL);
+ }
+ for(unsigned byte=0;byte<20;byte++) {
+  blob.csb_cdhash[byte]^=1;
+  assert(a52q_bool_proc(&process,key)==KERN_DENIED);
+  blob.csb_cdhash[byte]^=1;
+ }
+ unsigned flags=process.flags;
+ process.flags=CS_SIGNED;assert(a52q_bool_proc(&process,key)==KERN_DENIED);
+ process.flags=CS_VALID;assert(a52q_bool_proc(&process,key)==KERN_DENIED);process.flags=flags;
+ process.blob=NULL;assert(a52q_bool_proc(&process,key)==KERN_DENIED);process.blob=&blob;
+ flags=blob.csb_flags;
+ blob.csb_flags&=~CS_VALID;assert(a52q_bool_proc(&process,key)==KERN_DENIED);blob.csb_flags=flags;
+ blob.csb_flags&=~CS_SIGNED;assert(a52q_bool_proc(&process,key)==KERN_DENIED);blob.csb_flags=flags;
+ blob.csb_flags&=~CS_PLATFORM_BINARY;assert(a52q_bool_proc(&process,key)==KERN_DENIED);blob.csb_flags=flags;
+ blob.csb_platform_binary=0;assert(a52q_bool_proc(&process,key)==KERN_DENIED);blob.csb_platform_binary=1;
+ xml_error=1;assert(a52q_bool_proc(&process,key)==KERN_DENIED);xml_error=0;
+ der_error=1;assert(a52q_bool_proc(&process,key)==KERN_DENIED);der_error=0;
+ wrong_output=1;assert(a52q_bool_proc(&process,key)==KERN_DENIED);wrong_output=0;
+ blob.csb_entitlements_blob=NULL;assert(a52q_bool_proc(&process,key)==KERN_DENIED);blob.csb_entitlements_blob=&xml;
+ blob.csb_der_entitlements_blob=NULL;assert(a52q_bool_proc(&process,key)==KERN_DENIED);blob.csb_der_entitlements_blob=&der;
+ blob.csb_entitlements=(void*)1;assert(a52q_bool_proc(&process,key)==KERN_DENIED);blob.csb_entitlements=NULL;
+ full_root=0;assert(a52q_bool_proc(&process,key)==KERN_DENIED);full_root=1;
+ ro.flags=MNT_ROOTFS;assert(a52q_bool_proc(&process,key)==KERN_DENIED);ro.flags=MNT_RDONLY|MNT_ROOTFS;
+ task.mount=&other;assert(a52q_bool_proc(&process,key)==KERN_DENIED);task.mount=&ro;
+ copy_failure=1;object=(void*)1;
+ assert(a52q_object_proc(&process,key,&object)==KERN_RESOURCE_SHORTAGE && object==NULL);
+ copy_failure=0;
+ assert(boolean_copies==2); /* no rejected query may construct an object */
  puts("PASS: exact kernel policy, all 44 cache pins and 880 changed hashes");
  return 0;
 }
@@ -187,8 +249,9 @@ int main(void) {
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'policy.c'; path.write_text(prefix + function + body)
             executable = Path(directory) / ('policy.exe' if os.name == 'nt' else 'policy')
-            subprocess.run([compiler, '-std=c11', '-Wall', '-Wextra', '-Werror', str(path), '-o', str(executable)],
-                           check=True, capture_output=True)
+            compiled = subprocess.run([compiler, '-std=c11', '-Wall', '-Wextra', '-Werror', str(path), '-o', str(executable)],
+                                      capture_output=True, text=True)
+            self.assertEqual(compiled.returncode, 0, compiled.stderr)
             result = subprocess.run([str(executable)], check=True, capture_output=True, text=True)
             self.assertIn('880 changed hashes', result.stdout)
 
