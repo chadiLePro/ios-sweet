@@ -1,6 +1,26 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V18 RESTORED; abort reason confirmed: Unable to find AMFI
+## ACTIVE: V19 measured-cache service trial — BOOT RESTORATION PENDING
+
+Fresh readiness received. research/start_local_amfi_trial.py completed full
+installed16GiB root/protected partition hash checks, wrote/read back only BOOT,
+confirmed native reboot adb USB departure. Corrected candidate
+664360e93f7ab6e454d646cb2c0dbd21590a9a4165991e076de1c1543cd37389;
+kernel d164a51d9e4476e94068bf40f91a3ca66ba5fb8851dd5854718ea5f1d417a48c.
+Root remains RO/unchanged. New service/query/registration result UNKNOWN.
+
+backup/a52q/ios-ufs-v19/receipt.json requires_restore=true/original_boot_restored=false.
+C: robust guard wrapper PID2688/watch_ios_ufs_v19_restore.py invokes
+watch_pending_boot_restore.py, waits beyond30min, retries USB interruptions,
+preserves capture, refuses unknown BOOT contents. Logs same folder
+watcher.log/watcher.err.log. User told five full minutes from actual reboot
+confirmation, then reset to TWRP and leave USB connected. On return collect
+actual query/cache outcome and first failure, verify guard restoration, then
+fresh complete phone BOOT SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Do not leave restoration pending after recovery reconnects. Never select System
+or format data. No new storage write outside BOOT; no writable var installed.
+
+## Previous: V18 RESTORED; abort reason confirmed: Unable to find AMFI
 
 V18 guard collected/restored automatically. Receipt requires_restore=false,
 original_boot_restored=true, protected hashes unchanged, 3CRC entry records,
