@@ -1,6 +1,35 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V19 RESTORED; exact xpcproxy admission under host validation
+## ACTIVE: V20 xpcproxy install/check launcher running; guard result pending
+
+User freshly confirmed physical readiness. research/start_xpcproxy_trial.py
+running (execsession9716), phone pre-install full-root/protected hash checks.
+Do not start another install. On completed reboot departure, wrapper starts
+research/watch_ios_ufs_v20_restore.py -> robustguard; receipt/logs
+backup/a52q/ios-ufs-v20. Check receipt for requires_restore before any stop.
+No new result yet. Return to TWRP five full minutes after confirmed USBdeparture,
+then collect/verify original BOOT restoration and fresh full phone hash.
+
+Candidate/source committed b42f3852b4b8b5e1cd48fd876dc9399ed143bf67.
+Host121tests+repo validation PASS, LinuxCI43740932493 SUCCESS.
+AMFI-only build43740931838 SUCCESS with fullbase43735227285; source/hash guards
+and independent provenance verified. KernelSHA
+f94856acd6115ff2c067561106f31cd14a64679cb91c6d1fd4ab451845c81528,
+AMFISHA7f7bad698db6fe1702e0820002128655374c9434628f974f0785db2bdf5532aa.
+QEMU shim/out/a52q-xpcproxy-qemu-v1:3CRCentries,7diagnosticPID1heartbeats,
+provider registration/enforcement enabled. NOT Applexpcproxy/services emulation.
+Whole16GiB master rehashed0f4...312149. E:/A52-iOS16/ios-root-plan-v14.json,
+hardware-v16/build/a52q-ios-ufs-UNTESTED.img SHA
+c9adb74c6869ac36e643eeb2cb3fda207cd25f94e6d94a70c8f036d259b786c4.
+Manifest/kernel/root/96MiBimagechecked; noRAM/diagnosticroot inphonepayload.
+Independent report E:/A52-iOS16/xpcproxy-v20-candidate.json.
+Helper now explicitly bindsplan14; C:originalbackups/guard independent ofE:.
+
+Static original launchd log option audit (research/launchd-serial-parser.log)
+shows launchd_log_serial= reduced toBoolean, not a verified severity threshold.
+Do NOT set an invented verbosity number. Logging source/region remain unchanged.
+
+## V19 RESTORED; exact xpcproxy admission host audit
 
 Fresh read-only recovery check2026-11-15T17:22Z confirms whole original BOOT
 SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016

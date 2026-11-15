@@ -464,4 +464,50 @@ the next failure rather than inferring it from SIGABRT. The scoped software
 query and read-only boot-cache measurement change is documented in
 [A52Q-LOCAL-AMFI.md](A52Q-LOCAL-AMFI.md). Its corrected kernel passed compile,
 provenance, policy and diagnostic QEMU checks. A physical service/query result
-is still pending; the stored root is unchanged and no writable var is installed.
+was then demonstrated by V19; the stored root is unchanged and no writable var
+is installed. See the retained V19 result below.
+
+## V19 result and proposed xpcproxy trial
+
+V19 reports the measured boot-cache query, original detached-signature
+registration and `Early boot complete. Continuing system boot.` It imports
+service definitions, then `/usr/libexec/xpcproxy` fails signature admission
+(load error 4 / spawn error 85). Original BOOT was restored, its complete hash
+was freshly checked, and RECOVERY/DTBO/VBMETA hashes remained unchanged.
+The 262132-byte console reached capacity; its final timestamp is not a hang
+diagnosis. Persistent service startup and visible SpringBoard remain unproven.
+
+The next candidate admits the exact master/native-source xpcproxy identity and
+its verified signed metadata on the existing read-only root. It grants neither
+a general entitlement context nor automatic admission of any launched service.
+Normal code-page checking remains enabled. Storage, framebuffer, memory
+reservations and pstore code are unchanged.
+
+The temporary write scope remains BOOT `/dev/block/sda19`, bytes
+`[0, 100663296)`. No root/data/metadata write or formatting is included. The
+validated master and installed UFS root remain unchanged. Host checks include
+actual C-policy rejection tests, isolated kernel compile/link with guarded base
+provenance, and exact-kernel diagnostic QEMU. This QEMU fixture uses diagnostic
+PID1 and does not demonstrate xpcproxy or Apple service execution.
+
+Before install, the helper checks the installed root, protected partition hashes,
+saved original BOOT and candidate binding. After confirmed recovery departure,
+the independent recovery guard waits for TWRP, retains the first console capture
+and restores the complete original BOOT with readback. It retries USB interruptions
+and refuses an unexpected BOOT hash. The original backup is
+`backup/a52q/20261111T100325Z/boot.img`, SHA256
+`d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016`.
+BOOT restoration cannot recover the Android data destroyed by the earlier
+explicitly approved root install. A button reset back to TWRP is still required:
+Volume Down + Power until black, then immediately Volume Up + Power with USB.
+Leave recovery open; do not select System or format data.
+
+The checked xpcproxy candidate BOOT SHA256 is
+`c9adb74c6869ac36e643eeb2cb3fda207cd25f94e6d94a70c8f036d259b786c4`;
+kernel SHA256
+`f94856acd6115ff2c067561106f31cd14a64679cb91c6d1fd4ab451845c81528`.
+AMFI-only build `43740931838`, Linux CI `43740932493`, all 121 local tests,
+repository integrity, exact-kernel diagnostic QEMU (three CRC entries/seven
+heartbeats), master rehash and packaging checks passed. The phone payload has
+no RAM root or diagnostic PID1 substitution. The physical xpcproxy result is
+pending; host checks do not prove Apple service startup.
