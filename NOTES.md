@@ -33,7 +33,10 @@ Nativeactualcallback tests extended withpositiveobjectcopy, allotherkeydenials,
 because bridgechangesplatformleaf aswellasAMFI. No phonewritesforthisnewpatch.
 
 Committed e6cfca210fb33d694e84f50d956261216af12241. Full HFS build43703934486
-RUNNING; redundantpushbuild43703934123 cancelled. HostCI43703934116 SUCCESS;
+FAILED: proc_getcsflags undeclared at a52q_amfi.c:288. Pinned XNU declares its
+uint64return API in sys/proc_internal.h; added the actual header, not an ad-hoc
+prototype. Nativefixture nowmodels uint64return. Requirescorrectedfullrebuild.
+Redundantpushbuild43703934123 cancelled. HostCI43703934116 SUCCESS;
 120localtests/repositoryvalidator PASS, Linux+Windows actualCpolicyfixture PASS.
 Hostpipeline research/finish_bindfs_artifacts.py is running in session98258,
 stdout research/bindfs-build-package.log, failurelog research/bindfs-build-failure.log.

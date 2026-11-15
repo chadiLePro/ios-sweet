@@ -56,8 +56,8 @@ struct cs_blob {
  void *csb_entitlements;
  const CS_GenericBlob *csb_entitlements_blob, *csb_der_entitlements_blob;
 };
-typedef struct fake_proc { unsigned flags; struct cs_blob *blob; } *proc_t;
-static unsigned proc_getcsflags(proc_t proc) { return proc->flags; }
+typedef struct fake_proc { uint64_t flags; struct cs_blob *blob; } *proc_t;
+static uint64_t proc_getcsflags(proc_t proc) { return proc->flags; }
 static struct cs_blob *csproc_get_blob(proc_t proc) { return proc->blob; }
 static unsigned boolean_copies;
 static int copy_failure;

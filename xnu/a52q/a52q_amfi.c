@@ -14,6 +14,7 @@
 #include <mach/kern_return.h>
 #include <sys/codesign.h>
 #include <sys/proc.h>
+#include <sys/proc_internal.h>
 #include <sys/mount.h>
 #include <sys/vnode.h>
 #include <sys/systm.h>
