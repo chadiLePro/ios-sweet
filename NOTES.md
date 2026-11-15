@@ -1,6 +1,23 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V15 directory-cleanup trial — BOOT RESTORATION PENDING
+## ACTIVE: V15 RESTORED; cleanup ran; launchd_cache_loader exec rejected
+
+V15 watcher collected/restored automatically. Receipt requires_restore=false,
+original_boot_restored=true; protected hashes unchanged and recovery boot ID
+changed. Fresh whole BOOT readback again d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Phone TWRP. NO restoration pending. Saved backup/a52q/ios-ufs-v15/console.txt.
+
+FIPS POST again reports all tests PASSED. Exact dirs_cleaner admitted and actually
+ran; mkdir /private/var/dirs_cleaner failed EROFS30. Launchd advanced beyond it,
+but cleanup success / writable data is NOT demonstrated. System logger socket
+also EROFS30. Next fatal: launchd_cache_loader posix_spawn85/load signature4.
+Other optional helpers remain denied; no general admission bypass. No services
+or SpringBoard proof. Host audit for the now-observed loader is already complete
+as recorded below; next admit only its exact signed identity on same RO root.
+Retain original binary/cache and no fabricated AMFI trust response. Need observe
+loader's actual next operation before adding a cache-registration/provider fix.
+
+## Historical: V15 directory-cleanup trial — restored above
 
 User freshly confirmed readiness. research/start_dirs_trial.py completed the
 whole installed 16 GiB root hash and protected partition checks, then wrote
