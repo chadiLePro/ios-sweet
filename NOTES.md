@@ -1,6 +1,19 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V20 xpcproxy install/check launcher running; guard result pending
+## ACTIVE: V20 xpcproxy trial RUNNING; original BOOT restoration PENDING
+
+start_xpcproxy_trial.py completed successfully: full installed16GiB root/protected
+hashes checked, onlyBOOT written/readback, actual native reboot adb USBdeparture
+confirmed. backup/a52q/ios-ufs-v20/receipt.json requires_restore=true,
+original_boot_restored=false. New xpcproxy/service result UNKNOWN.
+C: robust guard wrapper PID4224 (watch_ios_ufs_v20_restore.py) is waiting forTWRP;
+logs backup/a52q/ios-ufs-v20/watcher.log +watcher.err.log. User told five fullminutes
+after departure confirmation, resetTWRP, leaveopenUSB. Fresh userreadiness confirmed.
+On return collect firstcapture/guardreceipt, verify originalBOOTrestored and
+freshfullphoneSHAd6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Do not selectSystem, formatdata, overwriteoldcapture or leave restorationpending.
+
+### V20 checked artifacts and preflight history
 
 User freshly confirmed physical readiness. research/start_xpcproxy_trial.py
 running (execsession9716), phone pre-install full-root/protected hash checks.
