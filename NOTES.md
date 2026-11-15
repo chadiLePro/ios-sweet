@@ -1,6 +1,25 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V18 fatal-exit diagnostic — BOOT RESTORATION PENDING
+## ACTIVE: V18 RESTORED; abort reason confirmed: Unable to find AMFI
+
+V18 guard collected/restored automatically. Receipt requires_restore=false,
+original_boot_restored=true, protected hashes unchanged, 3CRC entry records,
+changed recovery boot ID. Fresh full phone BOOT SHA
+d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016 matches.
+Phone TWRP. NO restoration pending. Retain backup/a52q/ios-ufs-v18/console.txt.
+
+New trace gives three identical reason lines: ns7/LIBXPC code1 description
+`Unable to find AMFI`. Loader process PID21, signal6. This confirms the observed
+IOServiceMatching("AppleMobileFileIntegrity") service lookup failure, not a
+code-page or spawn failure. Cache registration/submission, persistent services
+and SpringBoard remain unproven. Next narrowly implement software service and
+only observed user-client ABI type0/selector6, scalar1 + CDhash structure. Caller
+must remain exact verified loader on actual RO root. Recognize only exact
+verified boot-cache signatures, retain all unknown/modified rejections and normal
+code-page checks. No global AMFI bypass, no Apple CMS/SEP/hardware claims.
+Inspect real IOUserClient security/lifecycle and VFS measurement APIs before code.
+
+## Historical: V18 fatal-exit diagnostic — restored above
 
 Fresh readiness received; research/start_exit_trace_trial.py completed full
 installed16GiB root and protected partition hash checks, wrote/read back only
