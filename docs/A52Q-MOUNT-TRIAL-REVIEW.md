@@ -226,3 +226,34 @@ These are host file/hash checks, not Apple CMS authentication, admission policy
 changes, daemon execution or hardware/graphics compatibility. No service plist
 or executable was modified. The earlier serial-export timeout and unresolved
 native-path attempt were preserved as incomplete audits, not labelled passes.
+
+## Checked bindfs candidate and V12 trial
+
+Corrected full kernel build **43705321913**, source
+`5c34a0499b63bae2d52cf64f2a636b541d2120a0`, passed. Kernel SHA256:
+`b50504036500e95d19b7c4aa8a45c46204bbf7a483269a65d233c649106d3d9b`.
+All 73 reviewed overlay hashes match. Only `a52q_amfi.c` and
+`A52PlatformExpert.cpp` differ from the V11 overlay. Display, memory, logging,
+UFS read transport and the read-only mounted-root table are unchanged.
+
+Host CI 43705322098 and all 120 tests pass. Exact-kernel diagnostic QEMU retained
+three entry frames and seven heartbeats; it is not full iOS/UFS emulation.
+Plan-v8 rehashed the complete master unchanged. The candidate contains no RAM
+root and binds the same 16 GiB read-only UFS filesystem. BOOT SHA256:
+`b1b3bc6569b79772dd9162db54432df655a407a7c5fcd369b5ad1325a5ec9f27`.
+
+The user confirmed readiness for V12. The installer freshly verified the full
+stored root, wrote/read back only BOOT, and confirmed recovery USB departure.
+V12 is running; no physical success is claimed. Logs and automatic restoration
+use `backup/a52q/ios-ufs-v12/receipt.json` and the C: original BOOT backup.
+Return to TWRP after five minutes with the button sequence above. Until that
+receipt confirms restoration and complete readback, BOOT restoration is pending.
+No data format or other partition write is included.
+
+Further source inspected without modification: XNU `IOPlatformExpert.cpp`
+instantiates a normal IOPMrootDomain in the inherited platform path. This does
+not establish a battery provider or running powerd. Original patches 0046,
+0056, 0061, 0068 and 0079 contain Redmi IOSurface/framebuffer glue and a roughly
+60 Hz software notification timer. These are outside the current A52 provider
+set and have not been enabled by this mount correction. Their presence is not
+evidence of a working A52 IOMobileFramebuffer compositor.

@@ -1,6 +1,33 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V11 RESTORED; root table works; bindfs entitlement denied
+## ACTIVE: V12 bindfs-capability phone trial — BOOT RESTORATION REQUIRED
+
+V12 candidate b1b3bc6569b79772dd9162db54432df655a407a7c5fcd369b5ad1325a5ec9f27
+installed/readbackverified BOOTonly96MiB, originalcurrentlyNOTrestored. Receipt
+backup/a52q/ios-ufs-v12/receipt.json hasrequires_restore=true. Userconfirmedfresh
+readiness, full16GiBinstalledroot freshlyhashedunchanged, protectedpartshashes
+matched. Native /system/bin/reboot adb confirmedUSBdeparture. WatcherPID10676
+runningC:logs backup/a52q/ios-ufs-v12/{watcher.log,watcher.err.log,install.log}.
+Useraskedfive minutes thenTWRP (orleaveopenifselfreturns). Collect+restoreasap
+onreturn; originalwholeBOOT SHA d6bf...4b016 mustverify. NoSystem/Android/format.
+
+Corrected fullbuild43705321913/source5c34a0499b63bae2d52cf64f2a636b541d2120a0
+SUCCESS. Kernel b50504036500e95d19b7c4aa8a45c46204bbf7a483269a65d233c649106d3d9b;
+all73overlayfilesverified, onlyAMFIandA52PlatformExpert changedversusV11kernel.
+HostCI43705322098/120tests PASS; exactkernel diagnosticQEMU3entries/7heartbeats
+PASS, notfulliOS/UFSemulation. Fullmasterrehashedunchanged plan-v8; hardware-v10
+packagednoRAMroot. Headerproc_getcsflags includeerrorfromfirstbuildwasfixed.
+TypedOSBooleanbridge andexact signedbindfsBoolean query aretheonlynewcapability.
+Display/memory/console/UFSreader/ROrootfstabunchanged. No otherkeys/binariesadmitted.
+
+OnceV12restored, inspectactualnewconsole for bindfscapability grant andwhether
+mount-phase-1 completes, then nextfirstfailure. Do not callpendingresultsuccess.
+Master/root remainRO; host4GiBvarnotinstalled/no newrangeapproved. Services/UI
+unproven; objective remainsrealApplelaunchd/services/SpringBoardfrompersistentUFS.
+Private helper usesplan-v8; restore hasnoE:dependency. Ifwatchertimeout, restore
+stillrequired. PrecedingV11safetyrecordbelowishistoricalduringactiveV12.
+
+## Historical: V11 RESTORED; root table works; bindfs entitlement denied
 
 Authoritative receipt backup/a52q/ios-ufs-v11/receipt.json now has
 requires_restore=false, original_boot_restored=true, protected hashes unchanged,
