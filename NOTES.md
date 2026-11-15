@@ -1,6 +1,33 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V12 bindfs-capability phone trial — BOOT RESTORATION REQUIRED
+## ACTIVE: V12 RESTORED; retained log safe; pre-UFS result inconclusive
+
+V12 watcherexpiredafter10minutesbeforerecoveryreturned. Manualcollect-restore
+finishedsuccessfullywhenuserreportedTWRP. Receipt backup/a52q/ios-ufs-v12/receipt.json
+nowrequires_restore=false/original_boot_restored=true, protectedhashesunchanged,
+changedrecoverybootID,3CRCentryframes. FreshwholephoneBOOT SHA d6bf...4b016 matched
+againafteruserreportedanaccidentaladditionalreboot. PhonecurrentlyTWRP.
+NO RESTORATION PENDING. Do not overwrite V12savedconsolewithanothercapture.
+
+SavedV12console8394bytes,SHA256
+239e7cbc3603fc232a5dd9b15edd87cfb5645f6e4997cafd35092a8d950bc6c8.
+Extra byte-identicalcopies+manifest in
+backup/a52q/ios-ufs-v12/retained-after-reboot/{console.txt,receipt.json,
+manual-collect-restore.log,recovery-dmesg.txt,manifest.json}.
+The accidentalreboot cannot erase these hostcopies. Originalsavedfilesretained.
+
+Logstopsafterplatformregistered/CPUselfSGI; noUFSstages,rootwindow,P ID1orbindfs
+queryrecords. This is INCONCLUSIVE for bindfscapability, not proofthatfixfailed.
+PriorV11provedROroot table andlaunchdmain. Startupsource places
+IOKitInitializeTime() betweenbsd_bufferinit() andvfsinit()/UFS; it has30sIORTCwait,
+but this log does not establish the exact stall. User's accidentalreset timing
+isunknown; do not inferfull5minruntime or classifykernelregression fromabsence.
+Next: controlled unchangedb1b3...candidate retry with fresharchivedRAMconsole,
+newrecoverybootID andfulltimed5minwait. Extend recoverywatcher30min tocoverlate
+manualreturn. Same96MiBBOOTonly scope; rootROunchanged; no needrebuild binary.
+Do not weaken CPU/protected-memory/signatureguards based on this incomplete log.
+
+## Historical: V12 bindfs-capability phone trial — completed and restored
 
 V12 candidate b1b3bc6569b79772dd9162db54432df655a407a7c5fcd369b5ad1325a5ec9f27
 installed/readbackverified BOOTonly96MiB, originalcurrentlyNOTrestored. Receipt

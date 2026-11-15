@@ -257,3 +257,24 @@ not establish a battery provider or running powerd. Original patches 0046,
 60 Hz software notification timer. These are outside the current A52 provider
 set and have not been enabled by this mount correction. Their presence is not
 evidence of a working A52 IOMobileFramebuffer compositor.
+
+## V12 retained result
+
+V12 returned to TWRP after the watcher's ten-minute deadline. The collection and
+restoration command was run immediately, and the entire original BOOT hash
+matched again. No restoration remains pending. Protected hashes were unchanged.
+
+The retained console has three valid XNU-entry frames but ends after platform
+registration and CPU self-SGI initialization. No UFS, root, launchd or bindfs-query
+record is retained. This is inconclusive for the capability correction. It does
+not establish a specific early-kernel failure, successful bindfs, or a new
+userland milestone. A later accidental reboot does not remove the already saved
+computer copies. The 8,394-byte console's SHA256 is
+`239e7cbc3603fc232a5dd9b15edd87cfb5645f6e4997cafd35092a8d950bc6c8`.
+An additional byte-identical archive and hash manifest were retained separately.
+
+Further startup source inspected: `IOStartIOKit.cpp::IOKitInitializeTime`, called
+between buffer initialization and the A52 vfs/UFS hook, includes a bounded RTC
+resource wait. The saved log does not pinpoint a stall there. A controlled,
+fully timed retry of the unchanged checked candidate is needed before changing
+CPU initialization or treating this as a deterministic regression.
