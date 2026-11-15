@@ -75,6 +75,17 @@ must be superseded by corrected-leaf pipeline. V19 trial runners already prepare
 but DO NOT RUN until corrected kernel checks and fresh physical readiness.
 Phone still TWRP, original BOOT restored; NO restoration pending.
 
+Corrected-path full43735227285 SUCCESS; all75 archived source hashes/expected
+overlay verified, kernelSHAf22e5101a2697bb29fe1132e4f650ef206bcf9587a070e0338336ca13c522005,
+init aaacee...4473e. E:/A52-iOS16/builds/43735227285/{artifact,verified-build.json}
+is explicitly COMPILE/LINK BASE ONLY, not a phone candidate (raw-platform check
+still present there). No baseline packaging was run. Full build no longer running:
+now publish local correction554312c and isolated leafamfi using this success base,
+cancel redundant auto-full. Current source checks actual blob classification;
+native caller-policy testPASS. Do not flash basef22e kernel. New corrected kernel
+requires provenance, exactQEMU/provider registration, master hash/plan13 packaging,
+then fresh readiness before V19. Old host pipelines26818/64879 are stopped/ended.
+
 ## Historical: V18 fatal-exit diagnostic — restored above
 
 Fresh readiness received; research/start_exit_trace_trial.py completed full

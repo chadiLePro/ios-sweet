@@ -31,11 +31,11 @@ to `IOServiceMatching("AppleMobileFileIntegrity")`, user-client type 0, then:
 The query precedes `SecCodeMapMemory`. A legacy IOUserClient implements this one
 observed operation. Other selectors, caller identities and argument forms are
 rejected. Connections retain their owning task; every method rechecks the owner
-and the signed identity so a forwarded connection is insufficient. Original
+and the signed identity so a forwarded connection is insufficient.
 The raw process flags require CS_VALID and CS_SIGNED. Platform classification
 comes from the verified cs_blob: XNU's exec flag mask does not copy the platform
 bit into raw process flags, while csops synthesizes it from the blob.
-XML/DER metadata is verified; no global entitlement context, IOUserClient-class
+Original XML/DER metadata is verified; no global entitlement context, IOUserClient-class
 array, trust-cache privilege or other entitlement is fabricated.
 
 The compatibility service and class names satisfy the observed lookup. This is
