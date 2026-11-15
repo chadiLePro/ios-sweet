@@ -1,6 +1,23 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V14 FIPS execution trial — BOOT RESTORATION PENDING
+## ACTIVE: V14 RESTORED; real FIPS POST passed; dirs_cleaner exec rejected
+
+V14 watcher collected the new log and restored original BOOT automatically.
+Receipt requires_restore=false/original_boot_restored=true; fresh subsequent
+whole-phone BOOT SHA256 d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016
+matches. RECOVERY/DTBO/vbmeta unchanged, recovery boot ID changed. Phone is TWRP;
+NO restoration pending. Root remains the unchanged read-only 16 GiB UFS image.
+
+Saved backup/a52q/ios-ufs-v14/console.txt shows exact cc_fips_test admitted,
+real corecrypto POST subtests, `all tests PASSED (183 ms)`, then result=true.
+This is real task execution/results, NOT a FIPS certification claim. Apple
+launchd advances to keybag/usermanager (optional signature denials), then fatal:
+`Boot task failed: dirs_cleaner - posix_spawn: 85: Bad executable (or shared library)`.
+First inspect the exact required dirs_cleaner binary/arguments and filesystem
+effects before admitting it. Do not blanket-admit optional/destructive helpers.
+No data volume is installed, no services/SpringBoard/display-composition proof.
+
+## Historical: V14 FIPS execution trial — restoration completed above
 
 V14 started 2026-11-15 11:50:31 UTC after fresh user readiness. Receipt
 backup/a52q/ios-ufs-v14/receipt.json requires_restore=true; original BOOT is
