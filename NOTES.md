@@ -1,6 +1,23 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V14 RESTORED; real FIPS POST passed; dirs_cleaner exec rejected
+## ACTIVE: V15 directory-cleanup trial — BOOT RESTORATION PENDING
+
+User freshly confirmed readiness. research/start_dirs_trial.py completed the
+whole installed 16 GiB root hash and protected partition checks, then wrote
+and read back only BOOT. Candidate bc50a99b72cbb6fe862eacfadb5d69cb8e163d8c3fd4412a77651029c96ffa8f;
+kernel 13b6eda1e0525add11cd4f986bfd02b4a764c9d0b007d220729dfcf959249766.
+Native reboot adb confirmed recovery USB departure. Root stays RO/unchanged.
+
+backup/a52q/ios-ufs-v15/receipt.json requires_restore=true/original_boot_restored=false.
+C: restoration watcher PID3920 (research/watch_ios_ufs_v15_restore.py), 30-minute
+return window; logs same folder watcher.log/watcher.err.log. User instructed
+to wait five full minutes from confirmed departure, then reset to TWRP and
+leave USB connected. On return collect logs, restore original BOOT and freshly
+check full phone SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Do not leave restoration pending after recovery reconnects. Do not select
+System or format data. New physical cleanup result still UNKNOWN.
+
+## Previous: V14 RESTORED; real FIPS POST passed; dirs_cleaner exec rejected
 
 V14 watcher collected the new log and restored original BOOT automatically.
 Receipt requires_restore=false/original_boot_restored=true; fresh subsequent
