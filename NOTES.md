@@ -1,6 +1,29 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V13 RESTORED; both mount phases advanced; FIPS exec rejected
+## ACTIVE: V14 FIPS execution trial — BOOT RESTORATION PENDING
+
+V14 started 2026-11-15 11:50:31 UTC after fresh user readiness. Receipt
+backup/a52q/ios-ufs-v14/receipt.json requires_restore=true; original BOOT is
+NOT restored. Candidate 7e4a84b21c29d09ecc241f85f95f10c94ecd810cf33cbafc0b12356510438dfa
+was written/read back, then USB departure observed with native reboot adb.
+Kernel 233c149e...4533c53 adds only the verified FIPS executable policy pin.
+Full installed 16 GiB root was freshly hashed unchanged before installation.
+Protected RECOVERY/DTBO/vbmeta hashes matched. Only BOOT is temporarily changed.
+
+C: watcher research/watch_ios_ufs_v14_restore.py is running with a 30-minute
+return window; logs backup/a52q/ios-ufs-v14/{watcher.log,watcher.err.log}.
+On recovery return, collect retained console and restore original BOOT, then
+freshly verify whole BOOT SHA256 d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+Never leave this pending after TWRP reconnects. Do not select System or format.
+User instructed to wait five minutes before returning to TWRP. No new result yet.
+
+Host prerequisites completed: isolated rebuild 43710208735 and host CI passed;
+exact new-kernel diagnostic QEMU passed three CRC entries/seven PID1 heartbeats.
+This is not full iOS or FIPS emulation. Master rehash/root-plan-v9 and packaged
+96 MiB hardware-v11 BOOT passed binding/hash checks. No FIPS-disable boot flag,
+test argument, fake POST result, root write, display change or global CS bypass.
+
+## Previous: V13 RESTORED; both mount phases advanced; FIPS exec rejected
 
 V13watchercollected/restoredautomatically. Receipt backup/a52q/ios-ufs-v13/receipt.json
 requires_restore=false/original_boot_restored=true, protectedhashesunchanged,
