@@ -36,6 +36,12 @@ Committed e6cfca210fb33d694e84f50d956261216af12241. Full HFS build43703934486
 FAILED: proc_getcsflags undeclared at a52q_amfi.c:288. Pinned XNU declares its
 uint64return API in sys/proc_internal.h; added the actual header, not an ad-hoc
 prototype. Nativefixture nowmodels uint64return. Requirescorrectedfullrebuild.
+Correctioncommit5c34a04 fullHFSbuild43705321913 nowRUNNING; hostCI43705322098
+SUCCESS;120tests/73fileactualoverlaycheck PASS. Hostpipeline new session97326,
+research/finish_bindfs_artifacts.py nowexpects43705321913; stdout
+research/bindfs-build-package-retry.log and failurelog has runIDsuffix. Oldfailed
+buildlog research/bindfs-build-failure.log preserved. Preparationstillplan-v8/
+hardware-v10/QEMUbindfs-v1; nonecreatedbeforefailedbuild, no phonewrite.
 Redundantpushbuild43703934123 cancelled. HostCI43703934116 SUCCESS;
 120localtests/repositoryvalidator PASS, Linux+Windows actualCpolicyfixture PASS.
 Hostpipeline research/finish_bindfs_artifacts.py is running in session98258,
@@ -51,6 +57,18 @@ lastsavedV11console fallback. Private device helper now expects plan-v8; restore
 phase has no E:dependency. After allcandidatechecks pass, get fresh readiness
 for five-minute BOOT-only trial. Latestuserreadinesswas forV11, now completed.
 Do not install while build/checks pending. No BOOTrestoration currentlypending.
+
+Independentreadonlymasterserviceaudit COMPLETE:
+E:/A52-iOS16/master-service-audit-v3/report.json. Sixexecutables matchexactmaster
+hashes usingresolvednativesourcepaths andverify1804signedcodepages+XML/DERslots:
+backboardd280/securityd764/powerd146/watchdogd33/mobileactivationd572/SpringBoard9.
+Fiveactuallaunchplists readfrommaster; powerdpathis
+/System/Library/CoreServices/powerd.bundle/powerd; watchdogd configuredIOWatchdog
+matchingLaunchEvent, noobservedwatchdogpanic. No codeadmission/service/stubchange.
+V1serialbulkcopy timedout; V2checksumguest succeededbutWindowsUNCcouldnotfollow
+theLinuxosdirectorysymlink, so binaries were notverified there. V3resolvesLinux
+sourcepaths beforeUNCaccess; all6hashes/pagechecks pass, no missingpaths.
+Private reportskeepApplefilesoutofgit; WSLowneddistroterminatedafteraudit.
 
 Continue toward persistentAppleuserland thenSpringBoard. No services/UIproof.
 FilesystemrootstillRO/unchanged, host4GiBvarnotinstalled, newstoragerangewrite

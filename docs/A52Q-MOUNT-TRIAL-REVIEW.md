@@ -195,3 +195,34 @@ and the exact mount signature blobs. Modified for this next correction:
 `xnu/a52q/a52q_amfi.c`, `xnu/a52q/A52PlatformExpert.cpp`,
 `xnu/a52q/ios16-20H392-mount-pin.json`, `tests/test_a52q_exec_policy.py`, this
 review and `NOTES.md`. Display, logging and storage transport remain unchanged.
+
+The first full build of this correction (43703934486) caught a missing
+`sys/proc_internal.h` include for `proc_getcsflags`. The proper private header
+and its actual uint64 API are now used; native checks still pass. Corrected
+full build 43705321913 must succeed before packaging or another phone trial.
+
+## Independent service inventory
+
+Read-only master extraction checked these additional files against native source
+hashes, then verified every signed code page and XML/DER entitlement slot:
+
+| Executable | Signed pages checked |
+|---|---:|
+| `/usr/libexec/backboardd` | 280 |
+| `/usr/libexec/securityd` | 764 |
+| `/System/Library/CoreServices/powerd.bundle/powerd` | 146 |
+| `/usr/libexec/watchdogd` | 33 |
+| `/usr/libexec/mobileactivationd` | 572 |
+| `/System/Library/CoreServices/SpringBoard.app/SpringBoard` | 9 |
+
+The matching `System/Library/LaunchDaemons/com.apple.{backboardd,securityd,powerd,
+watchdogd,mobileactivationd}.plist` files were inspected. Backboardd is configured
+RunAtLoad/KeepAlive and advertises CARenderServer/display/HID services. Watchdogd
+has an IOWatchdog matching event; this does not demonstrate a running watchdog
+or justify disabling it. Powerd's actual path is its CoreServices bundle.
+
+The private complete inventory is `E:/A52-iOS16/master-service-audit-v3/report.json`.
+These are host file/hash checks, not Apple CMS authentication, admission policy
+changes, daemon execution or hardware/graphics compatibility. No service plist
+or executable was modified. The earlier serial-export timeout and unresolved
+native-path attempt were preserved as incomplete audits, not labelled passes.
