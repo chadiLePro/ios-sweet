@@ -32,6 +32,23 @@ Nativeactualcallback tests extended withpositiveobjectcopy, allotherkeydenials,
 20mutatedhashes, invalidslots/flags/process/root andcopyfailure. Fullbuildneeded
 because bridgechangesplatformleaf aswellasAMFI. No phonewritesforthisnewpatch.
 
+Committed e6cfca210fb33d694e84f50d956261216af12241. Full HFS build43703934486
+RUNNING; redundantpushbuild43703934123 cancelled. HostCI43703934116 SUCCESS;
+120localtests/repositoryvalidator PASS, Linux+Windows actualCpolicyfixture PASS.
+Hostpipeline research/finish_bindfs_artifacts.py is running in session98258,
+stdout research/bindfs-build-package.log, failurelog research/bindfs-build-failure.log.
+It waits/buildverifies73files then runs research/prepare_bindfs_artifacts.py:
+exactkernel diagnosticQEMU a52q-bindfs-qemu-v1, fullmasterrehash plan-v8, package
+hardware-v10. No phonewrite in pipeline. Private resultV11 proof saved to
+E:/A52-iOS16/mount-contract-v11-result.json; consoleSHA9a4d8165...6e0cccb.
+
+PreparedbutNOTSTARTED: research/start_bindfs_trial.py and
+research/watch_ios_ufs_v12_restore.py use C: backup/a52q/ios-ufs-v12, hardware-v10,
+lastsavedV11console fallback. Private device helper now expects plan-v8; restore
+phase has no E:dependency. After allcandidatechecks pass, get fresh readiness
+for five-minute BOOT-only trial. Latestuserreadinesswas forV11, now completed.
+Do not install while build/checks pending. No BOOTrestoration currentlypending.
+
 Continue toward persistentAppleuserland thenSpringBoard. No services/UIproof.
 FilesystemrootstillRO/unchanged, host4GiBvarnotinstalled, newstoragerangewrite
 requiresconcretereview/approval. Display/console unchanged. Previousactive record
