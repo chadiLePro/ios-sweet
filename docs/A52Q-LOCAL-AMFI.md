@@ -124,3 +124,8 @@ Native tests compile the actual policy and reject changed hashes, failed or
 substituted metadata, missing classification, wrong/writable roots and unrelated
 capabilities. The private master audit also rejects a changed xpcproxy entry page.
 Admission alone does not demonstrate xpcproxy main, successful service exec or UI.
+
+V20 subsequently admitted xpcproxy and its children reached service-exec
+signature checks. Generalized measured root-code admission is documented in
+[A52Q-ROOT-CODE-CATALOG.md](A52Q-ROOT-CODE-CATALOG.md). The exact cache-loader
+connection and detached-cache rules in this document remain unchanged.

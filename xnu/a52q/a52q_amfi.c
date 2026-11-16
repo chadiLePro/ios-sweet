@@ -2,8 +2,8 @@
  * No general entitlement context, trust caches or Apple validation service.
  * Measured boot tasks have local development platform classifications only.
  * Diagnostic mode permits only our exact entitlement-free ad-hoc init.
- * The separate full UFS root may also attempt the two audited 20H392 launch
- * executables and the audited entitlement-free shared caches below. Only the
+ * The separate full UFS root may also attempt measured 20H392 Mach-O identities
+ * from its generated catalog and the separately audited shared caches. Only the
  * exact admitted mount task may query its verified signed bindfs Boolean;
  * A local IOKit query also recognizes the exact measured launchd data cache
  * for the exact loader. No entitlement context or Apple trust is fabricated;
@@ -26,6 +26,7 @@
 #include <sys/errno.h>
 #include <libkern/crypto/sha2.h>
 #include "a52q_boot_cache_policy.h"
+#include "a52q_root_code_catalog.h"
 
 static int a52q_readonly_root_vnode(vnode_t vp, vnode_t root);
 
@@ -375,6 +376,35 @@ int a52q_boot_cache_query(const uint8_t *hash, size_t bytes)
     return 1;
 }
 
+/* Membership comes from the complete read-only master scan, not a pathname.
+ * Core code-page verification remains active. Keep original signed metadata
+ * without manufacturing an entitlement context or a debugging entitlement. */
+static int a52q_verified_catalog_blob(struct cs_blob *blob)
+{
+    extern vnode_t rootvnode;
+    if (!blob || !(blob->csb_flags & CS_VALID) || blob->csb_entitlements ||
+        !a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) return -1;
+    size_t lo = 0, hi = sizeof(a52q_root_code_pins) / sizeof(a52q_root_code_pins[0]);
+    while (lo < hi) {
+        size_t mid = lo + (hi - lo) / 2;
+        int order = memcmp(blob->csb_cdhash, a52q_root_code_pins[mid].cdhash, CS_CDHASH_LEN);
+        if (order < 0) { hi = mid; continue; }
+        if (order > 0) { lo = mid + 1; continue; }
+        const struct a52q_root_code_pin *pin = &a52q_root_code_pins[mid];
+        if (!!blob->csb_entitlements_blob != !!pin->xml_bytes ||
+            !!blob->csb_der_entitlements_blob != !!pin->der_bytes) return -1;
+        void *xml = NULL;
+        const CS_GenericBlob *der = NULL;
+        size_t xml_size = 0, der_size = 0;
+        if (pin->xml_bytes && (csblob_get_entitlements(blob, &xml, &xml_size) ||
+            xml != blob->csb_entitlements_blob || xml_size != pin->xml_bytes)) return -1;
+        if (pin->der_bytes && (csblob_get_der_entitlements(blob, &der, &der_size) ||
+            der != blob->csb_der_entitlements_blob || der_size != pin->der_bytes)) return -1;
+        return (int)mid;
+    }
+    return -1;
+}
+
 static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
 {
     extern int a52q_ufs_root_named(const char *name);
@@ -477,6 +507,13 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
         int cache_index = a52q_cache_pin_index(blob);
         if (cache_index >= 0) {
             printf("A52Q exec policy: pinned 20H392 shared cache %d accepted; no entitlements\n", cache_index);
+            return KERN_SUCCESS;
+        }
+        int root_code_index = a52q_verified_catalog_blob(blob);
+        if (root_code_index >= 0) {
+            blob->csb_flags |= CS_SIGNED | CS_PLATFORM_BINARY;
+            blob->csb_platform_binary = 1;
+            printf("A52Q boot policy: measured 20H392 root code catalog index %d admitted; signed slots checked, no entitlement context\n", root_code_index);
             return KERN_SUCCESS;
         }
     }

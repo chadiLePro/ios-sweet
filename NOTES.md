@@ -2,6 +2,26 @@
 
 ## ACTIVE: V20 RESTORED; generalized measured root-code catalog in progress
 
+Catalog V3 COMPLETE: E:/A52-iOS16/master-root-code-catalog-v3/catalog.json SHA
+60f22e7b3e5ce8befa592fbde4e55f1a22355aa868d27318762efb82e8e5c1d1.
+Readonlyappliance successfully used stopped distro VHDXro,noload/Python, noWSL
+VM needed.181744readableregularpaths,2790MachO,2786CodeDirectories,
+252793verifiedcodepages,2910signedslots. Two unreadableThai.shortcutresources
+explicitlyexcluded;9nonuserlandinputs excluded(5kext,4Metalarchives).
+All requestedserviceidentitiespresent; noCMS/exec/UIclaim. backboardliblinkguard
+is LC_LOAD_WEAK_DYLIB, notmandatorydependency. PriorV1scanhostcommitfailed;
+V2stoppedonUnicode; preservedlogs. V3normalizationfallbackrecordsunreadablegaps.
+
+Implemented generatedheader+publicauditJSON, read-onlycatalogtool, AMFIbinary
+search/metadata/rootchecks, applyheaderstaging, relinkerold/staleheaderguard,
+tests/docs. All128hosttests PASS; previousrepoauditPASS (rerunbeforepush).
+ActualCpolicychecksall2786identities+55720hashmutants, signedmetadatafailures,
+wrong/writablemounts, missingCS_VALID andforbiddencapabilities. Corepagechecks
+stayenabled; onlySIGNED/PLATFORMflagsadded. Noentcontext/gettaskmanufacture.
+Newheader changesoverlayto76files: FULL HFS build required, noisolatedoldbase.
+No newcandidate/phonewrite. OriginalBOOT restored. Nextcommit/push/build,
+verify76sourcehashes, QEMU/masterrehash/packageplan15/hardware17, freshreadiness.
+
 Guard collected/restored first attempt. V20 receipt requires_restore=false,
 original_boot_restored=true,protectedhashesunchanged,3CRCentryrecords,boundedROroot
 verified (1validrootrecord). Fresh completephoneBOOT hash matchesoriginal

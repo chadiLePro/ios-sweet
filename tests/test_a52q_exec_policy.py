@@ -43,6 +43,7 @@ class ExecPolicyTests(unittest.TestCase):
 #include <assert.h>
 #include <stdio.h>
 #include "a52q_boot_cache_policy.h"
+#include "a52q_root_code_catalog.h"
 typedef int kern_return_t;
 #define CS_CDHASH_LEN 20
 #define CS_ADHOC 2
@@ -371,6 +372,55 @@ int main(void) {
  assert(a52q_object_proc(&process,key,&object)==KERN_RESOURCE_SHORTAGE && object==NULL);
  copy_failure=0;
  assert(boolean_copies==2); /* no rejected query may construct an object */
+ /* Every measured standalone identity must pass the actual catalog checker.
+    Page and signed-slot hashing are tested by the independent image auditor. */
+ static const uint8_t springboard_pin[20]={
+  0xea,0x63,0x7d,0x6b,0xde,0x7a,0xc2,0xfc,0xdb,0x20,
+  0xb8,0x40,0x3d,0x7f,0xdc,0x10,0xe1,0x5f,0x20,0x6e};
+ unsigned springboard_checked=0;
+ for(unsigned n=0;n<sizeof(a52q_root_code_pins)/sizeof(a52q_root_code_pins[0]);n++) {
+  const struct a52q_root_code_pin *pin=&a52q_root_code_pins[n];
+  memset(&blob,0,sizeof(blob));memcpy(blob.csb_cdhash,pin->cdhash,20);
+  blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=&task;
+  blob.csb_entitlements_blob=pin->xml_bytes?&xml:NULL;
+  blob.csb_der_entitlements_blob=pin->der_bytes?&der:NULL;
+  xml_bytes=pin->xml_bytes;der_bytes=pin->der_bytes;
+  assert(a52q_verified_catalog_blob(&blob)==(int)n);
+  for(unsigned byte=0;byte<20;byte++) {
+   blob.csb_cdhash[byte]^=1;assert(a52q_verified_catalog_blob(&blob)<0);blob.csb_cdhash[byte]^=1;
+  }
+  if(pin->xml_bytes) {
+   xml_error=1;assert(a52q_verified_catalog_blob(&blob)<0);xml_error=0;
+   xml_bytes--;assert(a52q_verified_catalog_blob(&blob)<0);xml_bytes++;
+   wrong_output=1;assert(a52q_verified_catalog_blob(&blob)<0);wrong_output=0;
+  }
+  if(pin->der_bytes) {
+   der_error=1;assert(a52q_verified_catalog_blob(&blob)<0);der_error=0;
+   der_bytes--;assert(a52q_verified_catalog_blob(&blob)<0);der_bytes++;
+  }
+  blob.csb_entitlements=(void*)1;assert(a52q_verified_catalog_blob(&blob)<0);blob.csb_entitlements=NULL;
+  const CS_GenericBlob *saved=blob.csb_entitlements_blob;
+  blob.csb_entitlements_blob=pin->xml_bytes?NULL:&xml;
+  assert(a52q_verified_catalog_blob(&blob)<0);blob.csb_entitlements_blob=saved;
+  saved=blob.csb_der_entitlements_blob;blob.csb_der_entitlements_blob=pin->der_bytes?NULL:&der;
+  assert(a52q_verified_catalog_blob(&blob)<0);blob.csb_der_entitlements_blob=saved;
+  blob.csb_flags=CS_ADHOC;assert(a52q_verified_catalog_blob(&blob)<0);blob.csb_flags=CS_VALID|CS_ADHOC;
+  ro.flags=MNT_ROOTFS;assert(a52q_verified_catalog_blob(&blob)<0);ro.flags=MNT_ROOTFS|MNT_RDONLY;
+  task.mount=&other;assert(a52q_verified_catalog_blob(&blob)<0);task.mount=&ro;
+  task.type=0;assert(a52q_verified_catalog_blob(&blob)<0);task.type=VREG;
+  full_root=0;assert(a52q_verified_catalog_blob(&blob)<0);full_root=1;
+  if(!memcmp(pin->cdhash,springboard_pin,20)) {
+   assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
+   assert(blob.csb_platform_binary && (blob.csb_flags&(CS_SIGNED|CS_PLATFORM_BINARY))==(CS_SIGNED|CS_PLATFORM_BINARY));
+   assert(!(blob.csb_flags&4)); /* no manufactured get-task-allow */
+   struct fake_proc ui={CS_VALID|CS_SIGNED,&blob};
+   assert(a52q_bool_proc(&ui,"com.apple.private.bindfs-allow")==KERN_DENIED);
+   assert(a52q_bool_proc(&ui,"com.apple.private.IOSurface.protected-access")==KERN_DENIED);
+   caller=&ui;assert(!a52q_boot_cache_client_allowed());caller=NULL;
+   springboard_checked++;
+  }
+ }
+ assert(springboard_checked==1);
  puts("PASS: exact kernel policy, all 44 cache pins and 880 changed hashes");
  return 0;
 }

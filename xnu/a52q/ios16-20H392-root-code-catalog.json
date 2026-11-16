@@ -1,0 +1,123 @@
+{
+  "format": "a52q-root-code-catalog-v1",
+  "build": "20H392",
+  "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
+  "catalog_sha256": "60f22e7b3e5ce8befa592fbde4e55f1a22355aa868d27318762efb82e8e5c1d1",
+  "generated_header_sha256": "047ff6668d497d1d5ee1eab2746dfaa333005b975b9b5c850710ce4ec94af3d3",
+  "regular_readable_paths": 181744,
+  "measured_files": 2790,
+  "code_identities": 2786,
+  "verified_code_pages": 252793,
+  "verified_signed_metadata_slots": 2910,
+  "unreadable_paths": [
+    "/System/Library/PrivateFrameworks/WorkflowKit.framework/th.lproj/DefaultShortcuts/0C6A13DC-9084-4A3D-B056-D1C456F011B0/\u0e04\u0e33\u0e2a\u0e31\u0e48\u0e07\u0e25\u0e31\u0e14\u0e04\u0e37\u0e2d\u0e2d\u0e30\u0e44\u0e23.shortcut",
+    "/System/Library/PrivateFrameworks/WorkflowKit.framework/th.lproj/DefaultShortcuts/1401D3FE-B4C5-4DDA-96EE-B149258AD492/\u0e04\u0e33\u0e2a\u0e31\u0e48\u0e07\u0e25\u0e31\u0e14 Shazam.shortcut"
+  ],
+  "excluded": [
+    {
+      "path": "/System/Library/Extensions/ASIOKit.kext/ASIOKit",
+      "reason": "unsupported Mach-O file type"
+    },
+    {
+      "path": "/System/Library/Extensions/AppleGameControllerPersonality.kext/AppleGameControllerPersonality",
+      "reason": "unsupported Mach-O file type"
+    },
+    {
+      "path": "/System/Library/Extensions/AppleUserConsent.kext/AppleUserConsent",
+      "reason": "unsupported Mach-O file type"
+    },
+    {
+      "path": "/System/Library/Extensions/AppleUserConsent.kext/AppleUserConsent_development",
+      "reason": "unsupported Mach-O file type"
+    },
+    {
+      "path": "/System/Library/Extensions/lifs.kext/lifs",
+      "reason": "unsupported Mach-O file type"
+    },
+    {
+      "path": "/System/Library/Frameworks/CoreImage.framework/photo_style_archive_bin.metallib",
+      "reason": "need a thin ARM64 Mach-O with valid commands"
+    },
+    {
+      "path": "/System/Library/Frameworks/CoreImage.framework/portrait_filters_archive_bin.metallib",
+      "reason": "need a thin ARM64 Mach-O with valid commands"
+    },
+    {
+      "path": "/System/Library/Frameworks/CoreImage.framework/portrait_filters_fullsize_archive_bin.metallib",
+      "reason": "need a thin ARM64 Mach-O with valid commands"
+    },
+    {
+      "path": "/System/Library/Frameworks/CoreImage.framework/redeye_repair_archive_bin.metallib",
+      "reason": "need a thin ARM64 Mach-O with valid commands"
+    }
+  ],
+  "selected_identities": {
+    "/sbin/launchd": {
+      "sha256": "12370e5ee35bf28ae479b6c4b4455f4f4693ab803e37c5eb3032537c18cac61c",
+      "cdhashes": [
+        "b65c36c9f5b287a6a8f5ca83d9427fb55ef04f4e"
+      ]
+    },
+    "/usr/lib/dyld": {
+      "sha256": "5806834564fe6462ae981d0915d612b1eb2f6f168822b5d278bee56254933757",
+      "cdhashes": [
+        "684d847c40e6e873eeaec693011d4d997a869d2a"
+      ]
+    },
+    "/usr/libexec/xpcproxy": {
+      "sha256": "a97bc59d024c3b7fcf293aa6ef2fa75b60ef7220b2546ab4382adcbe78ddbfec",
+      "cdhashes": [
+        "f7f090b0a9b94dc944026136fc6154372763c846"
+      ]
+    },
+    "/usr/libexec/xpcroleaccountd": {
+      "sha256": "3b19c8750ecc646cf08f6d2250c747f3df3c0c81545dd777189edac3f8199255",
+      "cdhashes": [
+        "f252e59e3f3647f3eae87e9b23b31594f4cca2fb"
+      ]
+    },
+    "/usr/sbin/notifyd": {
+      "sha256": "f2b0b41392d751ea64b7e99df43657c00ea5c9ad3526d2d89c8b7de26c9ee4d2",
+      "cdhashes": [
+        "99a69e0de842615015efbb93cc49d8c22ae15bc8"
+      ]
+    },
+    "/usr/libexec/configd": {
+      "sha256": "06b0330ef3a40bb648c00cc63ce3ab0a59b51d8dd4734b33143edd07ad0a1539",
+      "cdhashes": [
+        "b8cffb2848e5b1680e84f52b7e5edb58a7694371"
+      ]
+    },
+    "/usr/libexec/backboardd": {
+      "sha256": "7aa6f8bf5ea2c3634fb8c8916a4e9c3c84508de78eccf57ca65c1ae4f676267c",
+      "cdhashes": [
+        "89e6328541c2e37522d90fa4a693c746825b22a8"
+      ]
+    },
+    "/System/Library/CoreServices/SpringBoard.app/SpringBoard": {
+      "sha256": "ea835980610a95591fb349bca077840fab7bdd663efaa11ef054d91bc2125475",
+      "cdhashes": [
+        "ea637d6bde7ac2fcdb20b8403d7fdc10e15f206e"
+      ]
+    },
+    "/usr/libexec/securityd": {
+      "sha256": "844d488d12708ba540b1ab3fd47455ee7f863270e2feda062cf8c787f9381693",
+      "cdhashes": [
+        "1e22d047405821e8c02df2cbee3395f551e2ddf9"
+      ]
+    },
+    "/System/Library/CoreServices/powerd.bundle/powerd": {
+      "sha256": "53e6867ae4d5cf04af3e1223cf3ca913e86ed7ff708d6c75ef404c562c68964c",
+      "cdhashes": [
+        "4b9d94f6c7a5e40096bd92751d071c7e7452ab21"
+      ]
+    },
+    "/usr/libexec/watchdogd": {
+      "sha256": "7951d706d73f906b5e0a139b09c05982385469b46e872d75da5da53c1fc4b1e1",
+      "cdhashes": [
+        "1f2bb1b3c52c52c63b208f48c528c61434e3c13c"
+      ]
+    }
+  },
+  "scope": "local development identity admission only; no CMS trust, entitlement context, runtime or UI claim"
+}
