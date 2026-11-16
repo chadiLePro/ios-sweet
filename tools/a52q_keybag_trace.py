@@ -12,7 +12,7 @@ def decode(data):
         body, crc = match.groups()
         if zlib.crc32(body) != int(crc, 16):
             continue
-        identity = re.match(rb'(open|match)/([1-9][0-9]?) ', body)
+        identity = re.match(rb'(open|match|aks)/([1-9][0-9]?) ', body)
         if not identity or not 1 <= int(identity[2]) <= 80:
             raise ValueError('invalid keybag trace sequence')
         key = (identity[1].decode(), int(identity[2]))

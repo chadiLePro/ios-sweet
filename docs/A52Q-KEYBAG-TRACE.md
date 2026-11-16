@@ -56,3 +56,29 @@ The preserved master was rehashed unchanged. The BOOT-only candidate SHA256 is
 `f754ca8e4d85aca3bd4a851fefc7750408f6adc5bdff8d617e739e37a7c878a0`.
 Packaging binds the kernel and read-only persistent root; no diagnostic RAM root
 is included in the phone payload. Hardware trace results remain pending.
+
+## V22 hardware result
+
+Original BOOT was restored automatically and a fresh complete hash matched the
+saved original. Recovery, DTBO and vbmeta also matched. The installed root was
+rehashed unchanged before the trial, remained read-only, and its BSD window was
+confirmed by two valid records. Three XNU entry records passed CRC validation.
+
+The first KeyStore match returned:
+
+```
+match/1 class=AppleKeyStore result=0xe00002f0 found=none
+match/2 class=AppleKeyStore result=0xe00002f0 found=none
+```
+
+Those records have three and two valid copies respectively. The target XNU
+IOReturn header defines this value as `kIOReturnNotFound`. No system-bag file
+open was observed. Timezone opens returned Darwin ENOENT; they do not establish
+a keybag permission or read-only failure. Some other console text is corrupted
+and has not been repaired or treated as an exact numerical result.
+
+Static inspection of the verified 20H392 keybagd distinguishes the failed match
+from its wrapper result: without a connection the wrapper retains generic
+`kIOReturnError`, whereas its disk-load branch expects NotFound from the
+system-bag query. The next bounded probe implements discovery and that empty
+query contract only; see [the probe scope](A52Q-KEYSTORE-PROBE.md).

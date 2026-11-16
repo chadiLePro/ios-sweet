@@ -1,14 +1,31 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V22 physically running; BOOT RESTORATION PENDING
+## ACTIVE: V22 restored; CRC-confirmed missing AppleKeyStore provider
 
-Latest V21 result is Apple keybagd failing to load the system bag and requesting
-recovery. It does not prove services, IOMobileFramebuffer or SpringBoard work.
-Saved console: backup/a52q/ios-ufs-v21/console.txt. Original BOOT restored;
-fresh recovery hash on 2026-11-16 again matches
-`d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016`.
-V21 restoration was confirmed before V22 installation; current V22 is active
-and requires restoration after recovery returns.
+V22 completed and C: watcher restored original BOOT. Independent fresh hashes of
+BOOT/recovery/DTBO/vbmeta all match saved originals. Phone recovery; NO restoration
+pending. Result backup/a52q/ios-ufs-v22/keybag-result.json and
+E:/A52-iOS16/keybag-trace-v22-result.json. Console and first capture preserved.
+Three CRC XNU entry copies; RO root window confirmed twice. Exact keybag records:
+match/1 class=AppleKeyStore result=0xe00002f0 found=none (3 valid copies)
+match/2 class=AppleKeyStore result=0xe00002f0 found=none (2 valid copies).
+No system-bag open observed. Other CRC opens show timezone files ENOENT, not
+proof of keybag EROFS. Static verified 20H392 wrapper starts with generic
+0xe00002bc if connection unavailable; its get-system selector14 is not reached
+without a connection. Apple keybagd subsequently requests recovery; no early
+boot complete or services/UI proven in V22. First hardware prerequisite is a
+software KeyStore interface; do NOT import SWEET's constant-unlocked fake bag.
+
+New host implementation in A52PlatformExpert.cpp only (no overlay changes):
+empty AppleKeyStore discovery probe for rd=a52ios0. Connection type0/selector0
+handshake; system query14 returns truthful NotFound without output handle;
+every other method Unsupported. No unlocked bag, crypto, filesystem write or
+boot-task bypass. Owner task retained/rechecked; close state, shape/descriptors/
+async rejected. Keybagd-only CRC aks records, max80. Decoder adds aks kind.
+Native actual C++ probe tests including object/task lifetime pass; all132A52
+tests PASS. Need repo checks, commit/push, isolated platform rebuild using full
+base43909951214, source provenance/QEMU/package before next hardware candidate.
+No new phone trial yet; original BOOT remains restored. Docs A52Q-KEYSTORE-PROBE.md.
 
 Corrected diagnostic source a9783bdd96893c39b00caa86c35b97018c8b510a.
 131 host tests and Linux CI 43909878860 passed. Full HFS kernel build
@@ -29,24 +46,11 @@ Independent report E:/A52-iOS16/keybag-trace-v22-candidate.json; completed host
 pipeline research/keybag-trace-build-package-v2-retry.log. Helper now binds
 E:/A52-iOS16/ios-root-plan-v16.json. No diagnostic RAM root in phone payload.
 
-User freshly confirmed readiness. Launcher session35672 completed successfully:
-full installed-root hash and protected partitions checked, candidate BOOT written
-and fully read back, native Samsung reboot USB departure confirmed. C: watcher
-PID14868 (research/watch_ios_ufs_v22_restore.py) is waiting for recovery.
-Receipt requires_restore=true, original_boot_restored=false,
-reboot_disconnect_observed=true. Logs backup/a52q/ios-ufs-v22/watcher*.log.
-User told five full minutes after confirmed departure, then TWRP return with USB.
-Do NOT select System/format. Next action on return: inspect watcher, collect first
-console and restore original BOOT, then freshly rehash whole BOOT and protected
-partitions. Do not start a second install. Actual keybag trace result UNKNOWN.
-Launcher research/start_keybag_trace_trial.py; guard
-research/watch_ios_ufs_v22_restore.py; receipt backup/a52q/ios-ufs-v22/receipt.json.
-Temporary BOOT only /dev/block/sda19 [0,100663296); installed UFS root remains
-read-only and unchanged. No data-volume write or formatting included.
-Notify five-minute return only after actual native reboot USB departure; on
-TWRP return collect/restore first and independently rehash full original BOOT.
-Decode saved console with tools/a52q_keybag_trace.py and retain CRC-valid original
-status/path records. No KeyStore acceptance, synthetic success or reboot bypass.
+V22 launcher completed install/readback and native reboot; guard PID14868
+collected and restored successfully. Its receipt now requires_restore=false,
+original_boot_restored=true. No new phone trial ready or authorized for immediate
+reboot; fresh physical readiness required for a new candidate. No writable data
+volume installed or approved. Root still read-only and unchanged.
 
 Exact master keybagd SHA256
 747271703b7aff98420ed23788a362716025506d8d0ba8c703fb78e5b3ec1b9b,

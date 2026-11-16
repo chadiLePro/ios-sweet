@@ -7,6 +7,8 @@
 #include <kern/task.h>
 #include <kern/task_ref.h>
 #include <kern/thread.h>
+#include <sys/proc.h>
+#include <pexpert/pexpert.h>
 #include "a52q_boot_cache_policy.h"
 
 extern "C" int a52q_boot_cache_client_allowed(void);
@@ -114,6 +116,167 @@ IOReturn AppleMobileFileIntegrity::newUserClient(task_t task, void *security,
     return kIOReturnSuccess;
 }
 
+/* A52Q_EMPTY_KEYSTORE_BEGIN
+ * V22: keybagd cannot discover AppleKeyStore. This empty discovery probe lets
+ * its real no-bag path run. It is NOT an unlocked bag, keychain or SEP emulator.
+ * No file, key, bag handle, lock state or crypto operation is implemented.
+ */
+static IOReturn
+a52q_aks_probe_request(uint32_t selector, IOExternalMethodArguments *a,
+    bool owner, unsigned *state)
+{
+    if (!owner) return kIOReturnNotPrivileged;
+    if (selector != 0 && selector != 14) return kIOReturnUnsupported;
+    if (!a || a->version != kIOExternalMethodArgumentsCurrentVersion ||
+        a->asyncWakePort != MACH_PORT_NULL || a->asyncReferenceCount ||
+        a->structureInputSize || a->structureOutputSize ||
+        a->structureInputDescriptor || a->structureOutputDescriptor ||
+        a->structureOutputDescriptorSize || a->structureVariableOutputData ||
+        a->scalarInputCount) return kIOReturnBadArgument;
+    if (selector == 0) {
+        if (a->scalarOutputCount) return kIOReturnBadArgument;
+        unsigned expected = 0;
+        if (!__atomic_compare_exchange_n(state, &expected, 1U, false,
+            __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) return kIOReturnNotOpen;
+        return kIOReturnSuccess; /* Only an actual per-connection handshake. */
+    }
+    if (a->scalarOutputCount != 1 || !a->scalarOutput) return kIOReturnBadArgument;
+    if (__atomic_load_n(state, __ATOMIC_ACQUIRE) != 1) return kIOReturnNotOpen;
+    /* Leave output handle untouched: no bag exists and none was loaded. */
+    return kIOReturnNotFound;
+}
+
+static void
+a52q_aks_probe_trace(uint32_t selector, IOReturn result)
+{
+    char name[32];
+    proc_selfname(name, sizeof(name));
+    if (strcmp(name, "keybagd")) return;
+    static unsigned events;
+    unsigned sequence = __atomic_fetch_add(&events, 1U, __ATOMIC_RELAXED) + 1U;
+    if (sequence > 80) return;
+    char body[120];
+    snprintf(body, sizeof(body), "aks/%u selector=%u result=0x%08x bag=absent",
+        sequence, selector, (unsigned)result);
+    uint32_t crc = 0xffffffffU;
+    for (unsigned i = 0; body[i]; i++) {
+        crc ^= (uint8_t)body[i];
+        for (unsigned bit = 0; bit < 8; bit++)
+            crc = (crc >> 1) ^ (0xedb88320U & (0U - (crc & 1)));
+    }
+    for (unsigned copy = 0; copy < 3; copy++)
+        IOLog("A52KB1 %s %08x\n", body, crc ^ 0xffffffffU);
+}
+
+class A52EmptyKeyStoreUserClient : public IOUserClient {
+    OSDeclareDefaultStructors(A52EmptyKeyStoreUserClient);
+    task_t ownerTask = TASK_NULL;
+    unsigned sessionState = 0; /* fresh/open/closed; never a bag handle */
+public:
+    using IOUserClient::initWithTask;
+    bool initWithTask(task_t, void *, UInt32, OSDictionary *) APPLE_KEXT_OVERRIDE;
+    void free(void) APPLE_KEXT_OVERRIDE;
+    IOReturn clientClose(void) APPLE_KEXT_OVERRIDE;
+    IOReturn externalMethod(uint32_t, IOExternalMethodArguments *,
+        IOExternalMethodDispatch *, OSObject *, void *) APPLE_KEXT_OVERRIDE;
+};
+OSDefineMetaClassAndStructors(A52EmptyKeyStoreUserClient, IOUserClient);
+
+bool A52EmptyKeyStoreUserClient::initWithTask(task_t task, void *security,
+    UInt32 type, OSDictionary *properties __unused)
+{
+    if (type || task == TASK_NULL || task != current_task()) return false;
+    if (!IOUserClient::initWithTask(task, security, type)) return false;
+    ownerTask = task;
+    task_reference(ownerTask);
+    return true;
+}
+
+void A52EmptyKeyStoreUserClient::free(void)
+{
+    if (ownerTask != TASK_NULL) {
+        task_deallocate(ownerTask);
+        ownerTask = TASK_NULL;
+    }
+    IOUserClient::free();
+}
+
+IOReturn A52EmptyKeyStoreUserClient::clientClose(void)
+{
+    __atomic_store_n(&sessionState, 2U, __ATOMIC_RELEASE);
+    terminate();
+    return kIOReturnSuccess;
+}
+
+IOReturn A52EmptyKeyStoreUserClient::externalMethod(uint32_t selector,
+    IOExternalMethodArguments *a, IOExternalMethodDispatch *dispatch __unused,
+    OSObject *target __unused, void *reference __unused)
+{
+    IOReturn result = a52q_aks_probe_request(selector, a,
+        ownerTask != TASK_NULL && current_task() == ownerTask, &sessionState);
+    a52q_aks_probe_trace(selector, result);
+    return result;
+}
+
+/* Matching compatibility name only. No Apple hardware is claimed. */
+class AppleKeyStore : public IOService {
+    OSDeclareDefaultStructors(AppleKeyStore);
+public:
+    IOReturn newUserClient(task_t, void *, UInt32, OSDictionary *, IOUserClient **) APPLE_KEXT_OVERRIDE;
+    IOReturn newUserClient(task_t, void *, UInt32, IOUserClient **) APPLE_KEXT_OVERRIDE;
+};
+OSDefineMetaClassAndStructors(AppleKeyStore, IOService);
+
+IOReturn AppleKeyStore::newUserClient(task_t task, void *security,
+    UInt32 type, IOUserClient **handler)
+{
+    return newUserClient(task, security, type, nullptr, handler);
+}
+
+IOReturn AppleKeyStore::newUserClient(task_t task, void *security,
+    UInt32 type, OSDictionary *properties, IOUserClient **handler)
+{
+    if (!handler) return kIOReturnBadArgument;
+    *handler = nullptr;
+    if (type) return kIOReturnUnsupported;
+    if (task == TASK_NULL || task != current_task()) return kIOReturnNotPrivileged;
+    A52EmptyKeyStoreUserClient *client = new A52EmptyKeyStoreUserClient;
+    if (!client) return kIOReturnNoMemory;
+    if (!client->initWithTask(task, security, type, properties) || !client->attach(this)) {
+        client->release();
+        return kIOReturnNotPrivileged;
+    }
+    if (!client->start(this)) {
+        client->detach(this);
+        client->release();
+        return kIOReturnNoResources;
+    }
+    *handler = client;
+    return kIOReturnSuccess;
+}
+
+static void
+a52q_aks_probe_register(IOService *platform)
+{
+    char root[32] = {0};
+    if (!PE_parse_boot_argn("rd", root, sizeof(root))) return;
+    root[sizeof(root) - 1] = '\0';
+    if (strcmp(root, "a52ios0")) return; /* No provider for diagnostic RAM roots. */
+    AppleKeyStore *probe = new AppleKeyStore;
+    if (!probe) return;
+    bool attached = false;
+    if (probe->init() && (attached = probe->attach(platform)) && probe->start(platform)) {
+        probe->setProperty("A52QEmptyKeyStoreProbe", kOSBooleanTrue);
+        probe->registerService();
+        IOLog("A52Q KeyStore: empty discovery probe registered; no keybags or crypto\n");
+    } else {
+        if (attached) probe->detach(platform);
+        IOLog("A52Q KeyStore: empty discovery probe registration failed\n");
+    }
+    probe->release();
+}
+/* A52Q_EMPTY_KEYSTORE_END */
+
 /* C AMFI callback bridge. OSBoolean's public singleton API preserves the
  * ownership/type expected by IOUserClient::copyClientEntitlement. This
  * function makes no policy decision; the C caller checks the exact signed
@@ -156,6 +319,7 @@ bool A52PlatformExpert::start(IOService *provider)
         }
         cacheService->release();
     }
+    a52q_aks_probe_register(this);
     IOLog("A52Q platform: registered\n");
     return true;
 }
