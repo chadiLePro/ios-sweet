@@ -1,13 +1,14 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V21 restored; V22 keybag diagnostic candidate checked, readiness pending
+## ACTIVE: V22 physically running; BOOT RESTORATION PENDING
 
 Latest V21 result is Apple keybagd failing to load the system bag and requesting
 recovery. It does not prove services, IOMobileFramebuffer or SpringBoard work.
 Saved console: backup/a52q/ios-ufs-v21/console.txt. Original BOOT restored;
 fresh recovery hash on 2026-11-16 again matches
 `d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016`.
-ADB reports recovery. No restoration pending; no V22 phone trial started.
+V21 restoration was confirmed before V22 installation; current V22 is active
+and requires restoration after recovery returns.
 
 Corrected diagnostic source a9783bdd96893c39b00caa86c35b97018c8b510a.
 131 host tests and Linux CI 43909878860 passed. Full HFS kernel build
@@ -28,7 +29,16 @@ Independent report E:/A52-iOS16/keybag-trace-v22-candidate.json; completed host
 pipeline research/keybag-trace-build-package-v2-retry.log. Helper now binds
 E:/A52-iOS16/ios-root-plan-v16.json. No diagnostic RAM root in phone payload.
 
-Fresh physical readiness requested for V22; do NOT install before reply.
+User freshly confirmed readiness. Launcher session35672 completed successfully:
+full installed-root hash and protected partitions checked, candidate BOOT written
+and fully read back, native Samsung reboot USB departure confirmed. C: watcher
+PID14868 (research/watch_ios_ufs_v22_restore.py) is waiting for recovery.
+Receipt requires_restore=true, original_boot_restored=false,
+reboot_disconnect_observed=true. Logs backup/a52q/ios-ufs-v22/watcher*.log.
+User told five full minutes after confirmed departure, then TWRP return with USB.
+Do NOT select System/format. Next action on return: inspect watcher, collect first
+console and restore original BOOT, then freshly rehash whole BOOT and protected
+partitions. Do not start a second install. Actual keybag trace result UNKNOWN.
 Launcher research/start_keybag_trace_trial.py; guard
 research/watch_ios_ufs_v22_restore.py; receipt backup/a52q/ios-ufs-v22/receipt.json.
 Temporary BOOT only /dev/block/sda19 [0,100663296); installed UFS root remains
