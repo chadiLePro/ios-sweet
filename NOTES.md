@@ -1,6 +1,33 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V21 catalog trial RUNNING; original BOOT restoration PENDING
+## ACTIVE: V21 RESTORED; keybagd fatal system-bag failure; bounded trace under validation
+
+Guardcollected/restoredfirstattempt; freshcompletephoneBOOTSHA
+d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016 matched,
+protectedhashesunchanged,3CRCentryrecords,ROrootwindowverified2copies.
+PhoneTWRP, NO restorationpending. E:/A52-iOS16/root-catalog-v21-result.json;
+backup/a52q/ios-ufs-v21/console.txt preserved. Cataloghelpersseputil,
+mobile_obliterator,MSUEarlyBootTask,keybagd actuallyran. FIPSallPASSED181ms.
+Keybagd reportsFATALKEYBAGERROR failedloadsystembag, requestsrecovery. Laterpanic
+Halt/RestartTimedOut issecondaryshutdownfailure. ThistrialdidNOT reachearlyboot
+completeorservices/UI. EarlierV20earlycomplete wasdifferentadmissionpolicy.
+
+Exactmasterkeybagd audit E:/A52-iOS16/master-keybagd-audit-v1/audit.json:
+275504B SHA747271703b7aff98420ed23788a362716025506d8d0ba8c703fb78e5b3ec1b9b,
+matchesfullcatalog;a8815e1634a055bd5ae09431eb7492cdcf3fd9b9 CDhash.
+Masterls showsno/private/var/keybags. StaticIKcallsAppleKeyStore; exactfirst
+failureAPI/errno stillunobserved. DoNOT inferonlySEP/storage orfakekeybag/success.
+Masterunchanged; no writablevarvolumewriteapproved/installed.
+
+Newkeybag_trace.py WIP applies2diagnostic-onlychanges tobsd/vfs/vfs_syscalls.c
+and iokit/Kernel/IOUserClient.cpp fromexact43897768441buildtree. A52keybagdonly,
+boundedpathsnapshot+all7openreturnpaths unchanged; matchingresultobservedwithout
+newquery/behavior.80events/kind,CRC32triplicates, tools/a52q_keybag_trace.pydecoder.
+Hosthelper/CRC/nonA52-return-preservation3testsPASS; needfullsuite+sourceproof,
+commit/push/fullHFSbuild because2newcompiledunits; noV22trialstarted.
+SWEETcodepreserved,AMFIcatalog/UFS/display/memory/pstoreimplementationunchanged.
+
+## Historical V21 catalog trial — restored above
 
 Launcher80083 finishedsuccessfully: installed16GiBroot/protectedhasheschecked,
 onlyBOOT written/readback, actualnativeSamsung rebootadbUSBdepartureconfirmed.

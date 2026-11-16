@@ -14,6 +14,7 @@ import struct
 import zlib
 import static_init
 import exit_trace
+import keybag_trace
 
 HERE = Path(__file__).resolve().parent
 
@@ -60,6 +61,8 @@ def apply(root, filesystem='mockfs'):
         changes[name] = text
     changes[static_init.TARGET] = static_init.transform(read(static_init.TARGET))
     changes[exit_trace.TARGET] = exit_trace.transform(read(exit_trace.TARGET))
+    changes[keybag_trace.VFS] = keybag_trace.vfs(read(keybag_trace.VFS))
+    changes[keybag_trace.IOKIT] = keybag_trace.iokit(read(keybag_trace.IOKIT))
     replace('bsd/kern/sweet_amfi.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
             '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_amfi.c"\n#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
     changes['bsd/kern/a52q_amfi.c'] = (HERE / 'a52q_amfi.c').read_text()

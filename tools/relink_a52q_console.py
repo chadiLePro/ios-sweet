@@ -117,6 +117,14 @@ def main():
     # This transform changes kern_exit.o, outside every supported leaf. Never
     # reuse an older archive or silently ignore a changed diagnostic hook.
     exit_trace = root / 'xnu/a52q/exit_trace.py'
+    keybag_trace = root / 'xnu/a52q/keybag_trace.py'
+    if keybag_trace.exists():
+        try:
+            old = run('git', 'show', a.base_sha + ':xnu/a52q/keybag_trace.py', cwd=root)
+        except subprocess.CalledProcessError:
+            raise SystemExit('full build required: base predates keybag diagnostics')
+        if old != keybag_trace.read_bytes():
+            raise SystemExit('full build required: keybag diagnostic transform changed')
     if exit_trace.exists():
         try:
             old = run('git', 'show', a.base_sha + ':xnu/a52q/exit_trace.py', cwd=root)
