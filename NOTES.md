@@ -2,6 +2,20 @@
 
 ## ACTIVE: V21 RESTORED; keybagd fatal system-bag failure; bounded trace under validation
 
+Correctedtrace source a9783bdd96893c39b00caa86c35b97018c8b510a;
+131localtests+LinuxCI43909878860PASS. FullHFS43909951214 attempt1FAILEDbeforeany
+steps: annotation`The job was not acquired by Runner of type hosted even after
+multiple attempts`. Retriedfailedjob once. Attempt2 nowIN_PROGRESS onactualMac,
+job133463859264. Source1stcompilerstrstrfailure43907188206 remainsCANCELLED.
+NOtracecandidateyet. Hostpipeline research/finish_keybag_trace_artifacts_v2.py
+restarted session88296, stdout research/keybag-trace-build-package-v2-retry.log.
+Itwillverify78overlayfiles againstfullcatalog43897768441, exactkernelQEMU,
+wholemasterrehash, plan16/hardware18 packaging. ExpectedmapalreadyPASS.
+Old99989/firstv2pipelineendedfailure; useonlyretrylog/session.
+Inactive V22launcher/start_keybag_trace_trial.py+watch_ios_ufs_v22_restore.py
+reviewedv22receipt/hardware18 paths. HelperSTILLplan15 untilcandidatechecked.
+Freshphysicalreadinessrequiredafterchecks; phoneoriginalBOOTrestored,nopendingwrite.
+
 Traceimplementation committed ea3c801f6771caaf17a60940165b42e53bb23ef4.
 131localtests+repocheckPASS;LinuxCI43907123341SUCCESS. FullHFS43907188206 CANCELLED
 afterlivecompiler caughtundeclaredstrstr inVFSheaders. NOsuccessfulbuild/candidate

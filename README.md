@@ -1,9 +1,11 @@
 # ios-sweet
 
 Experimental Galaxy A52 **4G** bring-up is documented separately in
-[docs/A52Q.md](docs/A52Q.md). On the verified SM-A525F/DS, XNU boots a RAM-disk
-diagnostic as PID 1 with repeated user-mode heartbeats. Original BOOT is restored.
-**Apple's iOS userland/UI has not booted on the A52.** The Redmi instructions
+[docs/A52Q.md](docs/A52Q.md). On the verified SM-A525F/DS, XNU mounts the full
+read-only iOS filesystem from UFS and executes Apple's launchd and early boot
+helpers. The current blocker is keybag initialization; original BOOT is restored
+after each trial. **SpringBoard has not rendered on the A52.** Guarded RGB output
+is verified; the iOS display/composition pipeline remains unproven. The Redmi instructions
 below do not apply to Samsung Download Mode, hardware drivers or partition layouts.
 
 **Apple's iOS 16 running on a Redmi Note 10 Pro.**
