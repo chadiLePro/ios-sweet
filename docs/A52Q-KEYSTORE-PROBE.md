@@ -37,3 +37,23 @@ Working AMFI, UFS, mount/FIPS, display, memory reservations and pstore code are
 unchanged. The full persistent root stays read-only and unmodified. A future
 writable data volume or real software bag format still needs independent
 implementation, validation and the concrete storage-write approval.
+
+## Build validation
+
+Source `205c4be52e9305a9d4cb1407402b8d893bde93d8` passed 132 native A52 tests,
+repository checks and Linux CI 43922073263. Isolated platform rebuild
+43922095033 succeeded using the verified 78-file full kernel 43909951214.
+The only recompiled unit was `SweetPlatformExpert.cpp`, containing this A52-only
+implementation. The kernel SHA256 is
+`8b9c189d3b9c10c99f40b634255b79cfc8abe8ee5aae0fdb280e6ba1ff3d7352`.
+Source/architecture/link provenance checks passed. The exact kernel passed its
+QEMU diagnostic fixture with three CRC entry records and seven PID1 heartbeats;
+the empty probe correctly remained unpublished for that RAM root. Apple keybag
+loading and the provider's physical behavior remain unverified.
+
+The master was fully rehashed unchanged before packaging. The checked 96 MiB
+BOOT candidate SHA256 is
+`62f4fc6ba95d8973fa75326fde3a2b83e99a49b97504d92986be928a32971464`.
+It contains the kernel and persistent-root binding, with no diagnostic RAM root.
+The next physical trial remains pending; it changes only BOOT temporarily and
+restores the hash-verified original after recovery returns.

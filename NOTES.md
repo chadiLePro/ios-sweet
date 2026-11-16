@@ -23,8 +23,28 @@ every other method Unsupported. No unlocked bag, crypto, filesystem write or
 boot-task bypass. Owner task retained/rechecked; close state, shape/descriptors/
 async rejected. Keybagd-only CRC aks records, max80. Decoder adds aks kind.
 Native actual C++ probe tests including object/task lifetime pass; all132A52
-tests PASS. Need repo checks, commit/push, isolated platform rebuild using full
-base43909951214, source provenance/QEMU/package before next hardware candidate.
+tests PASS; repo checks PASS. Source commit205c4be52e9305a9d4cb1407402b8d893bde93d8
+pushed. Linux CI43922073263 SUCCESS; isolated platform rebuild43922095033 SUCCESS
+against full base43909951214. Auto mockfs43922073283 cancellation requested.
+Host pipeline research/finish_keystore_probe_artifacts.py session87355 completed
+successfully; use research/keystore-probe-build-package-retry.log. First local
+checker stopped before download on CRLF-vs-git-LF assertion; fixed to canonical LF.
+Source provenance verified. Kernel SHA256
+8b9c189d3b9c10c99f40b634255b79cfc8abe8ee5aae0fdb280e6ba1ff3d7352.
+Exact QEMU passed: 3 CRC entries/7 diagnostic PID1 heartbeats; probe correctly
+not published for diagnostic RAM root. Whole master rehash unchanged;
+plan17/hardware19 packaging and research/check_keystore_probe_candidate.py PASS.
+New BOOT SHA256 62f4fc6ba95d8973fa75326fde3a2b83e99a49b97504d92986be928a32971464;
+E:/A52-iOS16/keystore-probe-v23-candidate.json. Phone payload has full persistent
+RO root, no diagnostic RAM root. Existing AMFI source SHA9a18...435c unchanged.
+
+Fresh readiness requested for V23, do NOT install until user replies. Launcher
+research/start_keystore_probe_trial.py, guard research/watch_ios_ufs_v23_restore.py,
+receipt backup/a52q/ios-ufs-v23/receipt.json. Backend now binds plan17. Only BOOT
+[0,100663296), no other storage write or formatting. Wait for actual native reboot
+USB departure before issuing five-minute return instruction. On recovery return
+collect first log/restore original and fresh hash verification FIRST. Decode aks
+CRC records without interpreting a NotFound response as working key storage.
 No new phone trial yet; original BOOT remains restored. Docs A52Q-KEYSTORE-PROBE.md.
 
 Corrected diagnostic source a9783bdd96893c39b00caa86c35b97018c8b510a.
