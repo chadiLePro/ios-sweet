@@ -1,60 +1,52 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V21 RESTORED; keybagd fatal system-bag failure; bounded trace under validation
+## ACTIVE: V21 restored; V22 keybag diagnostic candidate checked, readiness pending
 
-Correctedtrace source a9783bdd96893c39b00caa86c35b97018c8b510a;
-131localtests+LinuxCI43909878860PASS. FullHFS43909951214 attempt1FAILEDbeforeany
-steps: annotation`The job was not acquired by Runner of type hosted even after
-multiple attempts`. Retriedfailedjob once. Attempt2 nowIN_PROGRESS onactualMac,
-job133463859264. Source1stcompilerstrstrfailure43907188206 remainsCANCELLED.
-NOtracecandidateyet. Hostpipeline research/finish_keybag_trace_artifacts_v2.py
-restarted session88296, stdout research/keybag-trace-build-package-v2-retry.log.
-Itwillverify78overlayfiles againstfullcatalog43897768441, exactkernelQEMU,
-wholemasterrehash, plan16/hardware18 packaging. ExpectedmapalreadyPASS.
-Old99989/firstv2pipelineendedfailure; useonlyretrylog/session.
-Inactive V22launcher/start_keybag_trace_trial.py+watch_ios_ufs_v22_restore.py
-reviewedv22receipt/hardware18 paths. HelperSTILLplan15 untilcandidatechecked.
-Freshphysicalreadinessrequiredafterchecks; phoneoriginalBOOTrestored,nopendingwrite.
+Latest V21 result is Apple keybagd failing to load the system bag and requesting
+recovery. It does not prove services, IOMobileFramebuffer or SpringBoard work.
+Saved console: backup/a52q/ios-ufs-v21/console.txt. Original BOOT restored;
+fresh recovery hash on 2026-11-16 again matches
+`d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016`.
+ADB reports recovery. No restoration pending; no V22 phone trial started.
 
-Traceimplementation committed ea3c801f6771caaf17a60940165b42e53bb23ef4.
-131localtests+repocheckPASS;LinuxCI43907123341SUCCESS. FullHFS43907188206 CANCELLED
-afterlivecompiler caughtundeclaredstrstr inVFSheaders. NOsuccessfulbuild/candidate
-fromthatrun. Removedunnecessarysubstringfilter; verifiedvar/relativepathscovered.
-Needcommit/pushcorrection,newfullHFSrun,updated78fileexpectedmap/provenance,
-QEMU andplan16/hardware18 packaging. Oldhostpipeline99989 watchesCANCELLEDrun;
-willendfailure, doNOTreuse asnewpipeline. Helperstillplan15; noV22started.
+Corrected diagnostic source a9783bdd96893c39b00caa86c35b97018c8b510a.
+131 host tests and Linux CI 43909878860 passed. Full HFS kernel build
+43909951214 attempt 2 SUCCEEDED. Attempt 1 failed hosted-runner allocation;
+earlier 43907188206 was cancelled after the VFS strstr compile error, now fixed.
+All 78 archived overlay files match the expected source; only the VFS open and
+IOKit matching diagnostic units differ from full catalog build 43897768441.
+AMFI, UFS, display, protected memory and pstore behavior remain unchanged.
+Kernel SHA256 a88f7cde889c19dff7b34932557332d54fde25c09a7008ac9b726734a91bbd88.
+Exact kernel QEMU passed: three CRC entry copies and seven diagnostic PID1
+heartbeats. QEMU did NOT execute Apple's keybagd or validate Apple userland.
 
-Additionalupstreamaudit:0038SWEETKeyStore hasselector0/14 ABIconsistentwithexact
-keybagd disassembly (systembagquery14), butreturnsconstantunlockedhandle and
-doesNOTimplementsave/load/wrapkeycrypto. It isnotworkingsoftwarekeychain.
-0046+0068provideCPU-backedIOSurface/IOMFBAPIcode,60Hz16667ussoftwaretimer,
-stillSWEET-only; A52portwouldneedguardedmapping/MDSSrefreshadapter andphysical
-accessrestrictions. DoNOT claimthesealreadyworkonA52 orpatchnonexistent120Hzcheck.
+Master image fully rehashed unchanged, plan16/hardware18 packaged and checked by
+research/check_keybag_trace_candidate.py. Candidate:
+shim/out/a52q-ios-ufs-hardware-v18/build/a52q-ios-ufs-UNTESTED.img
+BOOT SHA256 f754ca8e4d85aca3bd4a851fefc7750408f6adc5bdff8d617e739e37a7c878a0.
+Independent report E:/A52-iOS16/keybag-trace-v22-candidate.json; completed host
+pipeline research/keybag-trace-build-package-v2-retry.log. Helper now binds
+E:/A52-iOS16/ios-root-plan-v16.json. No diagnostic RAM root in phone payload.
 
-Guardcollected/restoredfirstattempt; freshcompletephoneBOOTSHA
-d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016 matched,
-protectedhashesunchanged,3CRCentryrecords,ROrootwindowverified2copies.
-PhoneTWRP, NO restorationpending. E:/A52-iOS16/root-catalog-v21-result.json;
-backup/a52q/ios-ufs-v21/console.txt preserved. Cataloghelpersseputil,
-mobile_obliterator,MSUEarlyBootTask,keybagd actuallyran. FIPSallPASSED181ms.
-Keybagd reportsFATALKEYBAGERROR failedloadsystembag, requestsrecovery. Laterpanic
-Halt/RestartTimedOut issecondaryshutdownfailure. ThistrialdidNOT reachearlyboot
-completeorservices/UI. EarlierV20earlycomplete wasdifferentadmissionpolicy.
+Fresh physical readiness requested for V22; do NOT install before reply.
+Launcher research/start_keybag_trace_trial.py; guard
+research/watch_ios_ufs_v22_restore.py; receipt backup/a52q/ios-ufs-v22/receipt.json.
+Temporary BOOT only /dev/block/sda19 [0,100663296); installed UFS root remains
+read-only and unchanged. No data-volume write or formatting included.
+Notify five-minute return only after actual native reboot USB departure; on
+TWRP return collect/restore first and independently rehash full original BOOT.
+Decode saved console with tools/a52q_keybag_trace.py and retain CRC-valid original
+status/path records. No KeyStore acceptance, synthetic success or reboot bypass.
 
-Exactmasterkeybagd audit E:/A52-iOS16/master-keybagd-audit-v1/audit.json:
-275504B SHA747271703b7aff98420ed23788a362716025506d8d0ba8c703fb78e5b3ec1b9b,
-matchesfullcatalog;a8815e1634a055bd5ae09431eb7492cdcf3fd9b9 CDhash.
-Masterls showsno/private/var/keybags. StaticIKcallsAppleKeyStore; exactfirst
-failureAPI/errno stillunobserved. DoNOT inferonlySEP/storage orfakekeybag/success.
-Masterunchanged; no writablevarvolumewriteapproved/installed.
-
-Newkeybag_trace.py WIP applies2diagnostic-onlychanges tobsd/vfs/vfs_syscalls.c
-and iokit/Kernel/IOUserClient.cpp fromexact43897768441buildtree. A52keybagdonly,
-boundedpathsnapshot+all7openreturnpaths unchanged; matchingresultobservedwithout
-newquery/behavior.80events/kind,CRC32triplicates, tools/a52q_keybag_trace.pydecoder.
-Hosthelper/CRC/nonA52-return-preservation3testsPASS; needfullsuite+sourceproof,
-commit/push/fullHFSbuild because2newcompiledunits; noV22trialstarted.
-SWEETcodepreserved,AMFIcatalog/UFS/display/memory/pstoreimplementationunchanged.
+Exact master keybagd SHA256
+747271703b7aff98420ed23788a362716025506d8d0ba8c703fb78e5b3ec1b9b,
+CDhash a8815e1634a055bd5ae09431eb7492cdcf3fd9b9, 275504 bytes; matches catalog.
+Audit E:/A52-iOS16/master-keybagd-audit-v1/audit.json. Master has no
+/private/var/keybags. Disassembly shows system-bag selector 14; a failed KeyStore
+connection can yield generic 0xe00002bc before disk-load handling, but actual
+failing operation/result remains unobserved until V22. Do not infer it from
+corrupt text. SWEET AppleKeyStore stub does not implement working save/load/
+wrap crypto and must not be described as a software keychain.
 
 ## Historical V21 catalog trial — restored above
 

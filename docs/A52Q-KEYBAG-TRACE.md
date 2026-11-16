@@ -41,3 +41,18 @@ The next BOOT-only trial should identify a missing path, a read-only failure or
 an unavailable provider. It does not supply software KeyStore compatibility,
 writable var, graphics or a working keychain. A future persistent var write still
 requires its concrete layout and separate approval; no such write is included.
+
+## Checked candidate, hardware result pending
+
+Corrected source `a9783bdd96893c39b00caa86c35b97018c8b510a` passed 131 host
+tests and CI `43909878860`. Full HFS build `43909951214`, attempt 2, compiled
+and linked successfully; its 78 source-overlay hashes matched the expected
+manifest. Kernel SHA256:
+`a88f7cde889c19dff7b34932557332d54fde25c09a7008ac9b726734a91bbd88`.
+The exact kernel passed its diagnostic QEMU fixture with three CRC entry copies
+and seven PID1 heartbeats. That fixture does not run Apple's keybagd.
+
+The preserved master was rehashed unchanged. The BOOT-only candidate SHA256 is
+`f754ca8e4d85aca3bd4a851fefc7750408f6adc5bdff8d617e739e37a7c878a0`.
+Packaging binds the kernel and read-only persistent root; no diagnostic RAM root
+is included in the phone payload. Hardware trace results remain pending.
