@@ -57,3 +57,19 @@ BOOT candidate SHA256 is
 It contains the kernel and persistent-root binding, with no diagnostic RAM root.
 The next physical trial remains pending; it changes only BOOT temporarily and
 restores the hash-verified original after recovery returns.
+
+## V23 physical result
+
+The discovery interface worked on the A52. CRC-valid records show successful
+AppleKeyStore matching (three copies), selector-zero connection handshake (two
+copies), and selector-14 NotFound with bag absent (three copies). Apple's actual
+keybagd then opened `/private/var/keybags/systembag.kb` and its `.writing`
+alternative; both returned Darwin ENOENT. This is the first direct observation
+of its disk-load path. No bag was loaded, and neither early-boot completion nor
+services or UI are established by this trial.
+
+The guard collected the first console and restored original BOOT. Independent
+fresh hashes of BOOT, recovery, DTBO and vbmeta matched their saved originals.
+The installed root was verified unchanged before reboot and remained read-only.
+The observed missing files now require a real software-bag implementation and
+a reviewed persistent-data arrangement; the discovery probe alone supplies neither.

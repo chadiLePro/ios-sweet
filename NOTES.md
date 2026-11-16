@@ -1,6 +1,22 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V23 physically running; BOOT RESTORATION PENDING
+## ACTIVE: V23 restored; keybagd opens missing systembag.kb (ENOENT)
+
+
+V23 complete. C: watcher collected first console and restored original BOOT.
+Independent fresh BOOT/recovery/DTBO/vbmeta hashes match all saved originals.
+NO restoration pending. Saved backup/a52q/ios-ufs-v23/keystore-result.json and
+E:/A52-iOS16/keystore-probe-v23-result.json. CRC-validated records prove:
+match AppleKeyStore success (3 copies); selector0 handshake success (2 copies);
+selector14 NotFound/bag absent (3 copies). Then actual keybagd disk-load opens
+/private/var/keybags/systembag.kb and .writing return Darwin ENOENT (multiple
+valid copies). Kernel UFS root window valid twice; three XNU entries. No bag was
+loaded and no early boot complete/services/SpringBoard proved. Corrupted text is
+not repaired. New provider is discovery only; load/save/wrap still Unsupported.
+Next work: inspect actual opaque bag/load interface and persistent-data layout.
+Existing 4 GiB host var image is unchanged original var subtree, lacks keybags;
+its real SHA is efa03fd497c0ecf2b1c5915a925fbc27979319094b663611f11e3abf860b8a36
+(not the typo in some earlier summaries). No var write approved or installed.
 
 V22 completed and C: watcher restored original BOOT. Independent fresh hashes of
 BOOT/recovery/DTBO/vbmeta all match saved originals. Phone recovery; NO restoration
@@ -38,25 +54,9 @@ New BOOT SHA256 62f4fc6ba95d8973fa75326fde3a2b83e99a49b97504d92986be928a32971464
 E:/A52-iOS16/keystore-probe-v23-candidate.json. Phone payload has full persistent
 RO root, no diagnostic RAM root. Existing AMFI source SHA9a18...435c unchanged.
 
-User freshly confirmed V23 readiness. Launcher session23964 completed install:
-full installed-root hash/protected partitions checked, candidate BOOT written
-and fully read back, native Samsung reboot USB departure confirmed. Receipt
-requires_restore=true, original_boot_restored=false,
-reboot_disconnect_observed=true. C: guard wrapper PID11060 watches V23 receipt;
-logs backup/a52q/ios-ufs-v23/watcher.log and watcher.err.log. It retries USB and
-continues beyond30min. User told FIVE full minutes after confirmed departure,
-then return to TWRP with USB; no System/format. On return collect first console
-and restore BOOT FIRST, then fresh full original hash/protected hashes. Result
-UNKNOWN until capture; no bag or UI compatibility demonstrated. Launcher
-research/start_keystore_probe_trial.py, guard research/watch_ios_ufs_v23_restore.py,
-receipt backup/a52q/ios-ufs-v23/receipt.json. Backend now binds plan17. Only BOOT
-[0,100663296), no other storage write or formatting. Wait for actual native reboot
-USB departure before issuing five-minute return instruction. On recovery return
-collect first log/restore original and fresh hash verification FIRST. Decode aks
-CRC records without interpreting a NotFound response as working key storage.
-At preflight start original BOOT was restored; check active receipt for current
-state before stopping. Docs A52Q-KEYSTORE-PROBE.md.
-
+V23 receipt now requires_restore=false, original_boot_restored=true; guard
+finished successfully. Phone remains TWRP. Do not reinstall without a checked
+new candidate and physical readiness. No new root/data-volume writes authorized.
 Corrected diagnostic source a9783bdd96893c39b00caa86c35b97018c8b510a.
 131 host tests and Linux CI 43909878860 passed. Full HFS kernel build
 43909951214 attempt 2 SUCCEEDED. Attempt 1 failed hosted-runner allocation;
