@@ -52,6 +52,8 @@ Files:
 - `tools/relink_a52q_console.py`: reject an old or mismatched catalog baseline.
 - `tests/test_a52q_root_code_catalog.py`, `tests/test_a52q_exec_policy.py`: synthetic
   page/slot mutations, malformed fat slices and actual C-policy boundary checks.
+- `docs/A52Q-ROOT-CODE-CATALOG.md`, `docs/A52Q-LOCAL-AMFI.md`, `NOTES.md`:
+  scope, validation, retained evidence and recovery handoff.
 
 The native policy test checks every catalog identity, 55720 changed hashes,
 invalid signed metadata, missing CS_VALID, wrong/writable roots and forbidden

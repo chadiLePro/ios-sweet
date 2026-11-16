@@ -1,6 +1,19 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V21 catalog trial preflight/install running; watch restoration state
+## ACTIVE: V21 catalog trial RUNNING; original BOOT restoration PENDING
+
+Launcher80083 finishedsuccessfully: installed16GiBroot/protectedhasheschecked,
+onlyBOOT written/readback, actualnativeSamsung rebootadbUSBdepartureconfirmed.
+backup/a52q/ios-ufs-v21/receipt.json requires_restore=true,
+original_boot_restored=false. C:guardwrapperPID5040/watchedreceiptv21 waiting
+forTWRP; logs samefolder watcher.log/watcher.err.log. It retriesUSB beyond30min,
+preservesfirstcapture and refusesunknownBOOT. Newcatalog/service resultUNKNOWN.
+Usertoldfivefullminutesafterrebootconfirmation, resetTWRPleaveUSB, noSystem/format.
+Onreturn collectfirstlog/guardreceipt, confirmrestoredoriginalandfreshfullBOOTSHA
+d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016.
+DoNOT leave restorationpending afterTWRPreturns. NoextraUFSwrite/varvolumeinstalled.
+
+### V21 artifact and preflight history
 
 User freshly confirmed readiness. research/start_root_catalog_trial.py running
 execsession80083. Fullinstalledroot/protectedhashchecks beforeBOOTwrite. DoNOT
