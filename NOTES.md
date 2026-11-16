@@ -2,6 +2,21 @@
 
 ## ACTIVE: V21 RESTORED; keybagd fatal system-bag failure; bounded trace under validation
 
+Traceimplementation committed ea3c801f6771caaf17a60940165b42e53bb23ef4.
+131localtests+repocheckPASS;LinuxCI43907123341SUCCESS. FullHFS43907188206 CANCELLED
+afterlivecompiler caughtundeclaredstrstr inVFSheaders. NOsuccessfulbuild/candidate
+fromthatrun. Removedunnecessarysubstringfilter; verifiedvar/relativepathscovered.
+Needcommit/pushcorrection,newfullHFSrun,updated78fileexpectedmap/provenance,
+QEMU andplan16/hardware18 packaging. Oldhostpipeline99989 watchesCANCELLEDrun;
+willendfailure, doNOTreuse asnewpipeline. Helperstillplan15; noV22started.
+
+Additionalupstreamaudit:0038SWEETKeyStore hasselector0/14 ABIconsistentwithexact
+keybagd disassembly (systembagquery14), butreturnsconstantunlockedhandle and
+doesNOTimplementsave/load/wrapkeycrypto. It isnotworkingsoftwarekeychain.
+0046+0068provideCPU-backedIOSurface/IOMFBAPIcode,60Hz16667ussoftwaretimer,
+stillSWEET-only; A52portwouldneedguardedmapping/MDSSrefreshadapter andphysical
+accessrestrictions. DoNOT claimthesealreadyworkonA52 orpatchnonexistent120Hzcheck.
+
 Guardcollected/restoredfirstattempt; freshcompletephoneBOOTSHA
 d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016 matched,
 protectedhashesunchanged,3CRCentryrecords,ROrootwindowverified2copies.

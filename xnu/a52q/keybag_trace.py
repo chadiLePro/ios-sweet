@@ -53,8 +53,7 @@ a52q_keybag_open_result(const char *path, int flags, int result)
 {
     static unsigned lines;
     if (path[0] && (path[0] != '/' ||
-        !strncmp(path, "/private/var/", 13) || !strncmp(path, "/var/", 5) ||
-        strstr(path, "keybag") != NULL)) {
+        !strncmp(path, "/private/var/", 13) || !strncmp(path, "/var/", 5))) {
         char body[240];
         unsigned sequence = __atomic_fetch_add(&lines, 1U, __ATOMIC_RELAXED) + 1U;
         if (sequence > 80) return result;
