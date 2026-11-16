@@ -60,3 +60,28 @@ separate from the hardware trial. The validated master, UFS driver, mount/FIPS
 work, memory reservations, guarded RGB display test and pstore code are unchanged.
 RGB bars establish physical framebuffer output; they do not establish a working
 IOMobileFramebuffer/IOSurface/CoreAnimation pipeline or visible SpringBoard.
+
+Validation: all 128 host tests, repository checks and Linux CI `43900310051`
+passed. Full HFS kernel build `43897768441` succeeded with legacy warnings and
+no build errors. All 76 archived overlay hashes matched the expected sources.
+The generated header hash uses canonical LF; the initial Linux integrity-test
+failure from a Windows CRLF hash was corrected without changing measured
+identities or compiled C/header content. The redundant automatic build was
+cancelled after the successful full build.
+
+The exact kernel passed diagnostic QEMU with three CRC entry records and seven
+diagnostic PID1 heartbeats. This fixture does not execute Apple services. The
+master was rehashed before packaging BOOT SHA256
+`63a6199b0dcc3254cfe3c588f350ebb25a0360519212d19aaab41d122e55012a`;
+kernel SHA256 is
+`b9f5ab95d6c57d13efb9bcebbf72a2d320ee4d6264b0dc3ffaf289bbe36833a3`.
+
+The recoverable phone trial temporarily replaces only BOOT `/dev/block/sda19`,
+bytes `[0,100663296)`, then retains the first log and restores the original full
+BOOT with readback when TWRP returns. C: holds the verified original backup;
+recovery, DTBO and vbmeta are hash-checked. No root/data formatting or other
+partition write is included. The installed root stays read-only and unchanged.
+Original BOOT restoration cannot recover the Android data destroyed by the
+earlier approved 16 GiB root installation. Recovery requires Volume Down + Power
+until black, then immediately Volume Up + Power with USB. Physical service
+startup and graphics remain questions for the retained trial log.

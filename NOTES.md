@@ -1,6 +1,34 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V20 RESTORED; generalized measured root-code catalog in progress
+## ACTIVE: V21 catalog trial preflight/install running; watch restoration state
+
+User freshly confirmed readiness. research/start_root_catalog_trial.py running
+execsession80083. Fullinstalledroot/protectedhashchecks beforeBOOTwrite. DoNOT
+start anotherinstall. Receipt/logs backup/a52q/ios-ufs-v21, guardwrapper
+research/watch_ios_ufs_v21_restore.py. Inspect requires_restore before any stop.
+Actualnewserviceexecution result UNKNOWN. Notifyfive-minreset onlyafterUSBdeparture.
+
+FullHFS build43897768441 SUCCESS;76actualoverlayfiles matchedexpectedhashes,
+onlyAMFIC+newcatalogheader differ fromfullbaseline43735227285.
+KernelSHA b9f5ab95d6c57d13efb9bcebbf72a2d320ee4d6264b0dc3ffaf289bbe36833a3.
+AMFISHA9a18d92ebe653b579e185496134bd31b9c2e72ca1afbbac6a52950ad378c435c.
+Original128testCI43897710224 lineendingfailure fixedbyce9a5b92b07615be95a363b235625e5982ca9225:
+LinuxCI43900310051 SUCCESS,128localtestsPASS;redundantauto43900309926cancelled.
+CompiledC/header/apply exactlyequal8e1f079 buildhead aftercanonicalLFmetadatafix.
+Nootherkernelrebuildrequiredforfixturehashcorrection. DoNOT claimwarningfree;
+fulllegacytree compiledwithwarnings,noerrors.
+
+Hostpipeline61351 COMPLETE: E:/A52-iOS16/builds/43897768441/{artifact,verified-build.json};
+QEMUshim/out/a52q-root-catalog-qemu-v1:3CRCentries,7diagnosticPID1heartbeats,
+enforcement/providerregistrationchecked; NOT Appleuserlandemulation.
+Wholemaster16GiBhashstill0f4...312149; plan15/hardware17candidate96MiB SHA
+63a6199b0dcc3254cfe3c588f350ebb25a0360519212d19aaab41d122e55012a.
+Kernel/manifest/ROrootbound; nophoneRAMroot/diagnosticinit. Independentreview
+E:/A52-iOS16/root-catalog-v21-candidate.json. Helperexplicitlybindsplan15.
+FreshrecoverycheckoriginalBOOT+protectedhashes PASS beforetrial. Display/storage/
+memory/pstore/provider10sources byte-identicalfullbaseline. No newdata-volumewrite.
+
+## Catalog implementation/audit history
 
 Implemented measuredcatalogsource commit8e1f0791416a466ea6779297b9a810fb387471fa.
 128 localtests+repocheck PASS; nativeactualpolicytests every2786identity,
