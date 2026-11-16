@@ -183,7 +183,7 @@ def main():
         entries(report)
         print('A52_ROOT_CODE_CATALOG_JSON=' + json.dumps(report, separators=(',', ':')), flush=True)
     else:
-        a.out.write_text(header(json.loads(a.catalog.read_text())), encoding='utf-8')
+        a.out.write_text(header(json.loads(a.catalog.read_text())), encoding='utf-8', newline='\n')
 
 
 if __name__ == '__main__':

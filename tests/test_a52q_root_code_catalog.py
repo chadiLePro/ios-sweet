@@ -23,7 +23,8 @@ class RootCodeCatalogTests(unittest.TestCase):
     def test_checked_in_catalog_header_matches_audit_manifest(self):
         root = Path(__file__).resolve().parents[1] / 'xnu/a52q'
         metadata = json.loads((root / 'ios16-20H392-root-code-catalog.json').read_text())
-        data = (root / 'a52q_root_code_catalog.h').read_bytes()
+        # apply.py and Git use LF source text; normalize checkout line endings.
+        data = (root / 'a52q_root_code_catalog.h').read_text(encoding='utf-8').encode('utf-8')
         self.assertEqual(hashlib.sha256(data).hexdigest(), metadata['generated_header_sha256'])
         self.assertIn(metadata['master_sha256'].encode(), data)
         self.assertEqual(data.count(b'    {{'), metadata['code_identities'])

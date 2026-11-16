@@ -3,7 +3,7 @@
   "build": "20H392",
   "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
   "catalog_sha256": "60f22e7b3e5ce8befa592fbde4e55f1a22355aa868d27318762efb82e8e5c1d1",
-  "generated_header_sha256": "047ff6668d497d1d5ee1eab2746dfaa333005b975b9b5c850710ce4ec94af3d3",
+  "generated_header_sha256": "74be6f5730ab7220a4873f97b3e937047b0b3bbf5a9b02decc2e197ec7191ed3",
   "regular_readable_paths": 181744,
   "measured_files": 2790,
   "code_identities": 2786,
@@ -119,5 +119,6 @@
       ]
     }
   },
-  "scope": "local development identity admission only; no CMS trust, entitlement context, runtime or UI claim"
+  "scope": "local development identity admission only; no CMS trust, entitlement context, runtime or UI claim",
+  "generated_header_line_endings": "LF"
 }

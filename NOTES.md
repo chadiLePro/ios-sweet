@@ -2,6 +2,31 @@
 
 ## ACTIVE: V20 RESTORED; generalized measured root-code catalog in progress
 
+Implemented measuredcatalogsource commit8e1f0791416a466ea6779297b9a810fb387471fa.
+128 localtests+repocheck PASS; nativeactualpolicytests every2786identity,
+55720changedhashes,metadata/root/flagboundaries. FullHFS build43897768441 RUNNING;
+auto-mockfs43897710358 cancelled. Privatehostpipelinefinish_root_catalog_artifacts.py
+session61351 watchesbuild, verifies76overlayfiles againstfullbase43735227285
+(onlyAMFIC+newcatalogheader differ), exactkernelQEMU, masterrehash plan15,
+package hardware17. Expectedmapprepared PASS. PhoneoriginalBOOT restored; noV21.
+
+LinuxCI43897710224 FAILED oneheaderhashcheck: WindowsgeneratedCRLF vsGit/applyLF.
+Measuredidentitiesunchanged. Correctedgenerator towriteLF, testtonormalizecheckout,
+metadatahash74be6f5730ab7220a4873f97b3e937047b0b3bbf5a9b02decc2e197ec7191ed3.
+128localtests PASSaftercorrection. Do NOT pushmetadatafix untilfull43897768441
+finishes (xnuJSONpush triggersauto-full and cancelsactivebuild). Thenpushfix,
+cancelredundantauto-full,awaitnewLinuxCI. Header compiledbytes equal8e1f079GitLF.
+
+Inactive V21launcher research/start_root_catalog_trial.py+watch_ios_ufs_v21_restore.py
+reviewedpaths:receiptbackup/a52q/ios-ufs-v21,hardware17,ownwrapperv21. Mustbind
+helperplan15 onlyaftercandidatechecked; noinstalluntilfreshphysicalreadiness.
+No writablevar volume installed or newstoragewriteapproved. GuardC:backups
+independentofE:. Explicitcatalogcodeadmitsallmeasuredrootidentities, grantsno
+genericentitlementcontext; runtimecapabilityfailures areexpectedquestionsforphone.
+
+Source a52q_display.c explicitlyisguardeddiagnostic, notIOMFB/VSyncABI; noIOSurfaceRoot
+orMetal/GLbackendimplementation inA52sources. Keepthis distinction inreports.
+
 Catalog V3 COMPLETE: E:/A52-iOS16/master-root-code-catalog-v3/catalog.json SHA
 60f22e7b3e5ce8befa592fbde4e55f1a22355aa868d27318762efb82e8e5c1d1.
 Readonlyappliance successfully used stopped distro VHDXro,noload/Python, noWSL
