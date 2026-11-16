@@ -1,6 +1,6 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V22 restored; CRC-confirmed missing AppleKeyStore provider
+## ACTIVE: V23 physically running; BOOT RESTORATION PENDING
 
 V22 completed and C: watcher restored original BOOT. Independent fresh hashes of
 BOOT/recovery/DTBO/vbmeta all match saved originals. Phone recovery; NO restoration
@@ -38,14 +38,24 @@ New BOOT SHA256 62f4fc6ba95d8973fa75326fde3a2b83e99a49b97504d92986be928a32971464
 E:/A52-iOS16/keystore-probe-v23-candidate.json. Phone payload has full persistent
 RO root, no diagnostic RAM root. Existing AMFI source SHA9a18...435c unchanged.
 
-Fresh readiness requested for V23, do NOT install until user replies. Launcher
+User freshly confirmed V23 readiness. Launcher session23964 completed install:
+full installed-root hash/protected partitions checked, candidate BOOT written
+and fully read back, native Samsung reboot USB departure confirmed. Receipt
+requires_restore=true, original_boot_restored=false,
+reboot_disconnect_observed=true. C: guard wrapper PID11060 watches V23 receipt;
+logs backup/a52q/ios-ufs-v23/watcher.log and watcher.err.log. It retries USB and
+continues beyond30min. User told FIVE full minutes after confirmed departure,
+then return to TWRP with USB; no System/format. On return collect first console
+and restore BOOT FIRST, then fresh full original hash/protected hashes. Result
+UNKNOWN until capture; no bag or UI compatibility demonstrated. Launcher
 research/start_keystore_probe_trial.py, guard research/watch_ios_ufs_v23_restore.py,
 receipt backup/a52q/ios-ufs-v23/receipt.json. Backend now binds plan17. Only BOOT
 [0,100663296), no other storage write or formatting. Wait for actual native reboot
 USB departure before issuing five-minute return instruction. On recovery return
 collect first log/restore original and fresh hash verification FIRST. Decode aks
 CRC records without interpreting a NotFound response as working key storage.
-No new phone trial yet; original BOOT remains restored. Docs A52Q-KEYSTORE-PROBE.md.
+At preflight start original BOOT was restored; check active receipt for current
+state before stopping. Docs A52Q-KEYSTORE-PROBE.md.
 
 Corrected diagnostic source a9783bdd96893c39b00caa86c35b97018c8b510a.
 131 host tests and Linux CI 43909878860 passed. Full HFS kernel build
