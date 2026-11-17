@@ -1,94 +1,79 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: first UI full build failed on missing private prototype; correction under checks
+## ACTIVE: combined development KeyStore/UI kernel built; host packaging underway
 
-Full HFS44120791852 FAILED. Exactly one compiler error from new data proxy:
-undeclared chrtoblk in targetheaders. Actual XNU bsd/dev/arm64/conf.c implements
-extern dev_t chrtoblk(dev_t), used with explicit prototype also in spec_vnops.c.
-Added that exact declaration; retains raw->block device identity check. Do NOT
-remove the check or pretend first build compiled. Other apparent patch errors
-in logs are existing optional upstream patch-skip warnings. All new graphics/
-power/surface units compiled; no successful linked kernel/candidate fromthisrun.
-Oldhostpipeline98763 endedfailure; newfullbuild,expectedmap,pipeline required.
+Full HFS kernel run44125438385 attempt2 SUCCESS (2026-11-17 17:00UTC),
+source5a2b1fc4d67ce1c050978a6e8efe19d4260a81d0. Kernel SHA256
+472e5d1ad9cad238cf5b10445d4befd46425fda20d3f3cee3cb4972851e6864a.
+Archived90-file overlay matches reviewed source map, all90 archive contents
+rehash verified. Report E:/A52-iOS16/builds/44125438385/verified-build.json.
+HostCI44125437564 SUCCESS143tests plus native checks/loader QEMU.
+Pipeline57739 completed SUCCESS. Exact-kernel diagnostic QEMU:3CRC entries,
+13PID1 heartbeats, enforcement1/1; no hardware/UI emulation claimed. Master16GiB
+rehash passed, plan18/hardware20 packaged. BOOT SHA256
+70fe071a85e3962c3455dfb32e6939cd056a2a8510496e2b9b5dc674776f36e1.
+Independent research/check_development_ui_candidate.py PASS; record
+E:/A52-iOS16/development-ui-v24-candidate.json. Installer prepare ONLY passed,
+rehashing sourcevar and exactrangebackup. Review artifacts:
+development-var-install-review-v1.json and development-ui-v24-review.md onE.
+Fresh ADB=TWRP and original full BOOT SHA verified after packaging; no write.
+
+First combined full run44120791852 failed undeclared chrtoblk in new proxy.
+Corrected exact private prototype (used by target conf.c/spec_vnops.c); retains
+raw-to-block identity guard. Corrected run attempt1 failed runner allocation,
+without executing source; attempt2 compiled and linked successfully.
+Implementation aacc10a, native adapter test c5dae42, decoder cfd3a88, fix5a2b1fc.
 
 Latest explicit user request authorizes synthetic always-unlocked/no-SEP profile,
 CPU IOSurface/framebuffer bridge and software power/watchdog in one candidate.
-It supersedes older assistant notes refusing stubs. Do not call those stubs real
-SEP/keychain/graphics, or claim SpringBoard before physical observation.
-Original BOOT remains restored from V23; phone TWRP. No new phone write.
-Only RGB bars were physically proved, not A52 IOMFB or measured panel60Hz.
+It supersedes older assistant notes refusing development stubs. These are NOT
+real SEP/keychain/graphics, and no SpringBoard claim before physical observation.
+Original BOOT remains restored/hash-verified after V23; phone TWRP. No new phone
+writes. Only RGB bars physically proved, not A52 IOMFB or measured panel60Hz.
 
-Implementation committed aacc10a3846eae0676ff803974561bd746dea970; opt-in a52q_dev_keybag=1 and a52q_ui=1;
-default empty probe unchanged. Platform includes A52DevelopmentPower.cpp and
-exposes only display nub under UI flag. software_ui.py transforms exact fully
-patched Surface.h/.cpp, Framebuffer.cpp, Watchdog.cpp with A52 guards; preserves
-original Redmi body and cached lookup fix0068. New a52q_ui_bridge.c validates
-fixed captured FB/profile13regs, consistent WC mappings, only START writes,
-100ms bounded wait/fail closed. Does NOT change original a52q_display.c or UFS,
-AMFI/catalog, reserved-memory planner or persistent console. Copy helper checks
-bounds/alignment and copies BGRA only. Surface32MiB/per,96MiB total cap inside
-existing255MiB managed region; no carveout relaxation.
+Opt-in a52q_dev_keybag=1 selects fixed system handle0 (selector14), unlocked
+state4(selector7), DERstate(selector17), bounded compatibility setters; save/load/
+wrap/unwrap remain unsupported. Default empty probe and owning-task checks stay.
+Opt-in a52q_ui=1 enables exact-pinned upstream Surface/Framebuffer/Watchdog,
+guarded native1080x2400 BGRA copies and software16667us timer; synthetic100% AC.
+Bridge validates13captured registers, WC mappings, only tested START writes,
+100ms deadline/fail closed. Surface32MiB/per,96MiB total within255MiB managedRAM.
+No Apple Metal/OpenGL implementation/fallback proved; no opaque renderer hooks.
+Original UFS transport/root, AMFI2786catalog, a52q_display.c, bootfs source,
+pstore/early logging and reserved-memory planner files remain byte-identical.
+Overlay appends optional ROvar fstab after identical existing root wire.
+Separate bounded READ proxy /dev/a52var0 wraps /dev/ra52ufs0; all writes EROFS.
+Read-only var may block services requiring writable databases/logs; no silent RAMvar.
+Docs/A52Q-DEVELOPMENT-UI.md records files, evidence, scope and limits.
 
-New a52q_data_proxy.c wraps existing /dev/ra52ufs0 READ interface, verifies exact
-non-overlapping4GiB data extent/nonce/root/headerCRC, exposes only RO a52var0.
-New data_fstab.py appends optional RO/private/var table entry after identical
-original root wire. No UFS transport/root implementation edits. No writable var
-or kernel-write transport provided, so service writable-state failures remain
-possible. tools/a52q_payload.py explicit profile requires actual CRC display
-proof, full persistent root, exactflags/board/kernel/hash/ADT and optionalvarplan.
-New native tests PASS: KeyStoreprofile, guardedgeometry/copycanaries, actual
-proxy read strategy/write rejection, original rootwire before optionalvar,
-source transforms reconstructed from81patches, payloadbindings. All141A52 tests
-PASS locally; repo check PASS; LinuxCI44120768758 SUCCESS (all141 plus native
-protocol/display/log checks and loader QEMU). Full HFS44120791852 acquired Mac,
-job134171301553 now building kernel. Auto mockfs44120769162 completed/cancelled
-by concurrency. Host expected90-file compiled overlay prepared and source
-critical implementation hashes preserved. research/verify_development_ui_build.py
-44120791852 --prepare-only PASS; E:/A52-iOS16/development-ui-expected-overlay.json.
-Need fullbuild result, archived-source verification, exact-kernel diagnostic
-QEMU, rootplan18/hardware20 packaging. No new candidate/image yet.
-Additional native runtime test now executes actual bridge with synthetic DT/MMIO
-and clock APIs: profile absence/conflicts, guard rejection BEFORE mapping,
-exact START submit, consumed completion, permanent timeout failure and CRCs PASS.
-This is not physical proof. Kernel source unchanged since aacc10a.
-Docs/A52Q-DEVELOPMENT-UI.md records exact scope/limits.
+Var clone E:/A52-iOS16/storage-data-development-v2/a52q-ios-var-development.hfs.img,
+4GiB SHA44eb5f6d2f95476fca5f0f9ca233687d9db9e68d71901bd68ba97ab1fc6fea02.
+Clean RO fsck; original var tree rsync-checksum preservation passed. Seed
+keybags/systembag.kb is364B SHA d1db41b2a90d302b23ea55cfe040c1ee169d3af687d8046baed990ad507f5656,
+root:root0600 under0700. Development plist metadata, NOT real Apple/SEP bag/keys.
+Plan E:/A52-iOS16/var-layout-development-v2.json rehash/geometry checked.
+Preserved16GiB rootmaster SHA0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149.
+Original unseeded var preserved SHAefa03fd497c0ecf2b1c5915a925fbc27979319094b663611f11e3abf860b8a36.
 
-Host guard-test/doc commit c5dae42e516e1a49b158606cc9cc58afb54346e3 pushed;
-LinuxCI44123405728 SUCCESS (142tests). Full kernel build stays sourceaacc10a;
-no compiled source changes in c5. Hostpipeline
-research/finish_development_ui_artifacts.py active execsession98763; log
-research/development-ui-build-package.log. It waits44120791852, verifies90file
-archive againstexpected, exactkernelQEMU defaultfixture, masterrehash/rootplan18,
-hardware20 packaging with --development-ui-proof-build hardware-display-v2,
---development-ui-proof-log backup/a52q/kernel-display-v2/console.txt and
---development-var-plan E:/A52-iOS16/var-layout-development-v2.json.
-No new candidate yet. Existing C: BOOT helper STILL binds plan17; must update
-forplan18, explicitdevelopmentUI flag and installedvarreceipt/fullrangehash
-before any trial. Installer host prepare waitsforhardware20BOOT. No var approval.
-Additional public UI console CRC decoder implemented/tested but uncommitted;
-143rdtest rejects corrupted/wrongnonce/impossibleframecounts, never claimsvisibleUI.
+Proposed NEW userdata range[17179869184,21474836480) backed up offphone and
+independently full devicehashverified: E:/A52-iOS16/var-range-backup-v1/
+userdata-16GiB-20GiB.bin,4GiB SHA
+f40157ecac3a47a7edff45a86d76e3466644f13a072123aaa560b641012a129c.
+No var write approved/executed. Existing BOOT-only permission does NOT cover it.
+Private research/a52q_install_development_var.py has exact-range prepare/install/
+rollback; explicitapproval flags, root/GPT/protectedpartition checks,128MiB
+RAMchunks, fullreadback. Need host-only prepare after checked hardware20 exists,
+then concrete newrange approval before installation. Rollback exact same4GiB
+from verified backup; BOOT restoration is separate and cannot restore Android.
 
-
-Host var clone E:/A52-iOS16/storage-data-development-v2/
-a52q-ios-var-development.hfs.img (4GiB) SHA
-44eb5f6d2f95476fca5f0f9ca233687d9db9e68d71901bd68ba97ab1fc6fea02.
-Filesystem fsckPASS. Rsyncchecksumalloriginalvar paths outside explicitly new
-keybags subtreePASS; original master/varimage unchanged. Seed metadata file is
-364B SHA d1db41b2a90d302b23ea55cfe040c1ee169d3af687d8046baed990ad507f5656,
-root:root0600 under0700keybags. It is development metadata, NOT actualApple/SEPbag.
-Hostplan E:/A52-iOS16/var-layout-development-v2.json rehashed/geometrychecked.
-
-READ-ONLY backup of proposed new userdata range[17179869184,21474836480) captured
-offphone and independently full devicehashverified:
-E:/A52-iOS16/var-range-backup-v1/userdata-16GiB-20GiB.bin (4GiB),
-SHA f40157ecac3a47a7edff45a86d76e3466644f13a072123aaa560b641012a129c.
-Verified.json samefolder; no data write approved or executed. Private installer/rollback helper research/a52q_install_development_var.py
-prepared but NOT run (even prepare waits for candidate). Hardcoded hardware20
-candidate, exact hashes and target4GiB range, root/protected/GPT guards, no mounted
-userdata,128MiB push-Z tmpfs chunks and fullreadbacks; explicit approval flags.
-Rollback accepts interrupted install's bounded range with same saved plan.
-Review/prepare plus checked BOOT candidate required before newrange approval.
-Existing BOOT-only authorization does NOT cover this var installation.
+NEXT: request exact new4GiB var extent approval and physical readiness using
+E:/A52-iOS16/development-ui-v24-review.md. No approval/installation/V24trial yet.
+Private BOOT backend now binds plan18. research/start_development_ui_trial.py
+and watch_ios_ufs_v24_restore.py prepared for hardware20/backup/a52q/ios-ufs-v24.
+Backend requires explicit --development-ui-profile, installedvarreceipt and full
+varphonehash. Watcher C: keeps waiting/retriesUSB, preservesfirstcapture, restores
+and fullhashverifies originalBOOT. Only after approved varinstall/readbacks and
+physicalreadiness start five-minute trial; then collect/restore/hash BEFORE logs.
 
 ## Prior V23 verified result and build history
 

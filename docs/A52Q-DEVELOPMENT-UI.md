@@ -89,3 +89,29 @@ profiles perform no MMIO mapping; bad hardware guards prevent framebuffer
 mapping; the allowed START completes; and a timeout leaves the adapter failed
 without a reset or later submit. CRC records are checked. This tests software
 control flow, not the Samsung controller or physical display output.
+
+## Changed source files
+
+- `xnu/a52q/A52PlatformExpert.cpp`: opt-in development KeyStore dispatch,
+  display nub, and development power registration.
+- `xnu/a52q/A52DevelopmentPower.cpp`: explicitly synthetic AC power provider.
+- `xnu/a52q/software_ui.py`: pinned Surface, Framebuffer and Watchdog transforms.
+- `xnu/a52q/a52q_ui_bridge.c`, `a52q_ui_bridge.h`, `a52q_ui_profile.h`,
+  `a52q_ui_copy.h`: guarded display adapter and bounded BGRA copies.
+- `devices/a52q-ui-profile.json`: reviewed framebuffer and register evidence.
+- `xnu/a52q/a52q_data_proxy.c`, `a52q_var_bounds.h`, `data_fstab.py`:
+  separate bounded read-only var device and optional mount-table entry.
+- `xnu/a52q/apply.py`: opt-in board source/configuration integration.
+- `tools/a52q_ui_profile.py`, `a52q_persistent_data.py`, `a52q_payload.py`:
+  evidence checks, persistent-data planning and explicitly bound payload profile.
+- `tools/relink_a52q_console.py`: disallows reusing an incompatible old overlay.
+- `tests/test_a52q_keystore_probe.py`, `test_a52q_ui_profile.py`,
+  `test_a52q_ui_guard_runtime.py`, `test_a52q_data_proxy.py`,
+  `test_a52q_persistent_data.py`: native and host regression checks.
+- This document and `NOTES.md`: scope, evidence and handoff.
+
+The inspection also covered the target XNU raw-to-block mapping implementation,
+the original boot filesystem table, fully patched upstream software graphics
+units, captured display/pstore records, master image validation, and the captured
+GPT. Private dumps, Apple files and device-specific installation receipts are
+not committed.
