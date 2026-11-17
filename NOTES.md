@@ -9,7 +9,7 @@ SEP/keychain/graphics, or claim SpringBoard before physical observation.
 Original BOOT remains restored from V23; phone TWRP. No new phone write.
 Only RGB bars were physically proved, not A52 IOMFB or measured panel60Hz.
 
-Uncommitted implementation now includes optional a52q_dev_keybag=1 and a52q_ui=1;
+Implementation committed aacc10a3846eae0676ff803974561bd746dea970; opt-in a52q_dev_keybag=1 and a52q_ui=1;
 default empty probe unchanged. Platform includes A52DevelopmentPower.cpp and
 exposes only display nub under UI flag. software_ui.py transforms exact fully
 patched Surface.h/.cpp, Framebuffer.cpp, Watchdog.cpp with A52 guards; preserves
@@ -30,7 +30,18 @@ proof, full persistent root, exactflags/board/kernel/hash/ADT and optionalvarpla
 New native tests PASS: KeyStoreprofile, guardedgeometry/copycanaries, actual
 proxy read strategy/write rejection, original rootwire before optionalvar,
 source transforms reconstructed from81patches, payloadbindings. All141A52 tests
-PASS locally. Need repo check, fullbuild/provenance, QEMU and final packaging.
+PASS locally; repo check PASS; LinuxCI44120768758 SUCCESS (all141 plus native
+protocol/display/log checks and loader QEMU). Full HFS44120791852 acquired Mac,
+job134171301553 now building kernel. Auto mockfs44120769162 completed/cancelled
+by concurrency. Host expected90-file compiled overlay prepared and source
+critical implementation hashes preserved. research/verify_development_ui_build.py
+44120791852 --prepare-only PASS; E:/A52-iOS16/development-ui-expected-overlay.json.
+Need fullbuild result, archived-source verification, exact-kernel diagnostic
+QEMU, rootplan18/hardware20 packaging. No new candidate/image yet.
+Additional native runtime test now executes actual bridge with synthetic DT/MMIO
+and clock APIs: profile absence/conflicts, guard rejection BEFORE mapping,
+exact START submit, consumed completion, permanent timeout failure and CRCs PASS.
+This is not physical proof. Kernel source unchanged since aacc10a.
 Docs/A52Q-DEVELOPMENT-UI.md records exact scope/limits.
 
 Host var clone E:/A52-iOS16/storage-data-development-v2/
@@ -46,8 +57,12 @@ READ-ONLY backup of proposed new userdata range[17179869184,21474836480) capture
 offphone and independently full devicehashverified:
 E:/A52-iOS16/var-range-backup-v1/userdata-16GiB-20GiB.bin (4GiB),
 SHA f40157ecac3a47a7edff45a86d76e3466644f13a072123aaa560b641012a129c.
-Verified.json samefolder; no data write approved or executed. Need concrete
-installer/rollback and checked BOOT candidate before asking newrangeapproval.
+Verified.json samefolder; no data write approved or executed. Private installer/rollback helper research/a52q_install_development_var.py
+prepared but NOT run (even prepare waits for candidate). Hardcoded hardware20
+candidate, exact hashes and target4GiB range, root/protected/GPT guards, no mounted
+userdata,128MiB push-Z tmpfs chunks and fullreadbacks; explicit approval flags.
+Rollback accepts interrupted install's bounded range with same saved plan.
+Review/prepare plus checked BOOT candidate required before newrange approval.
 Existing BOOT-only authorization does NOT cover this var installation.
 
 ## Prior V23 verified result and build history

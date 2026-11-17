@@ -83,3 +83,9 @@ checks and physical tests must be reported separately. A candidate should only
 be flashed after packaging, review, new-data-range approval, and a restoration
 watcher are complete. Keep the root read-only and retain pstore for the next
 observed failure.
+
+The actual adapter also runs in a native mock environment: absent/conflicting
+profiles perform no MMIO mapping; bad hardware guards prevent framebuffer
+mapping; the allowed START completes; and a timeout leaves the adapter failed
+without a reset or later submit. CRC records are checked. This tests software
+control flow, not the Samsung controller or physical display output.
