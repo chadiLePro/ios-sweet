@@ -21,8 +21,15 @@ Native test nowusesactual data_fstabcallback, notfakeentry; verifies phases.
 
 Display guards NOT relaxed: added A52G2 CRC rejection reason/index/value,
 retains oldA52G1. Next trial can distinguishprofile/map/guardvalue/frame-map.
-No claimdisplayfix. Host144tests PASS andrepo validationPASS. Needcommit/fullHFS
-build,90archived-source verification, exactkernelQEMU and nextBOOT packaging.
+No claimdisplayfix. Host144tests PASS andrepo validationPASS. Correction committed/pushed5802a2ccff22f7f3031feda2e61cabb541c227b5.
+LinuxCI44140966345 SUCCESS144tests. FullHFS44140987363 compiling onMac,
+job134243400803. Pipeline research/finish_var_phase_artifacts.py active62690,
+logresearch/var-phase-build-package.log; sourceexpected90map prepared. Needfull
+compile/link, archive90map, exactkernelQEMU, masterrehash/plan19/hardware21.
+Private verifier/packager/checker/start_var_phase_trial/watch_v25 prepared, inactive.
+After candidateexists switch BOOTbackend plan18->19 thenindependentchecker.
+Existingvarreceipt authorizes/validates samealreadyinstalled4GiB; no new datawrite.
+Fresh userreadiness required fornext five-minuteBOOT-only trial.
 Original catalog/AMFI/UFS/root/displaydiagnostic/pstore files unchanged.
 
 Full HFS kernel run44125438385 attempt2 SUCCESS (2026-11-17 17:00UTC),
