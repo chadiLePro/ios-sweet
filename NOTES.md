@@ -1,6 +1,6 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V24 restored/verified; var pass-number correction and display diagnosis
+## ACTIVE: V24 restored; checked V25 phase-two candidate ready; awaiting readiness
 
 V24 finished. OriginalBOOT restored/fullreadback; independent fresh BOOT,
 recovery/DTBO/vbmeta hashes MATCH. No restoration pending. User saw Samsungsplash.
@@ -21,15 +21,24 @@ Native test nowusesactual data_fstabcallback, notfakeentry; verifies phases.
 
 Display guards NOT relaxed: added A52G2 CRC rejection reason/index/value,
 retains oldA52G1. Next trial can distinguishprofile/map/guardvalue/frame-map.
-No claimdisplayfix. Host144tests PASS andrepo validationPASS. Correction committed/pushed5802a2ccff22f7f3031feda2e61cabb541c227b5.
-LinuxCI44140966345 SUCCESS144tests. FullHFS44140987363 compiling onMac,
-job134243400803. Pipeline research/finish_var_phase_artifacts.py active62690,
-logresearch/var-phase-build-package.log; sourceexpected90map prepared. Needfull
-compile/link, archive90map, exactkernelQEMU, masterrehash/plan19/hardware21.
-Private verifier/packager/checker/start_var_phase_trial/watch_v25 prepared, inactive.
-After candidateexists switch BOOTbackend plan18->19 thenindependentchecker.
-Existingvarreceipt authorizes/validates samealreadyinstalled4GiB; no new datawrite.
-Fresh userreadiness required fornext five-minuteBOOT-only trial.
+No claimdisplayfix. Host144tests PASS andrepo validationPASS. Correction source5802a2ccff22f7f3031feda2e61cabb541c227b5; docs4af8212.
+LinuxCI44140966345 SUCCESS144tests. FullHFS44140987363 SUCCESS. Archived90file
+map/content hashes verified against reviewed source. Kernel SHA
+69087dba9c02292d90ad9be38bcd514a2359cb044df2dc65af1f0799d145ee82.
+Pipeline62690 completedSUCCESS, research/var-phase-build-package.log.
+Exactkernel diagnosticQEMU3CRC entries/13PID1heartbeats; noUI/UFSemulationclaim.
+Master16GiB rehashed unchanged; plan19/hardware21 packaged and independently
+checked by research/check_var_phase_candidate.py. BOOT96MiB SHA
+e316aebb8f8ecfdf2510f5378e30f6d173ff26724591c19222403c85f69f534d.
+E:/A52-iOS16/var-phase-v25-candidate.json and var-phase-v25-review.md.
+New BOOTbackend bindsplan19. Existingvar44eb...fc6fea02 installed/verified;
+no new datawrite. V25 NOT started; fresh physicalreadiness requested.
+Private start_var_phase_trial.py + watch_ios_ufs_v25_restore.py prepared;
+trialfolder backup/a52q/ios-ufs-v25 (noactivependingreceipt). Once userready,
+runlauncher, confirmdeparture+watcher, thenfive-minutereset instructions.
+After TWRP returns confirmoriginalBOOTfullhashrestore FIRST; analyzeactual
+varmount/systembagopens/AKSselectors and A52G2guardfailure details next.
+
 Original catalog/AMFI/UFS/root/displaydiagnostic/pstore files unchanged.
 
 Full HFS kernel run44125438385 attempt2 SUCCESS (2026-11-17 17:00UTC),
