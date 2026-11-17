@@ -133,8 +133,9 @@ int a52q_data_fstab(struct sysctl_req *req)
     int error=a52v_ready ? 0 : a52v_init(node);
     lck_mtx_unlock(&a52v_init_lock);
     if (error) {printf("A52Q var proxy: publication rejected error=%d\n",error);return error;}
+    /* iOS mount -P 2 selects NONROOT_PASSNO exactly. Zero skips BOTH phases. */
     struct a52v_wire entry={.spec="/dev/a52var0",.file="/private/var",.vfstype="hfs",.mntops="ro",
-        .type="ro",.passno=0};
+        .type="ro",.passno=2};
     return SYSCTL_OUT(req,&entry,sizeof(entry));
 }
 #endif

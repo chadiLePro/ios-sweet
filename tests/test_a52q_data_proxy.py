@@ -101,13 +101,20 @@ int main(void){
         raw=(R/'xnu/a52q/a52q_bootfs.c').read_text();changed=data_fstab.transform(raw)
         with self.assertRaises(ValueError):data_fstab.transform(changed)
         body='\n'.join(l for l in changed.splitlines() if not l.startswith('#include'))
+        proxy=(R/'xnu/a52q/a52q_data_proxy.c').read_text()
+        wire=proxy[proxy.index('struct a52v_wire {'):proxy.index('_Static_assert(sizeof(struct a52v_wire)')]
+        actual=proxy[proxy.index('int a52q_data_fstab(struct sysctl_req *req);'):proxy.rindex('#endif')]
         fake=r"""
-int a52q_data_fstab(struct sysctl_req *req) {
- if (!var_enabled) return 0;
- struct a52q_edt_fstab_wire entry={.spec="/dev/a52var0",.file="/private/var",.vfstype="hfs",.mntops="ro",.type="ro"};
- return SYSCTL_OUT(req,&entry,sizeof(entry));
+typedef int DTEntry;
+#define kSuccess 0
+static int a52v_ready=1,a52v_init_lock;
+static int SecureDTLookupEntry(void *parent,const char *path,DTEntry *node) {
+ assert(!parent && !strcmp(path,"/a52q-ufs-var"));*node=1;return var_enabled ? kSuccess : -1;
 }
-"""
+static void lck_mtx_lock(int *lock){assert(lock==&a52v_init_lock);}
+static void lck_mtx_unlock(int *lock){assert(lock==&a52v_init_lock);}
+static int a52v_init(DTEntry node){(void)node;assert(!"ready proxy must not reopen device");return 0;}
+"""+wire+actual
         extra=r"""
     mounted.flags=3;strcpy(mounted.stat.f_fstypename,"hfs");
     req.oldidx=0;assert(a52q_sysctl_edt_fstab(&req)==0);
@@ -115,6 +122,16 @@ int a52q_data_fstab(struct sysctl_req *req) {
     assert(a52q_sysctl_edt_fstab(&paired)==0 && paired.oldidx==472);
     assert(!memcmp(both,bytes,236));assert(!strcmp((char *)both+236,"/dev/a52var0"));
     assert(!strcmp((char *)both+236+32,"/private/var"));
+    int32_t rootpass,varpass;
+    memcpy(&rootpass,both+0xe4,4);memcpy(&varpass,both+236+0xe4,4);
+    assert(rootpass==1 && varpass==2);
+    /* Target mount.c: if (passno && fs->fs_passno != passno) continue.
+     * Regression: pass 0 is selected by neither mount -P 1 nor mount -P 2. */
+    for(int phase=1;phase<=2;phase++) {
+        assert((rootpass==phase)==(phase==1));
+        assert((varpass==phase)==(phase==2));
+        assert(0!=phase);
+    }
     paired.oldidx=0;paired.oldlen=236;assert(a52q_sysctl_edt_fstab(&paired)==ENOMEM);
 """
         checks=checks.replace('    return 0;',extra+'    return 0;')

@@ -60,8 +60,25 @@ def decode_console(data,config):
             raise ValueError('invalid CRC-valid UI adapter record')
         row=records.setdefault((phase,count),dict(phase=phase,frames=count,valid_copies=0))
         row['valid_copies']+=1
+    failures={}
+    for m in re.finditer(rb'A52G2 ([0-9a-f]{16}/[0-9a-f]{2}/[0-9a-f]{2}/[0-9a-f]{8}) ([0-9a-f]{8})\r?\n',data):
+        if zlib.crc32(m[1])!=int(m[2],16):continue
+        nonce,reason,index,value=[int(v,16) for v in m[1].split(b'/')]
+        if nonce!=config['nonce']:continue
+        if (reason not in (1,2,3,4) or
+            (reason in (1,4) and (index!=0xff or value)) or
+            (reason in (2,3) and index>=len(config['guards'])) or
+            (reason==2 and value)):
+            raise ValueError('invalid CRC-valid UI rejection detail')
+        row=failures.setdefault((reason,index,value),dict(
+            reason={1:'profile',2:'register-map',3:'register-value',4:'frame-map'}[reason],
+            register_index=index if index<13 else None,observed=value,valid_copies=0))
+        if reason==3:
+            row['expected']=config['guards'][index]['value']
+            if value==row['expected']:raise ValueError('non-mismatching UI guard rejection')
+        row['valid_copies']+=1
     rows=list(records.values())
-    return dict(records=rows,adapter_prepared=any(r['phase']==0x10 for r in rows),
+    return dict(records=rows,rejections=list(failures.values()),adapter_prepared=any(r['phase']==0x10 for r in rows),
         guarded_submit_observed=any(r['phase']==0x30 for r in rows),
         error_record_observed=any(r['phase']>=0xe0 for r in rows),
         physical_visible_ui_verified=False,physical_panel_hz=None,

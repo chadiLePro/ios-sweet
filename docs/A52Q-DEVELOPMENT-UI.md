@@ -115,3 +115,29 @@ the original boot filesystem table, fully patched upstream software graphics
 units, captured display/pstore records, master image validation, and the captured
 GPT. Private dumps, Apple files and device-specific installation receipts are
 not committed.
+
+## V24 physical result and correction
+
+V24 restored original BOOT with full readback; independent fresh BOOT, recovery,
+DTBO and vbmeta hashes also matched. The user saw only the Samsung splash.
+CRC-valid keybag records show selector 14 returned success, but systembag opens
+still returned ENOENT and keybagd requested recovery. This does not prove an
+unlocked keybag or completion of keybagd.
+
+The new var block device verified its window/header, but the initial fstab entry
+used pass 0. The pinned 20H392 mount executable (SHA256
+ac55c4c7d200d0153cc266b39d69d4d771a9707ac91eefec94f83eb2522364df)
+compares the entry's fs_passno with the requested phase at
+0x100005290..0x1000052a0 and skips mismatches. This agrees with
+[Apple's matching mount source](https://github.com/apple-oss-distributions/diskdev_cmds/blob/diskdev_cmds-701.100.2/mount.tproj/mount.c).
+Pass 0 therefore skipped var in both phases. The correction publishes pass 2,
+retaining the unchanged read-only entry and original root wire. The native test
+now consumes the actual proxy's fstab callback, rather than a replacement entry,
+and checks phase selection. Physical var mounting remains to be demonstrated.
+
+Three CRC-valid A52G1 records report phase e0, zero frames: the UI adapter
+rejected initialization. The original generic record cannot identify which guard
+failed. New A52G2 diagnostics distinguish profile rejection, register mapping,
+register-value mismatch (index/observed value), and framebuffer mapping. All
+original guards and mappings remain enforced; this is diagnosis, not proof of a
+fixed display adapter. Native tests check the detail CRC and rejection behavior.

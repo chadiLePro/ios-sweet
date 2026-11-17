@@ -69,6 +69,21 @@ class UIProfileTests(unittest.TestCase):
         self.assertTrue(ui.decode_console(good+frame(0xe1,20),cfg)['error_record_observed'])
         with self.assertRaises(ValueError):ui.decode_console(frame(0x30,4),cfg)
 
+    def test_rejection_detail_crc_nonce_and_guard_index(self):
+        cfg=dict(copy.deepcopy(ui.EXPECTED),nonce=81,kernel_sha256='b'*64,root_sha256='a'*64,
+                 physical_kernel_console_sha256='d'*64,software_vsync_us=16667,physical_panel_hz=None)
+        def detail(reason,index,value,nonce=81):
+            body=f'{nonce:016x}/{reason:02x}/{index:02x}/{value:08x}'.encode()
+            return b'A52G2 '+body+b' %08x\n'%zlib.crc32(body)
+        good=detail(3,6,4)*3
+        row=ui.decode_console(good,cfg)['rejections'][0]
+        self.assertEqual((row['register_index'],row['expected'],row['observed'],row['valid_copies']),(6,5,4,3))
+        self.assertFalse(ui.decode_console(good,cfg)['adapter_prepared'])
+        self.assertEqual(ui.decode_console(good.replace(b'/03/',b'/02/'),cfg)['rejections'],[])
+        self.assertEqual(ui.decode_console(detail(3,6,4,82),cfg)['rejections'],[])
+        for args in ((3,13,4),(3,6,5),(2,6,4),(1,0,0),(4,255,1)):
+            with self.subTest(args=args),self.assertRaises(ValueError):ui.decode_console(detail(*args),cfg)
+
     def test_native_profile_pins_and_cpu_copy_canaries(self):
         cc='C:/winlibs/mingw64/bin/gcc.exe' if os.name=='nt' else shutil.which('cc')
         if not cc:self.skipTest('native compiler unavailable')

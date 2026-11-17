@@ -113,5 +113,9 @@ int main(void){
             self.assertTrue(rows)
             self.assertTrue(all(zlib.crc32(body)==int(crc,16) for body,crc in rows))
             self.assertTrue(any(b'/30/' in body for body,crc in rows))
+            details=re.findall(rb'A52G2 ([0-9a-f/]+) ([0-9a-f]{8})',v.stdout)
+            self.assertTrue(all(zlib.crc32(body)==int(crc,16) for body,crc in details))
+            self.assertTrue(any(b'/01/ff/00000000' in body for body,crc in details))
+            self.assertTrue(any(b'/03/06/00000004' in body for body,crc in details))
 
 if __name__=='__main__':unittest.main()

@@ -39,8 +39,25 @@ static void a52ui_report(unsigned phase)
     }
     for (unsigned i=0;i<3;i++) printf("A52G1 %s %08x\n",body,crc^0xffffffffU);
 }
+/* V24 rejected before prepare. Diagnose the existing guards; never relax them.
+ * reason 1: profile, 2: register mapping, 3: register value, 4: frame mapping.
+ * index ff means no individual register; value is a public display register.
+ */
+static void a52ui_rejection(unsigned reason,unsigned index,uint32_t value)
+{
+    char body[64];
+    int n=snprintf(body,sizeof(body),"%016llx/%02x/%02x/%08x",a52ui_nonce,reason,index,value);
+    if (n<=0 || (unsigned)n>=sizeof(body)) return;
+    uint32_t crc=0xffffffffU;
+    for (int i=0;i<n;i++) {
+        crc^=(uint8_t)body[i];
+        for (unsigned j=0;j<8;j++) crc=(crc>>1)^(0xedb88320U&(0U-(crc&1)));
+    }
+    for (unsigned i=0;i<3;i++) printf("A52G2 %s %08x\n",body,crc^0xffffffffU);
+}
 int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
 {
+    unsigned reason=1,index=0xff;uint32_t observed=0;
     if (!phys || !w || !h || !stride) return 0;
     if (!a52ui_state) {
         int enable=0,expected=0;
@@ -61,11 +78,15 @@ int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
             !a52ui_property(chosen,"dram-size",&size,sizeof(size)) ||
             !a52q_ui_profile_matches(reg,geometry,guards,start,base,size)) goto reject;
         for (unsigned i=0;i<13;i++) {
+            index=i;reason=2;observed=0;
             a52ui_regs[i]=(volatile uint32_t *)ml_io_map(guards[i].address,4);
-            if (!a52ui_regs[i] || *a52ui_regs[i]!=guards[i].value) goto reject;
+            if (!a52ui_regs[i]) goto reject;
+            reason=3;observed=*a52ui_regs[i];
+            if (observed!=guards[i].value) goto reject;
         }
         /* Match IOSurface's user mapping attribute. Never map this frame with
          * a cached alias, or concurrently with the old VM_WIMG_IO diagnostic. */
+        reason=4;index=0xff;observed=0;
         a52ui_frame=(volatile uint32_t *)ml_io_map_unmappable(reg[0],reg[1],VM_WIMG_WCOMB);
         if (!a52ui_frame) goto reject;
         __atomic_store_n(&a52ui_state,1,__ATOMIC_RELEASE);
@@ -76,6 +97,7 @@ int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
     return 1;
 reject:
     __atomic_store_n(&a52ui_state,-2,__ATOMIC_RELEASE);
+    a52ui_rejection(reason,index,observed);
     a52ui_report(0xe0);return 0;
 }
 uintptr_t a52q_ui_pixels(void)

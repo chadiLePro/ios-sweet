@@ -1,19 +1,29 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V24 BOOT trial RUNNING; original BOOT restoration PENDING
+## ACTIVE: V24 restored/verified; var pass-number correction and display diagnosis
 
-User explicitly approved exact userdata[17179869184,21474836480) write and
-five-minute BOOT70fe071a trial. Var installation VERIFIED, root/protected hashes
-match, source44eb5f6d...fc6fea02. Receipt backup/a52q/ios-var-install-v1/receipt.json.
-BOOT candidate installed/fullreadback and recovery USB departure CONFIRMED.
-Original BOOT RESTORATION PENDING. V24 receipt requires_restore=True,
-reboot_disconnect_observed=True. C: watcher PID8864, wrapper
-research/watch_ios_ufs_v24_restore.py, logs backup/a52q/ios-ufs-v24/watcher.log.
-Launcher session48772 completed; logresearch/development-ui-v24-launch.log.
-Five-minute reset instructions sent to user after departure. Wait for TWRP, then
-confirm watcher collection/originalBOOT fullhashrestore FIRST, independent fresh
-BOOT/recovery/DTBO/vbmeta hashes, then inspect new console/keybag/UI records.
-No keybagd completion or display/SpringBoard success proved by starting this test.
+V24 finished. OriginalBOOT restored/fullreadback; independent fresh BOOT,
+recovery/DTBO/vbmeta hashes MATCH. No restoration pending. User saw Samsungsplash.
+Results backup/a52q/ios-ufs-v24/{keybag-result,kernel-ui-result}.json and
+E:/A52-iOS16/development-ui-v24-result.json. CRC keybag selector0success1copy;
+selector14 success2copies +repeat1copy. Systembag opens stillENOENT(2/3copies),
+.writingENOENT2copies. FATALKEYBAGkb_load; no earlycomplete/services/SpringBoard.
+UI phasee0/0frames3copies: adapter rejected init; exactreason not logged inV24.
+
+New4GiB var installed and fullreadbackverified44eb...fc6fea02; root16GiB/protected
+hashes checked. Consent/receipt backup/a52q/ios-var-install-v1/. No further data
+write needed. Proxy verified actual header/window inV24, but var NOT mounted:
+initial fstab passno0 excluded by BOTH target mount -P phases. Exact pinned
+mount binary SHAac55c4c...2364df verified; disassembly 0x100005290..52a0 compares
+fs_passno offset0x2c withphase andbranchesbacktogetfsent onmismatch. Matches
+Apple diskdev_cmds701.100.2 source. Fixed passno2, preservingRO/rootwire/UFS.
+Native test nowusesactual data_fstabcallback, notfakeentry; verifies phases.
+
+Display guards NOT relaxed: added A52G2 CRC rejection reason/index/value,
+retains oldA52G1. Next trial can distinguishprofile/map/guardvalue/frame-map.
+No claimdisplayfix. Host144tests PASS andrepo validationPASS. Needcommit/fullHFS
+build,90archived-source verification, exactkernelQEMU and nextBOOT packaging.
+Original catalog/AMFI/UFS/root/displaydiagnostic/pstore files unchanged.
 
 Full HFS kernel run44125438385 attempt2 SUCCESS (2026-11-17 17:00UTC),
 source5a2b1fc4d67ce1c050978a6e8efe19d4260a81d0. Kernel SHA256
