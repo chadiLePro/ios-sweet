@@ -20,6 +20,8 @@
 #include "a52q_ufs_bounds.h"
 #include "a52q_var_bounds.h"
 
+/* Same private prototype used by target bsd/dev/arm64/conf.c and spec_vnops.c. */
+extern dev_t chrtoblk(dev_t);
 extern int a52q_ufs_root_named(const char *);
 extern int a52q_ufs_rootdev(dev_t *);
 static LCK_GRP_DECLARE(a52v_group,"a52q_var_proxy");

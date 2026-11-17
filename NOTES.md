@@ -1,6 +1,15 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: development KeyStore/CPU UI/RO-var candidate implemented; full build pending
+## ACTIVE: first UI full build failed on missing private prototype; correction under checks
+
+Full HFS44120791852 FAILED. Exactly one compiler error from new data proxy:
+undeclared chrtoblk in targetheaders. Actual XNU bsd/dev/arm64/conf.c implements
+extern dev_t chrtoblk(dev_t), used with explicit prototype also in spec_vnops.c.
+Added that exact declaration; retains raw->block device identity check. Do NOT
+remove the check or pretend first build compiled. Other apparent patch errors
+in logs are existing optional upstream patch-skip warnings. All new graphics/
+power/surface units compiled; no successful linked kernel/candidate fromthisrun.
+Oldhostpipeline98763 endedfailure; newfullbuild,expectedmap,pipeline required.
 
 Latest explicit user request authorizes synthetic always-unlocked/no-SEP profile,
 CPU IOSurface/framebuffer bridge and software power/watchdog in one candidate.
