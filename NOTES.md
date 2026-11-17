@@ -1,6 +1,19 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: combined development KeyStore/UI kernel built; host packaging underway
+## ACTIVE: V24 BOOT trial RUNNING; original BOOT restoration PENDING
+
+User explicitly approved exact userdata[17179869184,21474836480) write and
+five-minute BOOT70fe071a trial. Var installation VERIFIED, root/protected hashes
+match, source44eb5f6d...fc6fea02. Receipt backup/a52q/ios-var-install-v1/receipt.json.
+BOOT candidate installed/fullreadback and recovery USB departure CONFIRMED.
+Original BOOT RESTORATION PENDING. V24 receipt requires_restore=True,
+reboot_disconnect_observed=True. C: watcher PID8864, wrapper
+research/watch_ios_ufs_v24_restore.py, logs backup/a52q/ios-ufs-v24/watcher.log.
+Launcher session48772 completed; logresearch/development-ui-v24-launch.log.
+Five-minute reset instructions sent to user after departure. Wait for TWRP, then
+confirm watcher collection/originalBOOT fullhashrestore FIRST, independent fresh
+BOOT/recovery/DTBO/vbmeta hashes, then inspect new console/keybag/UI records.
+No keybagd completion or display/SpringBoard success proved by starting this test.
 
 Full HFS kernel run44125438385 attempt2 SUCCESS (2026-11-17 17:00UTC),
 source5a2b1fc4d67ce1c050978a6e8efe19d4260a81d0. Kernel SHA256
@@ -59,21 +72,19 @@ Proposed NEW userdata range[17179869184,21474836480) backed up offphone and
 independently full devicehashverified: E:/A52-iOS16/var-range-backup-v1/
 userdata-16GiB-20GiB.bin,4GiB SHA
 f40157ecac3a47a7edff45a86d76e3466644f13a072123aaa560b641012a129c.
-No var write approved/executed. Existing BOOT-only permission does NOT cover it.
+New exact var range explicitly approved and installed/verified; see active receipt.
 Private research/a52q_install_development_var.py has exact-range prepare/install/
 rollback; explicitapproval flags, root/GPT/protectedpartition checks,128MiB
 RAMchunks, fullreadback. Need host-only prepare after checked hardware20 exists,
 then concrete newrange approval before installation. Rollback exact same4GiB
 from verified backup; BOOT restoration is separate and cannot restore Android.
 
-NEXT: request exact new4GiB var extent approval and physical readiness using
-E:/A52-iOS16/development-ui-v24-review.md. No approval/installation/V24trial yet.
-Private BOOT backend now binds plan18. research/start_development_ui_trial.py
-and watch_ios_ufs_v24_restore.py prepared for hardware20/backup/a52q/ios-ufs-v24.
-Backend requires explicit --development-ui-profile, installedvarreceipt and full
-varphonehash. Watcher C: keeps waiting/retriesUSB, preservesfirstcapture, restores
-and fullhashverifies originalBOOT. Only after approved varinstall/readbacks and
-physicalreadiness start five-minute trial; then collect/restore/hash BEFORE logs.
+NEXT: monitor BOOT launcher research/start_development_ui_trial.py and C: watcher
+research/watch_ios_ufs_v24_restore.py. Trial folder backup/a52q/ios-ufs-v24.
+Backend binds plan18; requires exactUIprofile and full installedroot/var hashes.
+On confirmed USBdeparture notify user five-minute reset. After return watcher
+captures first pstore and restores/hashverifies originalBOOT; independently verify
+before analyzing results. If USB interrupted guard continueswaiting/retrying.
 
 ## Prior V23 verified result and build history
 
