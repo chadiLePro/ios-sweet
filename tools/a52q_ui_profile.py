@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import re
 import struct
+import zlib
 from a52q_display_selftest import validate_config as validate_display, decode_kernel_console
 from mkadt import node, u32, u64, cstr
 
@@ -45,3 +46,23 @@ def adt_node(config):
 def display_node():
     return node('disp0',[('device_type',cstr('display-subsystem')),
         ('compatible',cstr('a52q,display')),('canvas-width',u32(1080)),('canvas-height',u32(2400))])
+
+
+def decode_console(data,config):
+    """Only guarded-adapter evidence; never infer framework or visible UI success."""
+    validate_config(config)
+    records={}
+    for m in re.finditer(rb'A52G1 ([0-9a-f]{16}/[0-9a-f]{2}/[0-9a-f]{8}) ([0-9a-f]{8})\r?\n',data):
+        if zlib.crc32(m[1])!=int(m[2],16):continue
+        nonce,phase,count=[int(v,16) for v in m[1].split(b'/')]
+        if nonce!=config['nonce']:continue
+        if phase not in (0x10,0x30,0xe0,0xe1) or (phase==0x10 and count) or (phase==0x30 and not 1<=count<=3):
+            raise ValueError('invalid CRC-valid UI adapter record')
+        row=records.setdefault((phase,count),dict(phase=phase,frames=count,valid_copies=0))
+        row['valid_copies']+=1
+    rows=list(records.values())
+    return dict(records=rows,adapter_prepared=any(r['phase']==0x10 for r in rows),
+        guarded_submit_observed=any(r['phase']==0x30 for r in rows),
+        error_record_observed=any(r['phase']>=0xe0 for r in rows),
+        physical_visible_ui_verified=False,physical_panel_hz=None,
+        scope='CRC-valid software adapter records only; not service startup, sustained Hz or a visible lock screen')

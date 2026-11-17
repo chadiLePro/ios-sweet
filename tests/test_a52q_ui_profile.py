@@ -54,6 +54,21 @@ class UIProfileTests(unittest.TestCase):
         defaults.props[-1]=('no-effaceable-storage',0,struct.pack('<I',0))
         with self.assertRaises(ValueError):check()
 
+    def test_adapter_decode_rejects_corruption_and_wrong_nonce(self):
+        cfg=dict(copy.deepcopy(ui.EXPECTED),nonce=81,kernel_sha256='b'*64,root_sha256='a'*64,
+                 physical_kernel_console_sha256='d'*64,software_vsync_us=16667,physical_panel_hz=None)
+        def frame(phase,count,nonce=81):
+            body=f'{nonce:016x}/{phase:02x}/{count:08x}'.encode()
+            return b'A52G1 '+body+b' %08x\n'%zlib.crc32(body)
+        good=frame(0x10,0)*3+frame(0x30,1)*2
+        report=ui.decode_console(good,cfg)
+        self.assertTrue(report['adapter_prepared'] and report['guarded_submit_observed'])
+        self.assertFalse(report['physical_visible_ui_verified'])
+        self.assertEqual(ui.decode_console(good.replace(b'/30/',b'/31/'),cfg)['records'][0]['phase'],0x10)
+        self.assertFalse(ui.decode_console(frame(0x30,1,82),cfg)['guarded_submit_observed'])
+        self.assertTrue(ui.decode_console(good+frame(0xe1,20),cfg)['error_record_observed'])
+        with self.assertRaises(ValueError):ui.decode_console(frame(0x30,4),cfg)
+
     def test_native_profile_pins_and_cpu_copy_canaries(self):
         cc='C:/winlibs/mingw64/bin/gcc.exe' if os.name=='nt' else shutil.which('cc')
         if not cc:self.skipTest('native compiler unavailable')

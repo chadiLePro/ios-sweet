@@ -44,6 +44,22 @@ exact START submit, consumed completion, permanent timeout failure and CRCs PASS
 This is not physical proof. Kernel source unchanged since aacc10a.
 Docs/A52Q-DEVELOPMENT-UI.md records exact scope/limits.
 
+Host guard-test/doc commit c5dae42e516e1a49b158606cc9cc58afb54346e3 pushed;
+LinuxCI44123405728 SUCCESS (142tests). Full kernel build stays sourceaacc10a;
+no compiled source changes in c5. Hostpipeline
+research/finish_development_ui_artifacts.py active execsession98763; log
+research/development-ui-build-package.log. It waits44120791852, verifies90file
+archive againstexpected, exactkernelQEMU defaultfixture, masterrehash/rootplan18,
+hardware20 packaging with --development-ui-proof-build hardware-display-v2,
+--development-ui-proof-log backup/a52q/kernel-display-v2/console.txt and
+--development-var-plan E:/A52-iOS16/var-layout-development-v2.json.
+No new candidate yet. Existing C: BOOT helper STILL binds plan17; must update
+forplan18, explicitdevelopmentUI flag and installedvarreceipt/fullrangehash
+before any trial. Installer host prepare waitsforhardware20BOOT. No var approval.
+Additional public UI console CRC decoder implemented/tested but uncommitted;
+143rdtest rejects corrupted/wrongnonce/impossibleframecounts, never claimsvisibleUI.
+
+
 Host var clone E:/A52-iOS16/storage-data-development-v2/
 a52q-ios-var-development.hfs.img (4GiB) SHA
 44eb5f6d2f95476fca5f0f9ca233687d9db9e68d71901bd68ba97ab1fc6fea02.
