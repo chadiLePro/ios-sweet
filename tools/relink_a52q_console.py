@@ -116,6 +116,12 @@ def main():
             raise SystemExit('full build required: unselected static-init policy changed')
     # This transform changes kern_exit.o, outside every supported leaf. Never
     # reuse an older archive or silently ignore a changed diagnostic hook.
+    for addition in ('software_ui.py','data_fstab.py'):
+        path=root/'xnu/a52q'/addition
+        if path.exists():
+            try: old=run('git','show',a.base_sha+':xnu/a52q/'+addition,cwd=root)
+            except subprocess.CalledProcessError: raise SystemExit('full build required: base predates '+addition)
+            if old!=path.read_bytes():raise SystemExit('full build required: changed '+addition)
     exit_trace = root / 'xnu/a52q/exit_trace.py'
     keybag_trace = root / 'xnu/a52q/keybag_trace.py'
     if keybag_trace.exists():

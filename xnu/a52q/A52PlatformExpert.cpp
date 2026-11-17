@@ -10,6 +10,7 @@
 #include <sys/proc.h>
 #include <pexpert/pexpert.h>
 #include "a52q_boot_cache_policy.h"
+#include "A52DevelopmentPower.cpp"
 
 extern "C" int a52q_boot_cache_client_allowed(void);
 extern "C" int a52q_boot_cache_query(const uint8_t *, size_t);
@@ -121,11 +122,61 @@ IOReturn AppleMobileFileIntegrity::newUserClient(task_t task, void *security,
  * its real no-bag path run. It is NOT an unlocked bag, keychain or SEP emulator.
  * No file, key, bag handle, lock state or crypto operation is implemented.
  */
+/* Explicit opt-in development compatibility, not SEP/data protection. */
+static IOReturn
+a52q_dev_keybag_request(uint32_t selector, IOExternalMethodArguments *a, unsigned *state)
+{
+    if (!a || a->version != kIOExternalMethodArgumentsCurrentVersion ||
+        a->asyncWakePort || a->asyncReferenceCount || a->structureInputSize ||
+        a->structureInputDescriptor || a->structureOutputDescriptor ||
+        a->structureOutputDescriptorSize || a->structureVariableOutputData ||
+        a->scalarInputCount > 4 || (a->scalarInputCount && !a->scalarInput))
+        return kIOReturnBadArgument;
+    if (__atomic_load_n(state, __ATOMIC_ACQUIRE) != 1) return kIOReturnNotOpen;
+    if (selector == 14 || selector == 7) {
+        if (a->structureOutputSize || a->scalarOutputCount != 1 || !a->scalarOutput ||
+            a->scalarInputCount > 1 || (a->scalarInputCount && a->scalarInput[0]))
+            return kIOReturnBadArgument;
+        a->scalarOutput[0] = selector == 14 ? 0 : 4; /* fixed system handle; unlocked-since-boot */
+        return kIOReturnSuccess;
+    }
+    if (selector == 17) {
+        if (!a->structureOutput || a->scalarOutputCount || a->scalarInputCount > 1 ||
+            (a->scalarInputCount && a->scalarInput[0])) return kIOReturnBadArgument;
+        /* libaks decode_extended_state: DER SET of eight key/integer pairs. */
+        const char *keys[] = {"ss", "sls", "sb", "sfa", "sgs", "sas", "sgpe", "srcd"};
+        uint8_t der[128] = {0x31, 0};
+        unsigned used = 2;
+        for (unsigned k = 0; k < 8; k++) {
+            unsigned n = (unsigned)strlen(keys[k]);
+            der[used++] = 0x30; der[used++] = (uint8_t)(n + 5);
+            der[used++] = 0x0c; der[used++] = (uint8_t)n;
+            memcpy(der + used, keys[k], n); used += n;
+            der[used++] = 0x02; der[used++] = 1; der[used++] = k == 0 ? 4 : 0;
+        }
+        der[1] = (uint8_t)(used - 2);
+        if (a->structureOutputSize < used) return kIOReturnBadArgument;
+        memcpy(a->structureOutput, der, used);
+        a->structureOutputSize = used;
+        return kIOReturnSuccess;
+    }
+    /* State setters in upstream libaks' no-passcode development profile.
+     * They cannot create/save/load/wrap/unwrap key material. */
+    switch (selector) {
+    case 4: case 5: case 9: case 12: case 13: case 26: case 27: case 55: case 102:
+        if (a->scalarOutputCount || a->structureOutputSize) return kIOReturnBadArgument;
+        return kIOReturnSuccess;
+    default:
+        return kIOReturnUnsupported;
+    }
+}
+
 static IOReturn
 a52q_aks_probe_request(uint32_t selector, IOExternalMethodArguments *a,
-    bool owner, unsigned *state)
+    bool owner, unsigned *state, bool development = false)
 {
     if (!owner) return kIOReturnNotPrivileged;
+    if (development && selector != 0) return a52q_dev_keybag_request(selector, a, state);
     if (selector != 0 && selector != 14) return kIOReturnUnsupported;
     if (!a || a->version != kIOExternalMethodArgumentsCurrentVersion ||
         a->asyncWakePort != MACH_PORT_NULL || a->asyncReferenceCount ||
@@ -147,7 +198,7 @@ a52q_aks_probe_request(uint32_t selector, IOExternalMethodArguments *a,
 }
 
 static void
-a52q_aks_probe_trace(uint32_t selector, IOReturn result)
+a52q_aks_probe_trace(uint32_t selector, IOReturn result, bool development = false)
 {
     char name[32];
     proc_selfname(name, sizeof(name));
@@ -156,8 +207,8 @@ a52q_aks_probe_trace(uint32_t selector, IOReturn result)
     unsigned sequence = __atomic_fetch_add(&events, 1U, __ATOMIC_RELAXED) + 1U;
     if (sequence > 80) return;
     char body[120];
-    snprintf(body, sizeof(body), "aks/%u selector=%u result=0x%08x bag=absent",
-        sequence, selector, (unsigned)result);
+    snprintf(body, sizeof(body), "aks/%u selector=%u result=0x%08x bag=%s",
+        sequence, selector, (unsigned)result, development ? "development-unlocked" : "absent");
     uint32_t crc = 0xffffffffU;
     for (unsigned i = 0; body[i]; i++) {
         crc ^= (uint8_t)body[i];
@@ -171,7 +222,8 @@ a52q_aks_probe_trace(uint32_t selector, IOReturn result)
 class A52EmptyKeyStoreUserClient : public IOUserClient {
     OSDeclareDefaultStructors(A52EmptyKeyStoreUserClient);
     task_t ownerTask = TASK_NULL;
-    unsigned sessionState = 0; /* fresh/open/closed; never a bag handle */
+    unsigned sessionState = 0; /* connection state */
+    bool development = false;
 public:
     using IOUserClient::initWithTask;
     bool initWithTask(task_t, void *, UInt32, OSDictionary *) APPLE_KEXT_OVERRIDE;
@@ -187,6 +239,8 @@ bool A52EmptyKeyStoreUserClient::initWithTask(task_t task, void *security,
 {
     if (type || task == TASK_NULL || task != current_task()) return false;
     if (!IOUserClient::initWithTask(task, security, type)) return false;
+    int enabled = 0;
+    development = PE_parse_boot_argn("a52q_dev_keybag", &enabled, sizeof(enabled)) && enabled == 1;
     ownerTask = task;
     task_reference(ownerTask);
     return true;
@@ -213,8 +267,8 @@ IOReturn A52EmptyKeyStoreUserClient::externalMethod(uint32_t selector,
     OSObject *target __unused, void *reference __unused)
 {
     IOReturn result = a52q_aks_probe_request(selector, a,
-        ownerTask != TASK_NULL && current_task() == ownerTask, &sessionState);
-    a52q_aks_probe_trace(selector, result);
+        ownerTask != TASK_NULL && current_task() == ownerTask, &sessionState, development);
+    a52q_aks_probe_trace(selector, result, development);
     return result;
 }
 
@@ -320,6 +374,7 @@ bool A52PlatformExpert::start(IOService *provider)
         cacheService->release();
     }
     a52q_aks_probe_register(this);
+    a52q_register_development_power(this);
     IOLog("A52Q platform: registered\n");
     return true;
 }
@@ -337,4 +392,14 @@ void A52PlatformExpert::processTopLevel(IORegistryEntry *root)
     }
     createNubs(this, IODTFindMatchingEntries(cpus, kIODTExclusive, NULL));
     cpus->release();
+    int ui=0;
+    if (PE_parse_boot_argn("a52q_ui",&ui,sizeof(ui)) && ui==1) {
+        IORegistryEntry *armio=root->childFromPath("arm-io",gIODTPlane);
+        if (armio) {
+            /* Profile exposes only disp0 plus the existing GIC (excluded).
+             * No Samsung bus, clock or reset drivers are enabled. */
+            createNubs(this,IODTFindMatchingEntries(armio,kIODTExclusive,"('gic')"));
+            armio->release();
+        }
+    }
 }

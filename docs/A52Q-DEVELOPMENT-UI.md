@@ -1,0 +1,85 @@
+# Opt-in A52 development KeyStore and CPU display candidate
+
+This candidate attempts two new interfaces together. It does not establish that
+keybagd completes, Apple services run, or SpringBoard draws. The physical display
+baseline is the guarded RGB-bars test; a working A52 IOMobileFramebuffer
+compositor and measured physical 60 Hz were not demonstrated by that test.
+
+## Preserved baseline
+
+The UFS transport, root window, root entry source, 2,786-identity catalog, AMFI
+implementation, original display diagnostic, early logging, and memory exclusions
+remain unchanged in their source files. An overlay hook appends an optional var
+entry after the existing root wire; native checks compare that root entry byte
+for byte with the old result. Without a var node, the table output is unchanged.
+The original 81 patches and Redmi behavior remain separate.
+
+## Development KeyStore
+
+Only `a52q_dev_keybag=1` selects the requested synthetic no-passcode model. The
+owning-task/connection checks remain. Selector 14 reports fixed system handle 0,
+selector 7 reports unlocked-since-boot, and selector 17 reports the upstream
+libaks DER state. Bounded companion state setters are compatibility stubs.
+Save/load/wrap/unwrap crypto remain unsupported. This is not real Apple keybag
+validation, software keychain encryption, SEP protection, or safe credential
+storage. The normal empty discovery probe remains the default.
+
+A separate host var clone contains `keybags/systembag.kb`, owner root:root,
+mode 0600, under a 0700 directory. It is a plain property-list development
+metadata file with a marked local KeyBagKeys payload, not an Apple/SEP bag.
+The warm fixed-handle path avoids a claim of loading that payload as real keys.
+The preserved root and original var image are not changed.
+
+## Persistent var extent
+
+The proposed data image occupies userdata bytes [17179869184,21474836480),
+4 GiB immediately after the installed read-only root, without a GPT change.
+An off-phone backup of exactly this range was captured and separately compared
+with the device hash. Installing the var clone still needs explicit approval;
+BOOT-only trial authorization does not cover this range.
+
+The new read-only block proxy forwards bounded reads through /dev/ra52ufs0.
+It verifies the existing full-root window, nonce, non-overlap, raw-device mapping
+and first-block CRC before publishing /dev/a52var0. Every write returns EROFS.
+The optional filesystem table mounts it read-only at /private/var. This first
+candidate does not provide writable logs/databases, and does not claim that
+all services can start with read-only var. No RAM-root/var replacement is used.
+
+## CPU display bridge
+
+Software-only Surface, Framebuffer and Watchdog sources are reused from the
+fully patched upstream build, with exact input hashes. Cached IOSurface lookup
+fix 0068 stays present. A52 physical surfaces are restricted to the captured
+0x9c000000/0x9e4000 splash reservation, 1080x2400, stride 4320. Other surfaces
+use managed kernel buffers: 32 MiB per surface and a conservative 96 MiB total
+ceiling inside the existing 255 MiB kernel RAM allocation. No protected region
+is removed from allocator exclusions.
+
+The new adapter checks the 13 captured running display registers and performs
+only the already-tested command-mode START write. It sends no panel commands
+and changes no clocks, resets, SMMU or display-controller mode. Its kernel and
+user framebuffer mappings use the same write-combine attribute. The old display
+diagnostic cannot run at the same time. That mapping/periodic-use path is new
+and needs a physical test; preserving the buffer geometry does not prove it.
+
+The timer runs every 16667 microseconds and presents composed BGRA surfaces with
+bounded CPU copies and guarded refresh. This is a software notification cadence,
+not a measured panel refresh rate. The copy path is not an alpha compositor,
+OpenGL implementation or Metal driver. No speculative hooks to Apple's opaque
+renderer have been applied. Framework selection and fallback still need observed
+service logs; a missing Metal device alone does not guarantee a CPU fallback.
+
+The opt-in power provider reports synthetic 100% AC without PMIC/SPMI access.
+The software watchdog accepts check-ins and never arms a hardware watchdog.
+These placeholders do not supply graphics or prove service health.
+
+## Validation and trial requirements
+
+Host tests cover actual KeyStore dispatch/ownership, source-transform drift,
+cached surface lookup preservation, native framebuffer pins and copy canaries,
+proxy read bounds/write rejection, original root-wire preservation, and payload
+kernel/root/board/flag binding. Kernel compile/link, diagnostic QEMU, host-image
+checks and physical tests must be reported separately. A candidate should only
+be flashed after packaging, review, new-data-range approval, and a restoration
+watcher are complete. Keep the root read-only and retain pstore for the next
+observed failure.

@@ -28,6 +28,7 @@ class EmptyKeyStoreTests(unittest.TestCase):
 #include <cstdio>
 #include <cstring>
 #include <cstdarg>
+#include <initializer_list>
 #define __unused __attribute__((unused))
 #define APPLE_KEXT_OVERRIDE override
 #define OSDeclareDefaultStructors(T) public: T() = default;
@@ -54,6 +55,7 @@ static void task_deallocate(task_t) { --task_refs; }
 static void proc_selfname(char *p, size_t n) { snprintf(p,n,"keybagd"); }
 static const char *boot_root = "a52ios0";
 static bool PE_parse_boot_argn(const char *key, void *p, size_t n) {
+ if (!strcmp(key,"a52q_dev_keybag")) { assert(n==sizeof(int)); *static_cast<int *>(p)=0; return true; }
  assert(!strcmp(key,"rd"));
  if (!boot_root) return false;
  snprintf(static_cast<char *>(p),n,"%s",boot_root); return true;
@@ -137,6 +139,25 @@ int main() {
   assert(a52q_aks_probe_request(0,&bad,true,&state)==kIOReturnBadArgument);
   assert(state==0);
  }
+ // New profile stays explicit; default discovery behavior below is unchanged.
+ unsigned devstate=1;uint64_t devhandle=99;auto dev=a;
+ dev.scalarOutput=&devhandle;dev.scalarOutputCount=1;
+ assert(a52q_aks_probe_request(14,&dev,true,&devstate,true)==kIOReturnSuccess && devhandle==0);
+ assert(a52q_aks_probe_request(7,&dev,true,&devstate,true)==kIOReturnSuccess && devhandle==4);
+ devhandle=99;
+ assert(a52q_aks_probe_request(14,&dev,false,&devstate,true)==kIOReturnNotPrivileged && devhandle==99);
+ uint64_t other=123;dev.scalarInput=&other;dev.scalarInputCount=1;
+ assert(a52q_aks_probe_request(14,&dev,true,&devstate,true)==kIOReturnBadArgument && devhandle==99);
+ uint8_t der[128];memset(der,0xaa,sizeof(der));dev=a;
+ dev.structureOutput=der;dev.structureOutputSize=1;
+ assert(a52q_aks_probe_request(17,&dev,true,&devstate,true)==kIOReturnBadArgument && der[0]==0xaa);
+ dev.structureOutputSize=sizeof(der);
+ assert(a52q_aks_probe_request(17,&dev,true,&devstate,true)==kIOReturnSuccess);
+ assert(der[0]==0x31 && (unsigned)der[1]+2U==dev.structureOutputSize && der[dev.structureOutputSize]==0xaa);
+ for(unsigned sel : {3U,6U,10U,11U,999U})
+  assert(a52q_aks_probe_request(sel,&a,true,&devstate,true)==kIOReturnUnsupported);
+ devstate=2;dev=a;dev.scalarOutput=&devhandle;dev.scalarOutputCount=1;
+ assert(a52q_aks_probe_request(14,&dev,true,&devstate,true)==kIOReturnNotOpen);
  uint64_t handle=0x1122334455667788ULL;
  auto query=a;query.scalarOutput=&handle;query.scalarOutputCount=1;
  assert(a52q_aks_probe_request(14,&query,true,&state)==kIOReturnNotOpen);

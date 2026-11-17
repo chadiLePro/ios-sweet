@@ -1,0 +1,68 @@
+{
+  "reg": [
+    2617245696,
+    10371072
+  ],
+  "geometry": [
+    1080,
+    2400,
+    4320
+  ],
+  "start_register": 182460444,
+  "guards": [
+    {
+      "address": 182460436,
+      "value": 131072
+    },
+    {
+      "address": 182460444,
+      "value": 0
+    },
+    {
+      "address": 182460660,
+      "value": 2
+    },
+    {
+      "address": 182461172,
+      "value": 0
+    },
+    {
+      "address": 182461684,
+      "value": 0
+    },
+    {
+      "address": 183058436,
+      "value": 501
+    },
+    {
+      "address": 183058440,
+      "value": 5
+    },
+    {
+      "address": 182472704,
+      "value": 157287480
+    },
+    {
+      "address": 182472724,
+      "value": 2617245696
+    },
+    {
+      "address": 182472740,
+      "value": 4320
+    },
+    {
+      "address": 182472752,
+      "value": 145407
+    },
+    {
+      "address": 182472756,
+      "value": 50462721
+    },
+    {
+      "address": 182472760,
+      "value": 2147483648
+    }
+  ],
+  "live_dtb_sha256": "8175ef1d0443676475ea94773484d4fece3a24f8df9cedae71ffabf90e9ab0c8",
+  "scope": "Captured A52Q command-mode splash profile only; not measured 60Hz or working userland graphics"
+}

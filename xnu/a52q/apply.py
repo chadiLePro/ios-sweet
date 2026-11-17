@@ -15,6 +15,8 @@ import zlib
 import static_init
 import exit_trace
 import keybag_trace
+import software_ui
+import data_fstab
 
 HERE = Path(__file__).resolve().parent
 
@@ -63,6 +65,16 @@ def apply(root, filesystem='mockfs'):
     changes[exit_trace.TARGET] = exit_trace.transform(read(exit_trace.TARGET))
     changes[keybag_trace.VFS] = keybag_trace.vfs(read(keybag_trace.VFS))
     changes[keybag_trace.IOKIT] = keybag_trace.iokit(read(keybag_trace.IOKIT))
+    for ui_name in software_ui.PINS:
+        ui_path='iokit/Kernel/arm/'+ui_name
+        changes[ui_path]=software_ui.transform(ui_name,read(ui_path))
+    for ui_name in ('a52q_ui_bridge.h','a52q_ui_copy.h','A52DevelopmentPower.cpp'):
+        changes['iokit/Kernel/arm/'+ui_name]=(HERE/ui_name).read_text()
+    for ui_name in ('a52q_ui_bridge.c','a52q_ui_profile.h','a52q_ui_bridge.h'):
+        changes['bsd/dev/'+ui_name]=(HERE/ui_name).read_text()
+    replace('bsd/conf/files', 'bsd/dev/sweet_ufs.c\t\t\tstandard\n',
+            'bsd/dev/sweet_ufs.c\t\t\tstandard\nbsd/dev/a52q_ui_bridge.c\t\tstandard\n')
+
     replace('bsd/kern/sweet_amfi.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
             '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_amfi.c"\n#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
     changes['bsd/kern/a52q_amfi.c'] = (HERE / 'a52q_amfi.c').read_text()
@@ -72,12 +84,19 @@ def apply(root, filesystem='mockfs'):
     replace('bsd/dev/sweet_ufs.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
             '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_ufs.c"\n#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
     changes['bsd/dev/a52q_ufs.c'] = (HERE / 'a52q_ufs.c').read_text()
+    changes['bsd/dev/a52q_data_proxy.c']=(HERE/'a52q_data_proxy.c').read_text()
+    changes['bsd/dev/a52q_var_bounds.h']=(HERE/'a52q_var_bounds.h').read_text()
+    replace('bsd/conf/files', 'bsd/dev/sweet_ufs.c\t\t\tstandard\n',
+            'bsd/dev/sweet_ufs.c\t\t\tstandard\nbsd/dev/a52q_data_proxy.c\t\tstandard\n')
     changes['bsd/dev/a52q_display.c'] = (HERE / 'a52q_display.c').read_text()
     changes['bsd/dev/a52q_display_pattern.h'] = (HERE.parents[1] / 'shim/a52q/display_pattern.h').read_text()
     replace('bsd/conf/files', 'bsd/dev/sweet_ufs.c\t\t\tstandard\n',
             'bsd/dev/sweet_ufs.c\t\t\tstandard\nbsd/dev/a52q_display.c\t\t\tstandard\n')
     for name in ('a52q_ufs_disk.c', 'a52q_ufs_bounds.h', 'a52q_bootfs.c'):
         changes['bsd/dev/' + name] = (HERE / name).read_text()
+    # Append an optional separate data entry; original mounted root wire and
+    # transport remain identical. No var node means byte-identical old output.
+    changes['bsd/dev/a52q_bootfs.c']=data_fstab.transform(changes['bsd/dev/a52q_bootfs.c'])
     for name in ('ufs_nop_protocol.h', 'ufs_read_protocol.h'):
         changes['bsd/dev/a52q_' + name] = (HERE.parents[1] / 'shim/a52q' / name).read_text()
     replace('bsd/kern/bsd_init.c', '\tvfsinit();\n',
@@ -202,6 +221,9 @@ def apply(root, filesystem='mockfs'):
             '    "   \'IONameMatch\' = \'samsung,a52q\'; \'IOProbeScore\' = 10000:32; },"\n'
             '    " { \'IOClass\' = A52CPU; \'IOProviderClass\' = IOPlatformDevice;"\n'
             '    "   \'IONameMatch\' = \'ARM,v8\'; \'IOProbeScore\' = 10000:32; },"\n'
+            '    " { \'IOClass\' = IOCoreSurfaceRoot; \'IOProviderClass\' = IOResources; \'IOMatchCategory\' = IOCoreSurfaceRoot; },"\n'
+            '    " { \'IOClass\' = AppleCLCD; \'IOProviderClass\' = IOPlatformDevice; \'IONameMatch\' = \'a52q,display\'; },"\n'
+            '    " { \'IOClass\' = IOWatchdog; \'IOProviderClass\' = IOResources; \'IOMatchCategory\' = IOWatchdog; },"\n'
             '#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
     # Read-only software observation of CPU signal state, not SMP startup.
     replace('osfmk/arm64/cpu.c', '#if defined(SWEET)\n/* Bring-up observer:',

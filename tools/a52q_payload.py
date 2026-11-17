@@ -83,7 +83,7 @@ def validate_bootstrap_init(data):
 
 
 def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None, display_test=None, ufs_root=None,
-             local_boot_manifest=None):
+             local_boot_manifest=None, development_ui_profile=None):
     if base % BLOCK or total < 4 * BLOCK or total % BLOCK or not 16 <= intid < 32:
         raise ValueError('unsupported bootstrap memory/timer geometry')
     memory = total - PANIC
@@ -128,6 +128,16 @@ def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None
         if not ufs_test: raise ValueError('UFS root requires the physical UFS selftest configuration')
         validate_config(ufs_root, ufs_test)
         result.children.append(adt_node(ufs_root))
+    if development_ui_profile:
+        if not ufs_root or ufs_root.get('layout_kind')!=2 or display_test:
+            raise ValueError('development UI profile requires full persistent root and no simultaneous display diagnostic')
+        from a52q_ui_profile import adt_node, display_node
+        result.children.append(adt_node(development_ui_profile))
+        if development_ui_profile.get('var_plan'):
+            from a52q_persistent_data import adt_node as var_node
+            result.children.append(var_node(development_ui_profile['var_plan'],ufs_root,ufs_test['nonce']))
+        next(n for n in result.children if n.name=='arm-io').children.append(display_node())
+        next(n for n in result.children if n.name=='defaults').props.append(('no-effaceable-storage',0,u32(1)))
     return result
 
 
@@ -280,6 +290,35 @@ def validate_payload(data, manifest):
             raise ValueError('code-signing trace requires full-root development mode and cs_debug=2')
     elif cs_trace:
         raise ValueError('code-signing trace must be explicitly declared')
+    ui=manifest.get('development_ui_profile')
+    ui_flags=[v for v in command if v.startswith((b'a52q_ui=',b'a52q_dev_keybag='))]
+    ui_nodes=[n for n in tree.children if n.name=='a52q-ui-bridge']
+    if ui:
+        from a52q_ui_profile import adt_node as ui_node, display_node
+        if (not ios_root or manifest.get('ios_exec_development') is not True or
+                manifest.get('environment')!='SM-A525F/DS hardware candidate' or
+                ui['kernel_sha256']!=manifest.get('kernel_sha256') or ui['root_sha256']!=ios_root['sha256'] or
+                ui['live_dtb_sha256']!=manifest.get('live_dtb_sha256') or
+                ui_flags!=[b'a52q_dev_keybag=1',b'a52q_ui=1'] or len(ui_nodes)!=1 or
+                adt.serialize(ui_nodes[0])!=adt.serialize(ui_node(ui)) or manifest.get('display_selftest')):
+            raise ValueError('development UI profile kernel/root/flags/ADT mismatch')
+        armio=next(n for n in tree.children if n.name=='arm-io')
+        displays=[n for n in armio.children if n.name=='disp0']
+        if len(displays)!=1 or adt.serialize(displays[0])!=adt.serialize(display_node()):
+            raise ValueError('development UI display node mismatch')
+        defaults=[n for n in tree.children if n.name=='defaults']
+        if len(defaults)!=1 or [b for n,f,b in defaults[0].props if n=='no-effaceable-storage']!=[u32(1)]:
+            raise ValueError('development keybag profile requires explicit no-effaceable-storage')
+    elif ui_flags or ui_nodes:
+        raise ValueError('undeclared development UI flags or profile')
+    var_nodes=[n for n in tree.children if n.name=='a52q-ufs-var']
+    var_plan=ui.get('var_plan') if ui else None
+    if var_plan:
+        from a52q_persistent_data import adt_node as var_node
+        if len(var_nodes)!=1 or adt.serialize(var_nodes[0])!=adt.serialize(var_node(var_plan,ios_root,ufs_test['nonce'])):
+            raise ValueError('persistent var node differs from reviewed RO extent')
+    elif var_nodes:
+        raise ValueError('undeclared persistent var extent')
     if ios_root and any(v.startswith((b'cs_enforcement_disable=', b'amfi_allow_any_signature=',
                                       b'amfi_get_out_of_my_way=')) for v in command):
         raise ValueError('full-root allowlist testing must retain signature enforcement')
@@ -400,6 +439,9 @@ def main():
     p.add_argument('--display-selftest-build', type=Path, help='successful standalone physical display build.json')
     p.add_argument('--display-selftest-log', type=Path, help='matching CRC-checked physical refresh console')
     p.add_argument('--display-register-sources', type=Path, help='pinned Samsung display register sources')
+    p.add_argument('--development-ui-proof-build', type=Path, help='opt-in no-SEP/CPU UI profile: CRC-confirmed A52 display build')
+    p.add_argument('--development-ui-proof-log', type=Path, help='matching physical XNU refresh console; no current UI success implied')
+    p.add_argument('--development-var-plan',type=Path,help='planned separate RO var extent; installation needs new explicit approval')
     p.add_argument('--qemu-dtb', type=Path, help='QEMU-generated virt DTB; makes a payload that phone packaging rejects')
     p.add_argument('--qemu-diagnostic', type=Path, help='matching QEMU loader diagnostic result with measured CNTFRQ')
     p.add_argument('--qemu-lowmem', action='store_true',
@@ -523,15 +565,33 @@ def main():
         if a.local_boot_manifest:
             from a52q_boot_manifest import measurement
             local_manifest = measurement(hashlib.sha256(kernel).hexdigest(), ufs_root['sha256'], dt_hash)
+        ui_profile=None
+        if a.development_ui_proof_build or a.development_ui_proof_log:
+            if (not a.development_ui_proof_build or not a.development_ui_proof_log or
+                    not a.ufs_ios_root_plan or not a.ios_exec_development or display_test or a.qemu_dtb):
+                raise ValueError('development UI profile needs persistent hardware root and exact physical display proof')
+            for marker in (b'a52q_dev_keybag',b'a52q_ui',b'A52G1 %s %08x'):
+                if marker not in kernel:raise ValueError('kernel lacks opted-in development UI implementation')
+            from a52q_ui_profile import configuration as ui_configuration
+            ui_profile=ui_configuration(json.loads(a.development_ui_proof_build.read_text()),
+                a.development_ui_proof_log.read_bytes(),hashlib.sha256(kernel).hexdigest(),ufs_root['sha256'])
+        if a.development_var_plan:
+            if ui_profile is None:raise ValueError('persistent development var needs the explicit UI/keybag profile')
+            from a52q_persistent_data import validate_config as validate_var
+            var_plan=json.loads(a.development_var_plan.read_text())
+            validate_var(var_plan,ufs_root)
+            if not var_plan.get('seed_files'):raise ValueError('development var lacks reviewed keybag metadata seed')
+            ui_profile['var_plan']=var_plan
         tree_path = a.out.with_suffix('.adt')
         tree_path.write_bytes(adt.serialize(make_adt(base, total, gic, hz, intid, mpidr,
-            ufs_test=ufs_test, display_test=display_test, ufs_root=ufs_root, local_boot_manifest=local_manifest)))
+            ufs_test=ufs_test, display_test=display_test, ufs_root=ufs_root, local_boot_manifest=local_manifest, development_ui_profile=ui_profile)))
         payload, info = mkpayload.build(str(a.kernel), str(tree_path),
                                        'debug=0xc serial=3 cpus=1 keepsyms=1 -v -noprogress rd=' +
                                        ('a52ios0' if a.ufs_ios_root_plan else 'a52root0' if ufs_root else 'md0') +
                                        (' unentitled_ios_sim_launch=1' if a.ios_exec_development else '') +
                                        (' ignition_level=1' if a.ios_ignition_level is not None else '') +
-                                       (' cs_debug=2' if a.ios_codesign_debug else ''),
+                                       (' cs_debug=2' if a.ios_codesign_debug else '') +
+                                       (' a52q_dev_keybag=1 a52q_ui=1' if ui_profile else ''),
                                        ramdisk_path=str(root_path) if root_path else None)
         report = {'target': 'A52Q', 'status': 'bootstrap payload; physical RAM access not yet verified',
                   'environment': environment,
@@ -567,6 +627,7 @@ def main():
             report['ios_codesign_debug'] = 2
         if local_manifest is not None:
             report['local_boot_manifest'] = local_manifest
+        if ui_profile is not None: report['development_ui_profile']=ui_profile
         validate_payload(payload, report)
         a.out.write_bytes(payload)
         a.out.with_suffix(a.out.suffix + '.json').write_text(json.dumps(report, indent=2) + '\n')

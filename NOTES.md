@@ -1,6 +1,56 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V23 restored; keybagd opens missing systembag.kb (ENOENT)
+## ACTIVE: development KeyStore/CPU UI/RO-var candidate implemented; full build pending
+
+Latest explicit user request authorizes synthetic always-unlocked/no-SEP profile,
+CPU IOSurface/framebuffer bridge and software power/watchdog in one candidate.
+It supersedes older assistant notes refusing stubs. Do not call those stubs real
+SEP/keychain/graphics, or claim SpringBoard before physical observation.
+Original BOOT remains restored from V23; phone TWRP. No new phone write.
+Only RGB bars were physically proved, not A52 IOMFB or measured panel60Hz.
+
+Uncommitted implementation now includes optional a52q_dev_keybag=1 and a52q_ui=1;
+default empty probe unchanged. Platform includes A52DevelopmentPower.cpp and
+exposes only display nub under UI flag. software_ui.py transforms exact fully
+patched Surface.h/.cpp, Framebuffer.cpp, Watchdog.cpp with A52 guards; preserves
+original Redmi body and cached lookup fix0068. New a52q_ui_bridge.c validates
+fixed captured FB/profile13regs, consistent WC mappings, only START writes,
+100ms bounded wait/fail closed. Does NOT change original a52q_display.c or UFS,
+AMFI/catalog, reserved-memory planner or persistent console. Copy helper checks
+bounds/alignment and copies BGRA only. Surface32MiB/per,96MiB total cap inside
+existing255MiB managed region; no carveout relaxation.
+
+New a52q_data_proxy.c wraps existing /dev/ra52ufs0 READ interface, verifies exact
+non-overlapping4GiB data extent/nonce/root/headerCRC, exposes only RO a52var0.
+New data_fstab.py appends optional RO/private/var table entry after identical
+original root wire. No UFS transport/root implementation edits. No writable var
+or kernel-write transport provided, so service writable-state failures remain
+possible. tools/a52q_payload.py explicit profile requires actual CRC display
+proof, full persistent root, exactflags/board/kernel/hash/ADT and optionalvarplan.
+New native tests PASS: KeyStoreprofile, guardedgeometry/copycanaries, actual
+proxy read strategy/write rejection, original rootwire before optionalvar,
+source transforms reconstructed from81patches, payloadbindings. All141A52 tests
+PASS locally. Need repo check, fullbuild/provenance, QEMU and final packaging.
+Docs/A52Q-DEVELOPMENT-UI.md records exact scope/limits.
+
+Host var clone E:/A52-iOS16/storage-data-development-v2/
+a52q-ios-var-development.hfs.img (4GiB) SHA
+44eb5f6d2f95476fca5f0f9ca233687d9db9e68d71901bd68ba97ab1fc6fea02.
+Filesystem fsckPASS. Rsyncchecksumalloriginalvar paths outside explicitly new
+keybags subtreePASS; original master/varimage unchanged. Seed metadata file is
+364B SHA d1db41b2a90d302b23ea55cfe040c1ee169d3af687d8046baed990ad507f5656,
+root:root0600 under0700keybags. It is development metadata, NOT actualApple/SEPbag.
+Hostplan E:/A52-iOS16/var-layout-development-v2.json rehashed/geometrychecked.
+
+READ-ONLY backup of proposed new userdata range[17179869184,21474836480) captured
+offphone and independently full devicehashverified:
+E:/A52-iOS16/var-range-backup-v1/userdata-16GiB-20GiB.bin (4GiB),
+SHA f40157ecac3a47a7edff45a86d76e3466644f13a072123aaa560b641012a129c.
+Verified.json samefolder; no data write approved or executed. Need concrete
+installer/rollback and checked BOOT candidate before asking newrangeapproval.
+Existing BOOT-only authorization does NOT cover this var installation.
+
+## Prior V23 verified result and build history
 
 
 V23 complete. C: watcher collected first console and restored original BOOT.
