@@ -1,20 +1,36 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V25 BOOT trial RUNNING; original BOOT restoration PENDING
+## ACTIVE: V25 restored/verified; real var mount works; tzinit EROFS and DSI status guard
 
-V25 physical readiness confirmed; record backup/a52q/ios-ufs-v25/readiness.json.
-Launcher research/start_var_phase_trial.py finished: fullroot/var/protected
-preflight passed, candidate e316aebb...f69f534d installed/fullreadback verified,
-recovery USBdeparture CONFIRMED. OriginalBOOT restoration PENDING, receipt
-requires_restore=True. C: watcher PID7504 running via
-research/watch_ios_ufs_v25_restore.py; trialfolder backup/a52q/ios-ufs-v25.
-Five-minute reset instructions sent AFTER confirmeddeparture. User must return
-phone to TWRP. On return verify watcher originalBOOT restore/fullhash FIRST,
-independent fresh BOOT/recovery/DTBO/vbmeta hashes, then analyzeactual varmount,
-systembag opens, AKS selectors and A52G2 guard-rejection details. No service/UI
-success claimed. No datawrite in V25; root/var remainread-only.
+V25 finished. OriginalBOOT restored/fullreadback; independent fresh BOOT,
+recovery/DTBO/vbmeta hashes MATCH. No restoration pending. User Samsungsplash.
+Savedbackup/a52q/ios-ufs-v25/{console.txt,keybag-result.json,kernel-ui-result.json,
+independent-protected-hashes.json}; E:/A52-iOS16/var-phase-v25-result.json.
+Real HFS mounted A52IOSVar /dev/a52var0 on /private/var read-only. CRCsystembag
+opens errno0 (3validcopies +repeat1). Selector14success3copies+repeat2. Raw
+MKB_INIT SystemKeybagloaded and DONE MKB_INIT, thenusermanagerd/dirs_cleaner/etc.
+This is developmentcompatibility, NOT realkeys/SEP. varwrites errno30 on
+AKSSetup.log/.aks_allowlist, usersession/persona files, butkeybagboot task continued.
+Firstfatalboot-task now tzinit: badzoneinfo link ENOENT, create_symlink from
+/var/db/timezone/zoneinfo to /usr/share/zoneinfo.default fails EROFS, exit30,
+userspacepanic. No EarlyBootComplete/services/SpringBoard proved.
 
-Historical V24 result follows; V25 restoration above is still pending.
+CRCUIrejectA52G2 reason3 index6 observed0 expected5 (2copies). This address
+0xae94008 = pinned DSI_STATUS; originalsnapshotguard incorrectlyrequiresbusy5.
+PinnedSamsung dsi_ctrl_hw_cmn.c functionwait_for_cmd_mode_mdp_idle testsbit2
+untilclear; bit31 iserrorcontention. Need implement narrowly observed idle0
+acceptance and boundedbusyhandling, leavingconfigguards/physicalFB/oldRGBdiag
+unchanged. No guard removed yet. SourcefromGitHub plugin fetched:
+drivers/gpu/drm/msm/dsi-staging/dsi_ctrl_hw_cmn.c @ f6bbda4e5986f09e4d51ceffd1b645b2d5aa75b4.
+
+NEXT independentwork: inspectactual var timezone symlinks and preservedmaster
+systemtzdata withROappliance; audit exacttzinit. A valid preseed may remove this
+initializationwrite while retainingstrictunchangedUFS/read-onlybaseline. Do not
+skip tzinit/force success. Writablevarservices maystillneedfutureboundedwriter;
+no new runtimewriteapproved. Any newvarimagehash/install requires reviewed exact
+range and explicitapproval. Preserveexisting44ebvarimage/master/backups.
+
+Historical V24/V25 build history follows; no restoration currently pending.
 V24 finished. OriginalBOOT restored/fullreadback; independent fresh BOOT,
 recovery/DTBO/vbmeta hashes MATCH. No restoration pending. User saw Samsungsplash.
 Results backup/a52q/ios-ufs-v24/{keybag-result,kernel-ui-result}.json and
