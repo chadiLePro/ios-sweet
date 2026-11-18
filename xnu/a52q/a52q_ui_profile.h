@@ -28,6 +28,17 @@ static const struct a52q_ui_guard a52q_ui_expected[13] = {
 #define A52Q_UI_WIDTH 1080U
 #define A52Q_UI_HEIGHT 2400U
 #define A52Q_UI_STRIDE 4320U
+/* DSI_STATUS is transient, not configuration: the pinned Samsung
+ * dsi_ctrl_hw_cmn_wait_for_cmd_mode_mdp_idle() waits for bit 2 to clear.
+ * V25 observed idle 0; the old physical snapshot observed busy 5. Accept
+ * only those two observed states, then require idle before mapping/START.
+ * Every other configuration register still matches its captured value.
+ */
+static inline int a52q_ui_guard_value_matches(unsigned index,uint32_t value)
+{
+    if (index>=13) return 0;
+    return index==6 ? (value==0 || value==5) : value==a52q_ui_expected[index].value;
+}
 static inline int a52q_ui_profile_matches(const uint64_t reg[2],
     const uint32_t geometry[3], const struct a52q_ui_guard guards[13],
     uint64_t start, uint64_t ram_base, uint64_t ram_size)

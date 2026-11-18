@@ -81,7 +81,8 @@ class UIProfileTests(unittest.TestCase):
         self.assertFalse(ui.decode_console(good,cfg)['adapter_prepared'])
         self.assertEqual(ui.decode_console(good.replace(b'/03/',b'/02/'),cfg)['rejections'],[])
         self.assertEqual(ui.decode_console(detail(3,6,4,82),cfg)['rejections'],[])
-        for args in ((3,13,4),(3,6,5),(2,6,4),(1,0,0),(4,255,1)):
+        self.assertEqual(ui.decode_console(detail(5,6,5),cfg)['rejections'][0]['reason'],'dsi-busy-timeout')
+        for args in ((3,13,4),(3,6,5),(2,6,4),(1,0,0),(4,255,1),(5,6,0),(5,5,5)):
             with self.subTest(args=args),self.assertRaises(ValueError):ui.decode_console(detail(*args),cfg)
 
     def test_native_profile_pins_and_cpu_copy_canaries(self):

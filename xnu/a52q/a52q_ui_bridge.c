@@ -40,7 +40,8 @@ static void a52ui_report(unsigned phase)
     for (unsigned i=0;i<3;i++) printf("A52G1 %s %08x\n",body,crc^0xffffffffU);
 }
 /* V24 rejected before prepare. Diagnose the existing guards; never relax them.
- * reason 1: profile, 2: register mapping, 3: register value, 4: frame mapping.
+ * reason 1: profile, 2: register mapping, 3: register value, 4: frame mapping,
+ * 5: DSI MDP busy timeout. Never writes DSI_STATUS to force an idle state.
  * index ff means no individual register; value is a public display register.
  */
 static void a52ui_rejection(unsigned reason,unsigned index,uint32_t value)
@@ -54,6 +55,19 @@ static void a52ui_rejection(unsigned reason,unsigned index,uint32_t value)
         for (unsigned j=0;j<8;j++) crc=(crc>>1)^(0xedb88320U&(0U-(crc&1)));
     }
     for (unsigned i=0;i<3;i++) printf("A52G2 %s %08x\n",body,crc^0xffffffffU);
+}
+static int a52ui_guard_read(unsigned index,uint32_t *value)
+{
+    *value=*a52ui_regs[index];
+    if (!a52q_ui_guard_value_matches(index,*value)) return 0;
+    if (index!=6 || !*value) return 1;
+    uint64_t deadline;nanoseconds_to_deadline(100*NSEC_PER_MSEC,&deadline);
+    do {
+        if (mach_absolute_time()>=deadline) return -1;
+        *value=*a52ui_regs[index];
+        if (!a52q_ui_guard_value_matches(index,*value)) return 0;
+    } while (*value);
+    return 1;
 }
 int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
 {
@@ -81,8 +95,10 @@ int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
             index=i;reason=2;observed=0;
             a52ui_regs[i]=(volatile uint32_t *)ml_io_map(guards[i].address,4);
             if (!a52ui_regs[i]) goto reject;
-            reason=3;observed=*a52ui_regs[i];
-            if (observed!=guards[i].value) goto reject;
+            reason=3;
+            int sampled=a52ui_guard_read(i,&observed);
+            if (sampled<0) {reason=5;goto reject;}
+            if (!sampled) goto reject;
         }
         /* Match IOSurface's user mapping attribute. Never map this frame with
          * a cached alias, or concurrently with the old VM_WIMG_IO diagnostic. */
@@ -114,7 +130,10 @@ int a52q_ui_flush(void)
     int expected=0;
     if (!a52q_ui_pixels() || !__atomic_compare_exchange_n(&a52ui_busy,&expected,1,0,__ATOMIC_ACQ_REL,__ATOMIC_ACQUIRE)) return 0;
     /* The only write is the exact START consumed by the previous RGB test. */
-    for (unsigned i=0;i<13;i++) if (*a52ui_regs[i]!=a52q_ui_expected[i].value) goto fail;
+    for (unsigned i=0;i<13;i++) {
+        uint32_t observed;
+        if (a52ui_guard_read(i,&observed)!=1) goto fail;
+    }
     __asm__ volatile("dsb sy" ::: "memory");
     *a52ui_regs[1]=1;
     __asm__ volatile("dsb sy" ::: "memory");

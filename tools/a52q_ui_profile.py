@@ -65,13 +65,14 @@ def decode_console(data,config):
         if zlib.crc32(m[1])!=int(m[2],16):continue
         nonce,reason,index,value=[int(v,16) for v in m[1].split(b'/')]
         if nonce!=config['nonce']:continue
-        if (reason not in (1,2,3,4) or
+        if (reason not in (1,2,3,4,5) or
             (reason in (1,4) and (index!=0xff or value)) or
             (reason in (2,3) and index>=len(config['guards'])) or
-            (reason==2 and value)):
+            (reason==2 and value) or
+            (reason==5 and (index!=6 or value!=5))):
             raise ValueError('invalid CRC-valid UI rejection detail')
         row=failures.setdefault((reason,index,value),dict(
-            reason={1:'profile',2:'register-map',3:'register-value',4:'frame-map'}[reason],
+            reason={1:'profile',2:'register-map',3:'register-value',4:'frame-map',5:'dsi-busy-timeout'}[reason],
             register_index=index if index<13 else None,observed=value,valid_copies=0))
         if reason==3:
             row['expected']=config['guards'][index]['value']

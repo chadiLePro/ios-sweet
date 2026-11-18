@@ -23,12 +23,23 @@ acceptance and boundedbusyhandling, leavingconfigguards/physicalFB/oldRGBdiag
 unchanged. No guard removed yet. SourcefromGitHub plugin fetched:
 drivers/gpu/drm/msm/dsi-staging/dsi_ctrl_hw_cmn.c @ f6bbda4e5986f09e4d51ceffd1b645b2d5aa75b4.
 
-NEXT independentwork: inspectactual var timezone symlinks and preservedmaster
-systemtzdata withROappliance; audit exacttzinit. A valid preseed may remove this
-initializationwrite while retainingstrictunchangedUFS/read-onlybaseline. Do not
-skip tzinit/force success. Writablevarservices maystillneedfutureboundedwriter;
-no new runtimewriteapproved. Any newvarimagehash/install requires reviewed exact
-range and explicitapproval. Preserveexisting44ebvarimage/master/backups.
+Independentaudit completed: E:/A52-iOS16/timezone-prerequisites-v1 extracted
+exacttzinit126640B SHA1e13c6f7c32b810a043a5e28dccc1d24ddf83b69ddc3323d500d3aefa91ff9ef,
+27signedpagesverified/CDhash3a1538960c0be7257ea41eaddeb7727c5ad61c25.
+Currentzoneinfo parser0x10000642c..6510 recognizes /usr/share/zoneinfo.default.
+Preservedvar lackszoneinfo+icutz links; rootdefaultdatasetexists. Preparinghost
+clone storage-data-timezone-v3 via research/prepare_timezone_var.py session73487,
+logresearch/timezone-var-prepare.log. New2symlinks only; source44eb/masterunchanged;
+ROLinuxchrootpathchecks planned with RAM utilities, noAppleexecutionclaim.
+Any newvarimage install requiresnewexactrange/hash approval; none granted yet.
+
+DSI fix implemented only optionalUIadapter: keep13capturedpins, acceptstatus0
+orobserved5 only, poll100ms untilidle0 beforemap/START; unknown/errorstatesfail,
+noDSIstatuswrites orclocks/resets. Newreason5busytimeoutCRC. Testscoveridle,
+busytransition,timeout,errorbits. Host145tests/repoPASS. Planner validatesexact
+2timezone symlinktargets/rootownership; no runtimewrite support added.
+Needcommit/fullHFSbuild, archive90map, exactkernelQEMU, newvarplan/candidate,
+concretesourceimage+currentvarbackup proof andapprovalbeforephonewrite.
 
 Historical V24/V25 build history follows; no restoration currently pending.
 V24 finished. OriginalBOOT restored/fullreadback; independent fresh BOOT,

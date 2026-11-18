@@ -65,5 +65,20 @@ class PersistentDataTests(unittest.TestCase):
         with self.assertRaises(ValueError):data.inspect_data(path,{},'a'*64)
         path.open.assert_not_called()
 
+    def test_system_timezone_seed_is_exact_and_does_not_enable_writes(self):
+        links={p:dict(target=t,uid=0,gid=0) for p,t in data.TIMEZONE_SYMLINKS.items()}
+        plan=dict(self.plan,seed_symlinks=links)
+        data.validate_config(plan,self.root)
+        self.assertFalse(plan['write_approved'])
+        for broken in ({},[],{'db/timezone/zoneinfo':links['db/timezone/zoneinfo']},
+                       dict(links,**{'root/escape':dict(target='/',uid=0,gid=0)})):
+            with self.subTest(broken=broken),self.assertRaises(ValueError):
+                data.validate_config(dict(plan,seed_symlinks=broken),self.root)
+        for path in links:
+            for key,value in (('target','/dev/block/sda31'),('uid',501),('gid',501)):
+                broken=copy.deepcopy(links);broken[path][key]=value
+                with self.subTest(path=path,key=key),self.assertRaises(ValueError):
+                    data.validate_config(dict(plan,seed_symlinks=broken),self.root)
+
 
 if __name__=='__main__':unittest.main()

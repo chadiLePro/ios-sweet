@@ -141,3 +141,37 @@ failed. New A52G2 diagnostics distinguish profile rejection, register mapping,
 register-value mismatch (index/observed value), and framebuffer mapping. All
 original guards and mappings remain enforced; this is diagnosis, not proof of a
 fixed display adapter. Native tests check the detail CRC and rejection behavior.
+
+## V25 physical result: persistent var mounted, timezone initialization blocked
+
+V25 mounted `A52IOSVar` from `/dev/a52var0` at `/private/var` read-only. CRC-valid
+records prove systembag opens returned zero; the development MKB task reached
+`DONE MKB_INIT`. This is not real keybag cryptography or a functional keychain.
+Usermanagerd subsequently attempted usersession/persona writes and saw EROFS.
+Boot advanced to tzinit, which failed creating `/var/db/timezone/zoneinfo` with
+Darwin EROFS (30). Original BOOT was restored and independently hash-verified,
+along with recovery, DTBO and vbmeta. No visible UI was reported.
+
+The preserved var subtree has no zoneinfo or icutz link. The preserved master
+does contain `/usr/share/zoneinfo.default` and the timezone components under
+`/usr/share/icu`. The exact tzinit SHA256 is
+`1e13c6f7c32b810a043a5e28dccc1d24ddf83b69ddc3323d500d3aefa91ff9ef`;
+all 27 signed code pages verified, CDhash
+`3a1538960c0be7257ea41eaddeb7727c5ad61c25`. Its current-dataset parser at
+0x10000642c..0x100006510 explicitly recognizes the system zoneinfo target.
+Preparing a separate host clone with the two system-default symlinks fixes the
+missing initial state without skipping or patching tzinit. The planner accepts
+only those exact paths/targets and root ownership. Actual Apple task completion
+still requires a phone test; services may require a writable var afterward.
+No writable UFS implementation or RAM-var replacement is introduced.
+
+The display rejection identified register index 6, `0x0ae94008`: observed 0,
+captured expectation 5, in two CRC-valid copies. This is DSI_STATUS, not a mode
+register. The pinned Samsung
+[MDP-idle implementation](https://github.com/LineageOS/android_kernel_samsung_sm7125/blob/f6bbda4e5986f09e4d51ceffd1b645b2d5aa75b4/drivers/gpu/drm/msm/dsi-staging/dsi_ctrl_hw_cmn.c#L1576)
+polls bit 2 until clear. The UI adapter now permits the two observed states 0/5,
+waits at most 100 ms for idle zero before mapping or START, and rejects unknown
+or error states. It never writes the status register to force success. Other
+configuration guards, physical geometry, the old RGB diagnostic, UFS/root code,
+code catalog, reservations and pstore remain unchanged. Native tests cover idle,
+busy-to-idle, busy timeout, unexpected/error bits, and unchanged START timeout.

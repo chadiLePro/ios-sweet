@@ -17,6 +17,18 @@ from a52q_persistent_root import ROOT_BYTES
 
 DATA_BYTES = 4 << 30
 BLOCK_BYTES = 4096
+TIMEZONE_SYMLINKS = {
+    'db/timezone/zoneinfo': '/usr/share/zoneinfo.default',
+    'db/timezone/icutz': '/usr/share/icu',
+}
+
+
+def validate_timezone_symlinks(links):
+    if not isinstance(links, dict) or set(links) != set(TIMEZONE_SYMLINKS):
+        raise ValueError('unreviewed timezone seed paths')
+    for path, target in TIMEZONE_SYMLINKS.items():
+        if links[path] != dict(target=target, uid=0, gid=0):
+            raise ValueError('invalid system timezone symlink seed')
 
 
 def digest_valid(value):
@@ -59,6 +71,9 @@ def inspect_data(path, proof, root_sha256):
                 seed.get('uid')!=0 or seed.get('gid')!=0 or seed.get('mode')!='0600'):
             raise ValueError('invalid development keybag metadata seed')
         result['seed_files']=files
+    if 'seed_symlinks' in proof:
+        validate_timezone_symlinks(proof['seed_symlinks'])
+        result['seed_symlinks']=proof['seed_symlinks']
     return result
 
 
@@ -86,6 +101,8 @@ def validate_config(config, root):
             config.get('runtime_implemented') is not False or
             config.get('write_approved') is not False):
         raise ValueError('invalid or overlapping persistent-data plan')
+    if 'seed_symlinks' in config:
+        validate_timezone_symlinks(config['seed_symlinks'])
 
 
 def configuration(capture, root, data):

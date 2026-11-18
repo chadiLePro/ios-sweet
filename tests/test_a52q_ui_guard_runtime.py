@@ -26,7 +26,7 @@ class UIGuardRuntimeTests(unittest.TestCase):
 typedef uintptr_t vm_offset_t;
 typedef size_t vm_size_t;
 typedef int DTEntry;
-static int flag=1,other=0,reg_maps,frame_maps,consume=1;
+static int flag=1,other=0,reg_maps,frame_maps,consume=1,busy_clears=1;
 static uint32_t regs[13],geometry[3]={1080,2400,4320};
 static uint64_t region[2]={A52Q_UI_PHYS,A52Q_UI_BYTES},nonce=81,ram_base=0x106000000ULL,ram_size=0xff00000;
 static uint64_t start_address;
@@ -69,12 +69,13 @@ vm_offset_t ml_io_map_unmappable(vm_offset_t address,vm_size_t bytes,unsigned fl
  ++frame_maps;return(uintptr_t)frame;
 }
 static void harness_barrier(void) {
- for(unsigned i=0;i<13;i++)if(i!=1)assert(regs[i]==a52q_ui_expected[i].value);
+ for(unsigned i=0;i<13;i++)if(i!=1)assert(regs[i]==(i==6 ? 0 : a52q_ui_expected[i].value));
 }
 static void nanoseconds_to_deadline(uint64_t span,uint64_t *out){*out=ticks+span;}
 static uint64_t mach_absolute_time(void){
- ticks+=consume ? 1 : 101000000;
+ ticks+=consume && busy_clears ? 1 : 101000000;
  if(consume)regs[1]=0;
+ if(busy_clears)regs[6]=0;
  return ticks;
 }
 """
@@ -82,8 +83,9 @@ static uint64_t mach_absolute_time(void){
 static void reset(void) {
  memcpy(guards,a52q_ui_expected,sizeof(guards));
  for(unsigned i=0;i<13;i++)regs[i]=guards[i].value;
+ regs[6]=0; /* V25's actual idle DSI_STATUS, not the older busy snapshot. */
  geometry[0]=1080;geometry[1]=2400;geometry[2]=4320;
- start_address=guards[1].address;flag=1;other=0;reg_maps=frame_maps=0;ticks=0;consume=1;
+ start_address=guards[1].address;flag=1;other=0;reg_maps=frame_maps=0;ticks=0;consume=1;busy_clears=1;
  a52ui_state=0;a52ui_busy=0;a52ui_frame=NULL;a52ui_frames=0;
 }
 int main(void){
@@ -93,6 +95,9 @@ int main(void){
  reset();other=1;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!reg_maps && !frame_maps);
  reset();geometry[2]+=4;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!reg_maps && !frame_maps);
  reset();regs[6]^=1;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(reg_maps==7 && !frame_maps);
+ reset();regs[6]=0x80000000;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(reg_maps==7 && !frame_maps);
+ reset();regs[6]=5;assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(regs[6]==0);
+ reset();regs[6]=5;busy_clears=0;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!frame_maps && regs[6]==5);
  reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
  assert(reg_maps==13 && frame_maps==1 && physical==A52Q_UI_PHYS && width==1080 && height==2400 && stride==4320);
  assert(frame[0]==0xa5 && frame[A52Q_UI_BYTES-1]==0xa5);
@@ -116,6 +121,7 @@ int main(void){
             details=re.findall(rb'A52G2 ([0-9a-f/]+) ([0-9a-f]{8})',v.stdout)
             self.assertTrue(all(zlib.crc32(body)==int(crc,16) for body,crc in details))
             self.assertTrue(any(b'/01/ff/00000000' in body for body,crc in details))
-            self.assertTrue(any(b'/03/06/00000004' in body for body,crc in details))
+            self.assertTrue(any(b'/03/06/00000001' in body for body,crc in details))
+            self.assertTrue(any(b'/05/06/00000005' in body for body,crc in details))
 
 if __name__=='__main__':unittest.main()
