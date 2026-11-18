@@ -19,7 +19,6 @@ DATA_BYTES = 4 << 30
 BLOCK_BYTES = 4096
 TIMEZONE_SYMLINKS = {
     'db/timezone/zoneinfo': '/usr/share/zoneinfo.default',
-    'db/timezone/icutz': '/usr/share/icu',
 }
 
 

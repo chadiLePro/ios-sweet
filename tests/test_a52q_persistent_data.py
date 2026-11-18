@@ -70,7 +70,7 @@ class PersistentDataTests(unittest.TestCase):
         plan=dict(self.plan,seed_symlinks=links)
         data.validate_config(plan,self.root)
         self.assertFalse(plan['write_approved'])
-        for broken in ({},[],{'db/timezone/zoneinfo':links['db/timezone/zoneinfo']},
+        for broken in ({},[],{'db/timezone/icutz':dict(target='/usr/share/icu',uid=0,gid=0)},
                        dict(links,**{'root/escape':dict(target='/',uid=0,gid=0)})):
             with self.subTest(broken=broken),self.assertRaises(ValueError):
                 data.validate_config(dict(plan,seed_symlinks=broken),self.root)

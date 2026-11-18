@@ -29,16 +29,27 @@ exacttzinit126640B SHA1e13c6f7c32b810a043a5e28dccc1d24ddf83b69ddc3323d500d3aefa9
 Currentzoneinfo parser0x10000642c..6510 recognizes /usr/share/zoneinfo.default.
 Preservedvar lackszoneinfo+icutz links; rootdefaultdatasetexists. Preparinghost
 clone storage-data-timezone-v3 via research/prepare_timezone_var.py session73487,
-logresearch/timezone-var-prepare.log. New2symlinks only; source44eb/masterunchanged;
+logresearch/timezone-var-prepare.log. Finalseed ONE zoneinfo symlink; ICUmonolithicdata default hasno externalpatch,
+soicutz staysabsent. Source44eb/masterunchanged;
 ROLinuxchrootpathchecks planned with RAM utilities, noAppleexecutionclaim.
 Any newvarimage install requiresnewexactrange/hash approval; none granted yet.
 
 DSI fix implemented only optionalUIadapter: keep13capturedpins, acceptstatus0
 orobserved5 only, poll100ms untilidle0 beforemap/START; unknown/errorstatesfail,
 noDSIstatuswrites orclocks/resets. Newreason5busytimeoutCRC. Testscoveridle,
-busytransition,timeout,errorbits. Host145tests/repoPASS. Planner validatesexact
-2timezone symlinktargets/rootownership; no runtimewrite support added.
-Needcommit/fullHFSbuild, archive90map, exactkernelQEMU, newvarplan/candidate,
+busytransition,timeout,errorbits. Host145tests/repoPASS. Planner validatesexactzoneinfo symlinktarget/rootownership; no runtimewrite support added.
+Kernelcommit7d0783db965357234643e7e13e23da7b5b0a2b3d pushed.
+FullHFS44308099292 inprogress, hostCI44308099048 SUCCESS145(oldtwo-linkpolicy);
+finalone-linkhostchecks145PASS locally, newhostCIneeded.
+Finalclone prepared by research/prepare_timezone_var_v2.py, correctedrun44700
+SUCCESS; firstv2process3960stopped beforeguest duebare-readlinkgenerationbug.
+Finalproof sourcepath storage-data-timezone-v3/a52q-ios-var-timezone.hfs.verified.json.
+Read-onlyfsck + alloriginalvarpathrsyncchecksum comparisonPASS exceptone newlink.
+LinuxstaticutilitychrootROroot/var resolutionPASS:+VERSION2022a/UTC/localtime,
+monolithicICUicudt70l.dat. NoApple tzinitexecutionclaim.
+Currentphonevarfullhash equals44ebhostimage, rollbackproof
+E:/A52-iOS16/var-current-range-proof-v2.json (read-onlyphoneverification).
+Need archive90map, exactkernelQEMU, newvarplan/candidate,
 concretesourceimage+currentvarbackup proof andapprovalbeforephonewrite.
 
 Historical V24/V25 build history follows; no restoration currently pending.

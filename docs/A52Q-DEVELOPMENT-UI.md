@@ -159,9 +159,13 @@ does contain `/usr/share/zoneinfo.default` and the timezone components under
 all 27 signed code pages verified, CDhash
 `3a1538960c0be7257ea41eaddeb7727c5ad61c25`. Its current-dataset parser at
 0x10000642c..0x100006510 explicitly recognizes the system zoneinfo target.
-Preparing a separate host clone with the two system-default symlinks fixes the
+Preparing a separate host clone with the system-default zoneinfo symlink fixes the
 missing initial state without skipping or patching tzinit. The planner accepts
-only those exact paths/targets and root ownership. Actual Apple task completion
+only that exact path/target and root ownership. The default ICU directory has
+`icudt70l.dat` and `icutzformat.txt`, with no separate `icutz*.dat` patch; the
+optional icutz link stays absent. The first host check incorrectly required a
+patch file and failed; that unvalidated intermediate was never installed.
+Actual Apple task completion
 still requires a phone test; services may require a writable var afterward.
 No writable UFS implementation or RAM-var replacement is introduced.
 
