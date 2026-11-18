@@ -1,7 +1,20 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: V24 restored; checked V25 phase-two candidate ready; awaiting readiness
+## ACTIVE: V25 BOOT trial RUNNING; original BOOT restoration PENDING
 
+V25 physical readiness confirmed; record backup/a52q/ios-ufs-v25/readiness.json.
+Launcher research/start_var_phase_trial.py finished: fullroot/var/protected
+preflight passed, candidate e316aebb...f69f534d installed/fullreadback verified,
+recovery USBdeparture CONFIRMED. OriginalBOOT restoration PENDING, receipt
+requires_restore=True. C: watcher PID7504 running via
+research/watch_ios_ufs_v25_restore.py; trialfolder backup/a52q/ios-ufs-v25.
+Five-minute reset instructions sent AFTER confirmeddeparture. User must return
+phone to TWRP. On return verify watcher originalBOOT restore/fullhash FIRST,
+independent fresh BOOT/recovery/DTBO/vbmeta hashes, then analyzeactual varmount,
+systembag opens, AKS selectors and A52G2 guard-rejection details. No service/UI
+success claimed. No datawrite in V25; root/var remainread-only.
+
+Historical V24 result follows; V25 restoration above is still pending.
 V24 finished. OriginalBOOT restored/fullreadback; independent fresh BOOT,
 recovery/DTBO/vbmeta hashes MATCH. No restoration pending. User saw Samsungsplash.
 Results backup/a52q/ios-ufs-v24/{keybag-result,kernel-ui-result}.json and
@@ -32,7 +45,7 @@ checked by research/check_var_phase_candidate.py. BOOT96MiB SHA
 e316aebb8f8ecfdf2510f5378e30f6d173ff26724591c19222403c85f69f534d.
 E:/A52-iOS16/var-phase-v25-candidate.json and var-phase-v25-review.md.
 New BOOTbackend bindsplan19. Existingvar44eb...fc6fea02 installed/verified;
-no new datawrite. V25 NOT started; fresh physicalreadiness requested.
+no new datawrite. V25 is nowrunning; readiness confirmed, see active receipt.
 Private start_var_phase_trial.py + watch_ios_ufs_v25_restore.py prepared;
 trialfolder backup/a52q/ios-ufs-v25 (noactivependingreceipt). Once userready,
 runlauncher, confirmdeparture+watcher, thenfive-minutereset instructions.
