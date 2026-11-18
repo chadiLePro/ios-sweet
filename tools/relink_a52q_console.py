@@ -122,6 +122,17 @@ def main():
             try: old=run('git','show',a.base_sha+':xnu/a52q/'+addition,cwd=root)
             except subprocess.CalledProcessError: raise SystemExit('full build required: base predates '+addition)
             if old!=path.read_bytes():raise SystemExit('full build required: changed '+addition)
+    # These new units are outside every supported single-leaf rebuild. In
+    # particular, never retain the old DSI snapshot guard while claiming the
+    # current source's idle-status fix or reuse an old persistent-var policy.
+    for addition in ('a52q_ui_bridge.c','a52q_ui_bridge.h','a52q_ui_profile.h',
+                     'a52q_ui_copy.h','A52DevelopmentPower.cpp',
+                     'a52q_data_proxy.c','a52q_var_bounds.h','a52q_bootfs.c'):
+        path=root/'xnu/a52q'/addition
+        if not path.exists():continue
+        try: old=run('git','show',a.base_sha+':xnu/a52q/'+addition,cwd=root)
+        except subprocess.CalledProcessError:raise SystemExit('full build required: base predates '+addition)
+        if old!=path.read_bytes():raise SystemExit('full build required: changed unselected '+addition)
     exit_trace = root / 'xnu/a52q/exit_trace.py'
     keybag_trace = root / 'xnu/a52q/keybag_trace.py'
     if keybag_trace.exists():
