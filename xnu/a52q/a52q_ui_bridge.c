@@ -13,6 +13,7 @@
 #include <libkern/libkern.h>
 #include "a52q_ui_profile.h"
 #include "a52q_ui_bridge.h"
+#include "a52q_fb_console.h"
 extern vm_offset_t ml_io_map(vm_offset_t, vm_size_t);
 extern vm_offset_t ml_io_map_unmappable(vm_offset_t, vm_size_t, unsigned int);
 static volatile uint32_t *a52ui_regs[13];
@@ -107,6 +108,7 @@ int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
         if (!a52ui_frame) goto reject;
         __atomic_store_n(&a52ui_state,1,__ATOMIC_RELEASE);
         a52ui_report(0x10);
+        a52q_fb_console_start();
     }
     if (__atomic_load_n(&a52ui_state,__ATOMIC_ACQUIRE)!=1) return 0;
     *phys=A52Q_UI_PHYS;*w=A52Q_UI_WIDTH;*h=A52Q_UI_HEIGHT;*stride=A52Q_UI_STRIDE;

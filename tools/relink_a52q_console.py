@@ -116,7 +116,7 @@ def main():
             raise SystemExit('full build required: unselected static-init policy changed')
     # This transform changes kern_exit.o, outside every supported leaf. Never
     # reuse an older archive or silently ignore a changed diagnostic hook.
-    for addition in ('software_ui.py','data_fstab.py'):
+    for addition in ('software_ui.py','data_fstab.py','text_console.py'):
         path=root/'xnu/a52q'/addition
         if path.exists():
             try: old=run('git','show',a.base_sha+':xnu/a52q/'+addition,cwd=root)
@@ -127,7 +127,8 @@ def main():
     # current source's idle-status fix or reuse an old persistent-var policy.
     for addition in ('a52q_ui_bridge.c','a52q_ui_bridge.h','a52q_ui_profile.h',
                      'a52q_ui_copy.h','A52DevelopmentPower.cpp',
-                     'a52q_data_proxy.c','a52q_var_bounds.h','a52q_bootfs.c'):
+                     'a52q_data_proxy.c','a52q_var_bounds.h','a52q_bootfs.c',
+                     'a52q_fb_console.c','a52q_fb_console.h','a52q_text_grid.h'):
         path=root/'xnu/a52q'/addition
         if not path.exists():continue
         try: old=run('git','show',a.base_sha+':xnu/a52q/'+addition,cwd=root)

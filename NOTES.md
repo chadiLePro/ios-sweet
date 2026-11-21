@@ -1,5 +1,35 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
+## ACTIVE: saved idle/zoneinfo build packaged; new bitmap console implemented, needs full build
+
+User returned2026-11-21 requesting finish/flashsavedchanges PLUS live scaled
+bitmapconsole, preservingUFS/catalog/keybag/displaybounds/pstore. No newphonewrite.
+SavedfullHFS44308099292 SUCCESS;90archive hashes; kernelc1539de3e3f90357ab1de955e322ed6f919b247beac8e4bfc17c1a803f54eda1.
+QEMU3CRCentries/13hearts +masterrehash +plan20/hardware22 packaged. Independent
+check_timezone_idle_candidate.py PASS beforeconsolecommit, BOOT SHA
+1d6a311b0ec95eaf3c5f78abf7a0c3a562ff59ef49b39112a9f32944cbf64384.
+No savedcandidateflash. Var6f30 seed NOT installed; original44eb stillphone.
+Private BOOTbackend currentlyplan20 +ios-timezone-var-install-v1receipt required.
+
+New opt-in textconsole: a52q_fb_console.c/h +a52q_text_grid.h, text_console.py
+transform appendsmirrorAFTERoriginalpstorewrite; actualbytebodyidentical(native
+assert). Originala52q_early.c sourcefileunchanged; stagedoverlaycallsnewqueue.
+Static16KiBqueue try-lock/noMMIOoralloc inproducer; existingXNUiso_font8x16@2x,
+67columns/banner+74scrollrows, whiteblack. Renderer onlyafterUIguardedmapping,
+10Hzdirtyrefresh throughboundedexistingSTART; best-effortpanicdrain, no blocking
+onpreemptedrenderer. Firstframebufferpresent permanenthandoff; busyretryvia
+existingpendingframe. Pstorecontinues afterhandoff. Onlyexistingconsolestream,
+notprivateAppleos_log/file-only logs; no serviceorUIclaim. Header/fontglyphbounds,
+scroll/controlcodes/backpressure/reentrance/ownership testedactualCnative.
+Explicit--text-console payloadflag+profile andcompiledmarker required.
+Applyadds5newarchivepaths -> expected95overlayfiles. SoftwareUIpinnedtransform
+addsconsumer/handoff; defaultRedmibody preserved. UFS/catalog/keystore/source
+physicalRGBdiagnostic/reservations untouched. docs/A52Q-TEXT-CONSOLE.md scope.
+All147hosttestsPASS; repo81patches/45tools/7shell PASS withGitBash+PYTHONUTF8.
+Needcommit/fullHFSbuild, expected95archivecheck, diagnosticQEMU/newrootplan21/
+hardware23 +consoleCLIflag. Retainexistingvar6f30plan/image andbackup44eb.
+Thenindependentcandidate+installerprepare/review; phonefreshreadiness required.
+
 ## ACTIVE: V25 restored/verified; real var mount works; tzinit EROFS and DSI status guard
 
 V25 finished. OriginalBOOT restored/fullreadback; independent fresh BOOT,
@@ -49,6 +79,20 @@ LinuxstaticutilitychrootROroot/var resolutionPASS:+VERSION2022a/UTC/localtime,
 monolithicICUicudt70l.dat. NoApple tzinitexecutionclaim.
 Currentphonevarfullhash equals44ebhostimage, rollbackproof
 E:/A52-iOS16/var-current-range-proof-v2.json (read-onlyphoneverification).
+Latesthostguardcommit77df64d134c6c9f84c7dc28eafdcf992491bd887 pushed;
+CI44310697223 SUCCESS145. It blocksleafrelinks retainingstaleUI/var units.
+Finalvar clone SHA6f30c2ad09764388224ff5cd887506688a06e144411fff04eda0b39f0f6e75f9;
+headerCRC923690534. E:/A52-iOS16/var-layout-timezone-v3.json validated.
+Buildpipeline research/finish_timezone_idle_artifacts.py running43306,
+logresearch/timezone-idle-build-package.log, fullHFS44308099292 stillcompiling.
+Expected90overlaymap prepared. Newprivate verifier/checker/prepare/start helpers
+research/{verify_timezone_idle_build,check_timezone_idle_candidate,
+prepare_timezone_idle_artifacts,start_timezone_trial,watch_ios_ufs_v26_restore}.py;
+newinstaller research/a52q_install_timezone_var.py prepared, NOTRUN.
+Nextplan20/hardware22/qemu a52q-timezone-idle-qemu-v1. Afterpackage switchBOOT
+backend plan19->20 and varreceipt toios-timezone-var-install-v1; independentcheck,
+installer prepareONLY (rehashnew6f30+backup44eb), writeconcretereview, thenrequest
+new exactvarimagewrite+5mintrialapproval/readiness. No newphonewrites yet.
 Need archive90map, exactkernelQEMU, newvarplan/candidate,
 concretesourceimage+currentvarbackup proof andapprovalbeforephonewrite.
 

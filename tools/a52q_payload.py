@@ -291,6 +291,9 @@ def validate_payload(data, manifest):
     elif cs_trace:
         raise ValueError('code-signing trace must be explicitly declared')
     ui=manifest.get('development_ui_profile')
+    text_flags=[v for v in command if v.startswith(b'a52q_text_console=')]
+    if text_flags!=([b'a52q_text_console=1'] if ui and ui.get('text_console') is True else []):
+        raise ValueError('bitmap console flag/profile mismatch')
     ui_flags=[v for v in command if v.startswith((b'a52q_ui=',b'a52q_dev_keybag='))]
     ui_nodes=[n for n in tree.children if n.name=='a52q-ui-bridge']
     if ui:
@@ -442,6 +445,7 @@ def main():
     p.add_argument('--development-ui-proof-build', type=Path, help='opt-in no-SEP/CPU UI profile: CRC-confirmed A52 display build')
     p.add_argument('--development-ui-proof-log', type=Path, help='matching physical XNU refresh console; no current UI success implied')
     p.add_argument('--development-var-plan',type=Path,help='planned separate RO var extent; installation needs new explicit approval')
+    p.add_argument('--text-console',action='store_true',help='opt-in bitmap mirror of the existing console; requires guarded hardware UI profile')
     p.add_argument('--qemu-dtb', type=Path, help='QEMU-generated virt DTB; makes a payload that phone packaging rejects')
     p.add_argument('--qemu-diagnostic', type=Path, help='matching QEMU loader diagnostic result with measured CNTFRQ')
     p.add_argument('--qemu-lowmem', action='store_true',
@@ -575,6 +579,10 @@ def main():
             from a52q_ui_profile import configuration as ui_configuration
             ui_profile=ui_configuration(json.loads(a.development_ui_proof_build.read_text()),
                 a.development_ui_proof_log.read_bytes(),hashlib.sha256(kernel).hexdigest(),ufs_root['sha256'])
+        if a.text_console:
+            if ui_profile is None or b'A52Q text console:' not in kernel:
+                raise ValueError('text console needs guarded UI profile and compiled renderer')
+            ui_profile['text_console']=True
         if a.development_var_plan:
             if ui_profile is None:raise ValueError('persistent development var needs the explicit UI/keybag profile')
             from a52q_persistent_data import validate_config as validate_var
@@ -591,7 +599,8 @@ def main():
                                        (' unentitled_ios_sim_launch=1' if a.ios_exec_development else '') +
                                        (' ignition_level=1' if a.ios_ignition_level is not None else '') +
                                        (' cs_debug=2' if a.ios_codesign_debug else '') +
-                                       (' a52q_dev_keybag=1 a52q_ui=1' if ui_profile else ''),
+                                       (' a52q_dev_keybag=1 a52q_ui=1' if ui_profile else '')+
+                                       (' a52q_text_console=1' if a.text_console else ''),
                                        ramdisk_path=str(root_path) if root_path else None)
         report = {'target': 'A52Q', 'status': 'bootstrap payload; physical RAM access not yet verified',
                   'environment': environment,

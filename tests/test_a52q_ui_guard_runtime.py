@@ -26,13 +26,14 @@ class UIGuardRuntimeTests(unittest.TestCase):
 typedef uintptr_t vm_offset_t;
 typedef size_t vm_size_t;
 typedef int DTEntry;
-static int flag=1,other=0,reg_maps,frame_maps,consume=1,busy_clears=1;
+static int flag=1,other=0,reg_maps,frame_maps,consume=1,busy_clears=1,console_starts;
 static uint32_t regs[13],geometry[3]={1080,2400,4320};
 static uint64_t region[2]={A52Q_UI_PHYS,A52Q_UI_BYTES},nonce=81,ram_base=0x106000000ULL,ram_size=0xff00000;
 static uint64_t start_address;
 static struct a52q_ui_guard guards[13];
 static unsigned char *frame;
 static uint64_t ticks;
+void a52q_fb_console_start(void){assert(frame_maps==1);++console_starts;}
 static int test_snprintf(char *p,size_t n,const char *fmt,...) {
  va_list a;va_start(a,fmt);int v=vsnprintf(p,n,fmt,a);va_end(a);return v;
 }
@@ -87,6 +88,7 @@ static void reset(void) {
  geometry[0]=1080;geometry[1]=2400;geometry[2]=4320;
  start_address=guards[1].address;flag=1;other=0;reg_maps=frame_maps=0;ticks=0;consume=1;busy_clears=1;
  a52ui_state=0;a52ui_busy=0;a52ui_frame=NULL;a52ui_frames=0;
+ console_starts=0;
 }
 int main(void){
  frame=malloc(A52Q_UI_BYTES);assert(frame);memset(frame,0xa5,A52Q_UI_BYTES);
@@ -100,6 +102,7 @@ int main(void){
  reset();regs[6]=5;busy_clears=0;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!frame_maps && regs[6]==5);
  reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
  assert(reg_maps==13 && frame_maps==1 && physical==A52Q_UI_PHYS && width==1080 && height==2400 && stride==4320);
+ assert(console_starts==1);
  assert(frame[0]==0xa5 && frame[A52Q_UI_BYTES-1]==0xa5);
  assert(a52q_ui_physical_allowed(physical,width,height,stride));
  assert(!a52q_ui_physical_allowed(physical+4096,width,height,stride));

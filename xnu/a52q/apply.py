@@ -17,6 +17,7 @@ import exit_trace
 import keybag_trace
 import software_ui
 import data_fstab
+import text_console
 
 HERE = Path(__file__).resolve().parent
 
@@ -68,12 +69,16 @@ def apply(root, filesystem='mockfs'):
     for ui_name in software_ui.PINS:
         ui_path='iokit/Kernel/arm/'+ui_name
         changes[ui_path]=software_ui.transform(ui_name,read(ui_path))
-    for ui_name in ('a52q_ui_bridge.h','a52q_ui_copy.h','A52DevelopmentPower.cpp'):
+    for ui_name in ('a52q_ui_bridge.h','a52q_ui_copy.h','A52DevelopmentPower.cpp','a52q_fb_console.h'):
         changes['iokit/Kernel/arm/'+ui_name]=(HERE/ui_name).read_text()
     for ui_name in ('a52q_ui_bridge.c','a52q_ui_profile.h','a52q_ui_bridge.h'):
         changes['bsd/dev/'+ui_name]=(HERE/ui_name).read_text()
     replace('bsd/conf/files', 'bsd/dev/sweet_ufs.c\t\t\tstandard\n',
             'bsd/dev/sweet_ufs.c\t\t\tstandard\nbsd/dev/a52q_ui_bridge.c\t\tstandard\n')
+    for name in ('a52q_fb_console.c','a52q_fb_console.h','a52q_text_grid.h'):
+        changes['bsd/dev/'+name]=(HERE/name).read_text()
+    replace('bsd/conf/files', 'bsd/dev/sweet_ufs.c\t\t\tstandard\n',
+            'bsd/dev/sweet_ufs.c\t\t\tstandard\nbsd/dev/a52q_fb_console.c\t\tstandard\n')
 
     replace('bsd/kern/sweet_amfi.c', '#if defined(ARM64_BOARD_CONFIG_SWEET)',
             '#if defined(ARM64_BOARD_CONFIG_A52Q)\n#include "a52q_amfi.c"\n#endif\n#if defined(ARM64_BOARD_CONFIG_SWEET)')
@@ -207,7 +212,8 @@ def apply(root, filesystem='mockfs'):
     # This source is already in files.arm64. Preserve the Redmi implementation.
     replace('osfmk/arm64/sweet_early.c', '#if defined(SWEET)',
             '#if defined(A52Q)\n#include "a52q_early.c"\n#endif\n\n#if defined(SWEET)')
-    changes['osfmk/arm64/a52q_early.c'] = (HERE / 'a52q_early.c').read_text()
+    changes['osfmk/arm64/a52q_early.c'] = text_console.early((HERE / 'a52q_early.c').read_text())
+    changes['osfmk/arm64/a52q_fb_console.h']=(HERE/'a52q_fb_console.h').read_text()
     # Keep independent implementations in the two existing build units, whose
     # Redmi bodies remain guarded by SWEET. No change to the original patches.
     for stem in ('A52PlatformExpert', 'A52CPU'):

@@ -53,6 +53,12 @@ class UIProfileTests(unittest.TestCase):
             manifest[key]=old
         defaults.props[-1]=('no-effaceable-storage',0,struct.pack('<I',0))
         with self.assertRaises(ValueError):check()
+        defaults.props[-1]=('no-effaceable-storage',0,struct.pack('<I',1))
+        cfg['text_console']=True
+        with self.assertRaises(ValueError):check()
+        cmd+=b' a52q_text_console=1';data[0x48:0x2a8]=cmd+bytes(608-len(cmd));check()
+        del cfg['text_console']
+        with self.assertRaises(ValueError):check()
 
     def test_adapter_decode_rejects_corruption_and_wrong_nonce(self):
         cfg=dict(copy.deepcopy(ui.EXPECTED),nonce=81,kernel_sha256='b'*64,root_sha256='a'*64,

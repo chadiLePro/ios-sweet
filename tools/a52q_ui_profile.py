@@ -21,6 +21,8 @@ def validate_config(config):
             raise ValueError('UI profile lacks bound kernel/root/physical proof')
     if config.get('software_vsync_us')!=16667 or config.get('physical_panel_hz') is not None:
         raise ValueError('UI profile must distinguish software cadence from physical panel Hz')
+    if 'text_console' in config and config['text_console'] is not True:
+        raise ValueError('invalid opt-in bitmap console declaration')
 
 
 def configuration(build,console,kernel_sha256,root_sha256):

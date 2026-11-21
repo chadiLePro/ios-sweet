@@ -31,6 +31,11 @@ def transform(name, source):
             'IOCoreSurfaceRoot::start(IOService *provider)\n{\n#if defined(A52Q)\n\tint ui=0;\n\tif (!PE_parse_boot_argn("a52q_ui",&ui,sizeof(ui)) || ui!=1) return false;\n#endif')
     elif name=='SweetFramebuffer.cpp':
         change('#include "SweetSurface.h"', '#include "SweetSurface.h"\n#if defined(A52Q)\n#include "a52q_ui_bridge.h"\n#include "a52q_ui_copy.h"\n#endif')
+        change('#include "a52q_ui_copy.h"','#include "a52q_ui_copy.h"\n#include "a52q_fb_console.h"')
+        change('AppleCLCD::present(const uint8_t *rec)\n{',
+            'AppleCLCD::present(const uint8_t *rec)\n{\n#if defined(A52Q)\n\tif (!a52q_fb_console_handoff()) { swap(rec); return; }\n#endif')
+        change('AppleCLCD::vsyncFired(OSObject *owner, IOTimerEventSource *sender)\n{',
+            'AppleCLCD::vsyncFired(OSObject *owner, IOTimerEventSource *sender)\n{\n#if defined(A52Q)\n\ta52q_fb_console_tick(0);\n#endif')
         change('extern "C" int sweet_console_muted;     /* osfmk/console/serial_console.c */',
             '#if defined(SWEET)\nextern "C" int sweet_console_muted;     /* osfmk/console/serial_console.c */\n#endif')
         change('\tPE_Video video;', '#if defined(SWEET)\n\tPE_Video video;\n#endif')
