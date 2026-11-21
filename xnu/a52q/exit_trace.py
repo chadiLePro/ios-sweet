@@ -13,7 +13,7 @@ REGISTERS = '''
 void a52q_crash_registers(const char *name, int pid);
 void a52q_crash_registers(const char *name, int pid)
 {
-    if (!name || (strcmp(name,"SpringBoard") && strcmp(name,"logd") &&
+    if (!name || (strcmp(name,"SpringBoard") && strcmp(name,"backboardd") && strcmp(name,"logd") &&
         strcmp(name,"mediaserverd"))) return;
     arm_saved_state_t *ss=find_user_regs(current_thread());
     if (!ss || !is_saved_state64(ss)) return;

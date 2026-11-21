@@ -8,7 +8,7 @@ def decode(data):
         if zlib.crc32(m[1])!=int(m[2],16):continue
         fields=m[1].decode('ascii').split('/')
         if (len(fields)!=8 or not re.fullmatch(r'[1-9][0-9]*',fields[0]) or
-            fields[1] not in ('SpringBoard','logd','mediaserverd') or
+            fields[1] not in ('SpringBoard','backboardd','logd','mediaserverd') or
             any(not re.fullmatch(r'[0-9a-f]{16}',v) for v in fields[2:])):
             raise ValueError('invalid CRC-valid crash register record')
         row=records.setdefault(m[1],dict(pid=int(fields[0]),process=fields[1],

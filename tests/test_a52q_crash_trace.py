@@ -49,7 +49,7 @@ static arm_saved_state_t *find_user_regs(void *t){assert(t==&state);return missi
 static int is_saved_state64(arm_saved_state_t *s){return s->bits==64;}
 static unsigned tail_copies;
 static void a52q_early_critical(const char *line,unsigned length,unsigned slot) {
- assert(length==strlen(line) && slot==6 && !strncmp(line,"A52CR1 ",7));++tail_copies;
+ assert(length==strlen(line) && slot==(strstr(line,"backboardd") ? 7U : 6U) && !strncmp(line,"A52CR1 ",7));++tail_copies;
 }
 static vm_shared_region_t vm_shared_region_get(task_t t){assert(t==(task_t)&task);refs++;return (vm_shared_region_t)&region;}
 static void vm_shared_region_deallocate(vm_shared_region_t r){assert(r==(vm_shared_region_t)&region);refs--;}
@@ -65,6 +65,7 @@ int main(void){
  missing=1;a52q_crash_registers("SpringBoard",25);assert(!refs);missing=0;
  state.bits=32;a52q_crash_registers("SpringBoard",25);assert(!refs);state.bits=64;
  a52q_crash_registers("unrelated",25);a52q_crash_registers(NULL,25);assert(!refs);
+ a52q_crash_registers("backboardd",28);assert(!refs && tail_copies==2);
  return 0;
 }
 '''
@@ -73,8 +74,9 @@ int main(void){
             v=subprocess.run([cc,'-std=c11','-Wall','-Wextra','-Werror',str(p),'-o',str(exe)],capture_output=True,text=True)
             self.assertEqual(v.returncode,0,v.stderr)
             v=subprocess.run([str(exe)],capture_output=True);self.assertEqual(v.returncode,0,v.stderr)
-            row=decode(v.stdout)['records'];self.assertEqual(len(row),1)
+            row=decode(v.stdout)['records'];self.assertEqual(len(row),2)
             self.assertEqual(row[0]['valid_copies'],3);self.assertEqual(row[0]['slide'],0x4000)
             self.assertEqual(row[0]['pc'],0x180004000)
+            self.assertEqual(row[1]['process'],'backboardd')
 
 if __name__=='__main__':unittest.main()
