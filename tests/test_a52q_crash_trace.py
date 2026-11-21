@@ -5,6 +5,16 @@ sys.path.insert(0,str(R/'tools'));from a52q_crash_trace import decode
 sys.path.insert(0,str(R/'xnu/a52q'));import exit_trace
 
 class CrashTraceTests(unittest.TestCase):
+    def test_transform_accepts_original_anchor_and_keeps_redmi_call_unchanged(self):
+        source=('#include <kern/thread_call.h>\n#if defined(ARM64_BOARD_CONFIG_SWEET)\n'
+            '\t\tif (p == current_proc()) {\n'
+            '\t\t\textern void sweet_crash_log(const char *, int, int, uint64_t, uint64_t);')
+        out=exit_trace.transform(source)
+        self.assertIn(source.split('\n',1)[1],out)
+        self.assertEqual(out.count('a52q_crash_registers(p);'),1)
+        self.assertLess(out.index('a52q_crash_registers(p);'),out.index('#if defined(ARM64_BOARD_CONFIG_SWEET)'))
+        with self.assertRaises(ValueError):exit_trace.transform(out)
+
     def test_decoder_rejects_corruption_and_bad_schema(self):
         b=b'25/SpringBoard/'+b'/'.join([b'0000000000001000']*6)
         line=b'A52CR1 '+b+b' %08x\n'%zlib.crc32(b)

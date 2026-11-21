@@ -1,5 +1,11 @@
 # CURRENT: V26 restored; host fixes/build while user away; NO PHONE TRIAL until continue
 
+Initial hostfixcommitc078238/full44937355741 superseded: independent overlay
+check caught a52q_crash_registers call accidentally added to the original match
+anchor rather than A52 trace. Corrected anchor/call placement; new independent
+literal-anchor regression. All150hosttests PASS, expected95overlay construction
+PASS against actual V26 archived source. Restart full HFS build on correctedhead.
+
 User: "fix all bugs and build kernel and when ill come back ill say continue".
 Phone TWRP, V26receipt original_boot_restoredTrue/requires_restoreFalse. Fresh
 BOOT/recovery/DTBO/vbmeta hashes match; independent-protected-hashes.json saved.

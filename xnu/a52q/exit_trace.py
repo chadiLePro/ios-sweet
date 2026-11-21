@@ -35,7 +35,6 @@ static void a52q_crash_registers(proc_t p)
 '''
 ANCHOR = '''#if defined(ARM64_BOARD_CONFIG_SWEET)
 		if (p == current_proc()) {
-			a52q_crash_registers(p);
 			extern void sweet_crash_log(const char *, int, int, uint64_t, uint64_t);'''
 TRACE = '''#if defined(ARM64_BOARD_CONFIG_A52Q)
 		/* V17: the required cache-loader child aborts, but var/crash logs are
@@ -44,6 +43,7 @@ TRACE = '''#if defined(ARM64_BOARD_CONFIG_A52Q)
 		 * signal, code-signing status or crash-report decision. Three bounded
 		 * copies improve retention in the existing unprotected text stream. */
 		if (p == current_proc()) {
+			a52q_crash_registers(p);
 			for (unsigned copy = 1; copy <= 3; copy++) {
 				printf("A52Q crash[%u]: pid=%d comm=%.16s signal=%d exception=%u code=0x%llx subcode=0x%llx\\n",
 				    copy, proc_getpid(p), p->p_comm, WTERMSIG(rv),
