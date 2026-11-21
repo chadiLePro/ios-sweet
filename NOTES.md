@@ -1,6 +1,33 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: console build passed; serializing shared-surface export before phone trial
+## ACTIVE: combined text-console/idle/zoneinfo candidate checked; awaiting exact-var approval/readiness
+
+Source922e77eced45faf9b53acc5484968fefa4fadd95 pushed. Full HFS44916663730
+SUCCESS; hostCI44916653849 SUCCESS147. All95 archived overlay sources rehashed
+against reviewed map. Kernel SHA
+adab051fa0538d35a9b6c31db49489f1b514b3bd8cc3a9cb5b41554db8b55032.
+Exact-kernel diagnostic QEMU3CRCentries/13PID1hearts (not Apple userland/UI/UFS
+emulation); protected16GiBmaster rehash PASS. Plan22/hardware24 packaged.
+BOOT96MiB SHA b3d7bf44417cfe85f45eef5a9a09e68d0379c56e52655c651f6d99a5783dabf7.
+Independent check_text_console_candidate.py PASS including payload/profile/root/
+var binding, compiled-source matching and successful matching LinuxCI.
+Installer PREPARE ONLY passed: rehashed newvar6f30 and currentrollback44eb.
+Concrete review E:/A52-iOS16/text-console-v26-review.json lists20 changed files,
+full hashes/ranges/rollback/commands. Candidate record text-console-v26-candidate.
+Protected13implementations hash-identical tosaved7d0783d; report onE.
+
+No newphonewrites. PhoneTWRP and originalBOOT/recovery/DTBO/vbmeta freshly match.
+Var6f30 remainsNOTinstalled; parent44eb remainsphone. NoV26 trialreceipt or new
+varinstallreceipt. Freshexactvarwrite approval/readiness still needed (4GiB at
+sda31[17179869184,21474836480), preserves16GiBroot). Priorapprovalwas44eb.
+Afteryes run research/a52q_install_timezone_var.py install --approved-exact-var-write;
+verifyreceipt/root/protectedhashes, then research/start_text_console_trial.py.
+Backend nowplan22/hardware24/text-consoleflag and newvarreceipt required.
+V26watcher C-based autoBOOTrestore after TWRP, fullreadback; manualreset5min.
+No visibletextconsole, Apple services or SpringBoard proof yet.
+
+## Earlier handoff correction
+
 
 Full HFS44915225317 (49113a5) SUCCESS;95archive source hashes, exact-kernel
 RAM diagnostic QEMU, preserved-master rehash, plan21/hardware23 packaging PASS.

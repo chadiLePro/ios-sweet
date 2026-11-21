@@ -2,7 +2,12 @@
 
 The saved idle-status/zoneinfo candidate completed full HFS compilation, a
 90-file source-archive check, diagnostic QEMU, preserved-master rehash and BOOT
-packaging. It was not installed. The new console needs its own full build.
+packaging. It was not installed. The combined console build now also passed:
+HFS run44916663730, hostCI44916653849 (147tests),95 archived source hashes,
+exact-kernel diagnostic QEMU (3 entry records,13 diagnostic PID1 heartbeats),
+preserved-master rehash and independently checked BOOT packaging. The QEMU
+fixture does not exercise Samsung display/UFS hardware or Apple userland.
+The new timezone seed and combined BOOT have not been installed on the phone.
 
 The opt-in `--text-console` payload flag requires the guarded hardware UI profile,
 a compiled renderer marker, and the exact `a52q_text_console=1` boot argument.
