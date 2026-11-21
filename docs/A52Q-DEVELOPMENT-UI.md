@@ -208,3 +208,12 @@ does not establish why the main display object was unavailable. No assertion is
 skipped and no fake display object is returned. Root, var, MKB and early boot
 progress remain observed; the UEA capability fix still lacks positive runtime
 proof in the retained log, which filled at about48.88 seconds.
+
+V28 host candidate built successfully: sourcecf23c5a, HFS44942860068 and
+hostCI44942854724 (150tests). All96 archived source hashes match, with only the
+UI bridge implementation and comment-only profile header changed from V27.
+Exact-kernel diagnostic QEMU passed3 entry records/13 PID1 heartbeats; the
+pristine16GiB master rehash and independent BOOT payload validation passed.
+BOOT SHA256 b6d971e320bcd61c4005b9fee7180a8510470b93a31c7994f59f0b7ddb5385f2.
+The candidate is unflashed; physical console output and the main CADisplay
+condition require the next phone trial. Original BOOT is restored and verified.

@@ -1,3 +1,55 @@
+# CURRENT: V28 READY, UNFLASHED; V27 restored; user away again, wait for return
+
+Sourcecf23c5aea21c9385c5e0e6dfce9e195c4bb66b36 pushed. Full HFS44942860068
+SUCCESS; LinuxCI44942854724 SUCCESS150tests. Archived96source hashes/content
+verified. Only bsd/dev/a52q_ui_bridge.c and profileheader differ fromV27; header
+executabletokens identical(commentchange), other94compiledsources identical.
+Invariant proof E:/A52-iOS16/refresh-guard-protected-invariants.json.
+Kernel SHA8f5c4b306a57a1529d1dd1b6b22cd74a1fc85133407542ab51283503bd35cc5c.
+Pipeline4521 SUCCESS: research/refresh-guard-build-package.log. Exactkernel
+QEMUdiagnostic3CRCentries/13PID1hearts; signing1/1. NOT Appleuserland/hardware
+emulation. Pristine16GiBmaster fullrehash unchanged. Plan24/hardware26 packaged;
+independentcheck_refresh_guard_candidate +review PASS, matching150-testCI.
+BOOT96MiB SHAb6d971e320bcd61c4005b9fee7180a8510470b93a31c7994f59f0b7ddb5385f2.
+Image shim/out/a52q-ios-ufs-hardware-v26/build/a52q-ios-ufs-UNTESTED.img.
+E:/A52-iOS16/refresh-guard-v28-{candidate,review}.json records6changedpublicfiles,
+exactBOOTonlyrange/recovery/limits. NO V28trial orreceipt; launcher/watchernotrun.
+
+PhoneV27 closed/restoredFULLreadback plusfreshBOOT/recovery/DTBO/vbmeta hashes
+match. User: noIOS16text, inTWRP, notoncomputer now. NO morephone trial untiluser
+returns andcanreset after5min. No pendingBOOTrestoration. Root16GiB andinstalled
+var6f30 remainRO; no newdatawrite/format needed. Catalog2786/AMFIUEA/keybag/
+reservations/framegeometry/cacheattrs/oldRGB/pstoreimplementation UNCHANGED.
+Future start_refresh_guard_trial.py usesplan24/hardware26/candidateb6d9, archives
+V27fallback, then C: watch_ios_ufs_v28_restore.py collects/restoresoriginalBOOT.
+Backendplan24 currently; alloldersafetyreceipts closed. KeepTWRP, noSystemboot.
+
+ObservedV27G2reason5 index6 value5 provesour added DSIidlewait failedafterSTART1.
+PinnedSamsung dsi_display.c:7910 waits foridle insideclockchange_pending; wechange
+noclocks. EarlierphysicallyVISIBLE RGB acceptedstatus5 andonlyboundedSTART.
+Fix returnsguardpredicate directly (onlyobserved0/5), no mandatoryidlepoll; all
+otherpins/errorstate rejection, soleSTARTwrite/barriers/100mscompletion remain.
+Nativecase repeatedSTARTwhileDSIstays5 nowpasses; unknown1/highbitstillreject,
+quietpanicstillnoprint. Physicaltextoutput needs NEWtest; no handoff/UIclaim.
+
+SpringBoardV27CRC PC/LR0x1e0580ca8 minusactualslide0x44c18000 =0x19b968ca8,
+FrontBoardServices brk#0. Master-matching .09code and .27.dylddata fullyhashed.
+Actualslidev2delta_mask0xffff0000000000/value_add0 decodesCFString@0x1d7162ef0
+->0x19b98b641: "failed to find the main CADisplay". This identifiesassertion,
+NOT whyCADisplaymain unavailable; relationship toguard requiresnewphoneevidence.
+Proof E:/A52-iOS16/frontboard-trap-v27-audit-v1/assertion-evidence.json.
+No assertion-skipping/fakeCADisplay orGPU/daemonstubs added.
+UEA lowspace fix live behaviorunproven: no positivecapabilityline beforelogfull
+~48.88sec; noabort there isnot successproof. logd pid90/94 CRC mainoffset18160,
+measuredmasterexecutableSHAae339154ca87e1bde5f34114e397a4879d68dbf61f2e23da432bcf2559767345,
+BRK#1 storescrashmessage "BUG IN LIBTRACE: Failed to migrate directory"; actual
+errno/path notyetcaptured. E:/A52-iOS16/master-logd-v27-audit-v1/{verified-executable,
+logd-trap-evidence}.json. Don'tignorefailures orenableuserdatawrites silently.
+V27rawconsole/kernelUI/keybag/crashrecords/freshprotectedhashes underC backup;
+result E:/A52-iOS16/runtime-diagnostics-v27-result.json. No lockscreen verified.
+
+## Historical work below; latest status above is authoritative
+
 # CURRENT: V27 RESTORED/HASH-VERIFIED; user away again; NO PHONE TRIAL
 
 User reported noIOS16text, nowTWRP, willnotbeoncomputer. Watchercompleted.
