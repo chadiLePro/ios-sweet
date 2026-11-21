@@ -19,6 +19,9 @@ The follow-up adds a CRC guard index/value or START timeout reason on runtime
 flush failure, preserving every guard and the quiet panic path. Saved PC/LR and
 shared-cache slide are recorded with CRC for SpringBoard, logd and mediaserverd;
 no user stack is dereferenced and termination behavior stays intact.
+The register helper lives in the Mach exception translation unit, where task
+and shared-region private definitions are available. BSD calls a typed name/PID
+entry; it does not dereference those opaque types.
 UserEventAgent's exact original signed low-space Boolean is exposed through the
 existing AMFI query callbacks only after catalog/platform checks and a full
 84,016-byte SHA-256 of its read-only root vnode. All 15 code pages and signed

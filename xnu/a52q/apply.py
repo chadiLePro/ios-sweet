@@ -64,6 +64,7 @@ def apply(root, filesystem='mockfs'):
         changes[name] = text
     changes[static_init.TARGET] = static_init.transform(read(static_init.TARGET))
     changes[exit_trace.TARGET] = exit_trace.transform(read(exit_trace.TARGET))
+    changes[exit_trace.REGISTER_TARGET] = exit_trace.exception(read(exit_trace.REGISTER_TARGET))
     changes[keybag_trace.VFS] = keybag_trace.vfs(read(keybag_trace.VFS))
     changes[keybag_trace.IOKIT] = keybag_trace.iokit(read(keybag_trace.IOKIT))
     for ui_name in software_ui.PINS:

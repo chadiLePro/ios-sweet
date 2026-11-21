@@ -11,9 +11,14 @@ class CrashTraceTests(unittest.TestCase):
             '\t\t\textern void sweet_crash_log(const char *, int, int, uint64_t, uint64_t);')
         out=exit_trace.transform(source)
         self.assertIn(source.split('\n',1)[1],out)
-        self.assertEqual(out.count('a52q_crash_registers(p);'),1)
-        self.assertLess(out.index('a52q_crash_registers(p);'),out.index('#if defined(ARM64_BOARD_CONFIG_SWEET)'))
+        self.assertEqual(out.count('a52q_crash_registers(p->p_comm, proc_getpid(p));'),1)
+        self.assertNotIn('task->mach_header_vm_address',out)
+        self.assertLess(out.index('a52q_crash_registers(p->p_comm'),out.index('#if defined(ARM64_BOARD_CONFIG_SWEET)'))
         with self.assertRaises(ValueError):exit_trace.transform(out)
+        mach='#if defined(ARM64_BOARD_CONFIG_SWEET)\n#include <vm/vm_shared_region.h>\nold_helper();\n#endif'
+        changed=exit_trace.exception(mach)
+        self.assertIn(mach,changed);self.assertIn('task->mach_header_vm_address',changed)
+        with self.assertRaises(ValueError):exit_trace.exception(changed)
 
     def test_decoder_rejects_corruption_and_bad_schema(self):
         b=b'25/SpringBoard/'+b'/'.join([b'0000000000001000']*6)
@@ -32,8 +37,6 @@ class CrashTraceTests(unittest.TestCase):
 #include <string.h>
 #include <assert.h>
 #define ARM64_BOARD_CONFIG_A52Q 1
-typedef struct {const char *p_comm;} *proc_t;
-static int proc_getpid(proc_t p){(void)p;return 25;}
 typedef struct {int bits;} arm_saved_state_t;
 typedef struct {uint64_t mach_header_vm_address;} *task_t;
 typedef struct {uint64_t sr_slide;} *vm_shared_region_t;
@@ -54,11 +57,10 @@ static void vm_shared_region_deallocate(vm_shared_region_t r){assert(r==(vm_shar
         code+='\n'.join(l for l in exit_trace.REGISTERS.splitlines() if not l.startswith('#include'))
         code+=r'''
 int main(void){
- struct {const char *p_comm;} p={"SpringBoard"};
- a52q_crash_registers((proc_t)&p);assert(!refs);
- missing=1;a52q_crash_registers((proc_t)&p);assert(!refs);missing=0;
- state.bits=32;a52q_crash_registers((proc_t)&p);assert(!refs);state.bits=64;
- p.p_comm="unrelated";a52q_crash_registers((proc_t)&p);assert(!refs);
+ a52q_crash_registers("SpringBoard",25);assert(!refs);
+ missing=1;a52q_crash_registers("SpringBoard",25);assert(!refs);missing=0;
+ state.bits=32;a52q_crash_registers("SpringBoard",25);assert(!refs);state.bits=64;
+ a52q_crash_registers("unrelated",25);a52q_crash_registers(NULL,25);assert(!refs);
  return 0;
 }
 '''

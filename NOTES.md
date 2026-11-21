@@ -1,5 +1,26 @@
 # CURRENT: V26 restored; host fixes/build while user away; NO PHONE TRIAL until continue
 
+Full44937633007 FAILED: BSDtranslationunit hidesstructtask andvm_shared_region
+(MACH_KERNEL_PRIVATE). Fix moves register+slide helper into osfmk/kern/exception.c
+using actual same-context APIs as existing Redmi crashhelper, not private-type
+casts in BSD. BSD nowcalls typed name/pid entry only. Original Redmi unchanged.
+Newapply transform stagesexception.c too ->96overlayfiles. All150hosttests,
+actual V26source-based expected96construction and repo validationPASS. Needfull
+HFSrestart on correctedMach/BSDboundary; no phonewrites. Older build IDs below
+are historical. Same plan23/hardware25 targets remainunused/newhostonly outputs.
+
+Correctedsource6479ed8b2e46e3a9996a9dfb660576a53fe90537 pushed. LinuxCI
+44937627819 SUCCESS150tests. FullHFS44937633007 compiling. Independent expected
+95-source overlay prepared from V26 archive; only bsd/kern/a52q_amfi.c,
+bsd/kern/kern_exit.c and bsd/dev/a52q_ui_bridge.c differ. Host finisher16879:
+research/finish_runtime_diagnostics_artifacts.py -> runtime-diagnostics-build-package.log.
+Next hostoutputs: runtime-diag-qemu-v1, plan23, hardware25. New V27 start/watch
+helpers prepared but NOTRUN. BOOT backend nowplan23; current V26 restoration
+alreadyclosed. Future candidate uses installedvar6f30 (no newdatawrite).
+Omit optionalcs_debug=2 in V27 packaging to reduce observed no-hash debugspam
+(primary XNU ubc_subr.c:5757 conditional cs_debug>1). Signatureenforcement and
+normalconsolelogging remain enabled; no pstorelayout/capacity changes.
+
 Initial hostfixcommitc078238/full44937355741 superseded: independent overlay
 check caught a52q_crash_registers call accidentally added to the original match
 anchor rather than A52 trace. Corrected anchor/call placement; new independent
