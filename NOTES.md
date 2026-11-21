@@ -1,3 +1,22 @@
+# CURRENT PHONE ACTION: V27 RUNNING; BOOT RESTORATION PENDING
+
+User resumed held reviewed candidate203155db...c6da009. ADB recovery; fresh
+BOOT/recovery/DTBO/vbmeta hashes matchoriginals. Independent candidatechecker
+PASS. No V27receipt existed beforestart. New resume record in
+backup/a52q/ios-ufs-v27/operator-resume.json. Launcher running (49689):
+research/start_runtime_diagnostics_trial.py, parentlog research/runtime-diagnostics-v27-start.log.
+V27receipt confirms candidate203155...c6da009 fullreadback and recoveryUSBdeparture.
+C: restoration watcher15932 ACTIVE, noerrors. Useraskedwait5fullminutes then
+returnTWRP; operator-timing.json records observation signal/not-beforeUTC.
+FIRST onreturn checkreceipt original_boot_restoredTrue/requires_restoreFalse
+and freshoriginalBOOThash. Current pendingrestoreTRUE. No newroot/varwrites.
+It rechecks fullroot/var, archives existing RAMlog (fallback latestsavedV26),
+stages/readsback BOOT, confirms USBdeparture thenstarts C: restoration watcher.
+Until confirmeddeparture do NOT signal five-minute timer. Once running update
+this header with watcherPID; onreturn restore/hash beforeanalysis. Only BOOT
+writes authorized; no newuserdata/root/varwrite. Older wait-for-continue notes
+below are historical: this continue revokes the away hold.
+
 # CURRENT: V27 READY, UNFLASHED; user away, wait for "continue" before phone trial
 
 Full HFS44939199104 SUCCESS. Compiledsource18c6d78cdf37bcc282e070e41523f50617087df3.
