@@ -47,6 +47,10 @@ static void *current_thread(void){return &state;}
 static task_t current_task(void){return (task_t)&task;}
 static arm_saved_state_t *find_user_regs(void *t){assert(t==&state);return missing ? NULL : &state;}
 static int is_saved_state64(arm_saved_state_t *s){return s->bits==64;}
+static unsigned tail_copies;
+static void a52q_early_critical(const char *line,unsigned length,unsigned slot) {
+ assert(length==strlen(line) && slot==6 && !strncmp(line,"A52CR1 ",7));++tail_copies;
+}
 static vm_shared_region_t vm_shared_region_get(task_t t){assert(t==(task_t)&task);refs++;return (vm_shared_region_t)&region;}
 static void vm_shared_region_deallocate(vm_shared_region_t r){assert(r==(vm_shared_region_t)&region);refs--;}
 #define get_saved_state_pc(s) ((void)(s),0x180004000ULL)
@@ -57,7 +61,7 @@ static void vm_shared_region_deallocate(vm_shared_region_t r){assert(r==(vm_shar
         code+='\n'.join(l for l in exit_trace.REGISTERS.splitlines() if not l.startswith('#include'))
         code+=r'''
 int main(void){
- a52q_crash_registers("SpringBoard",25);assert(!refs);
+ a52q_crash_registers("SpringBoard",25);assert(!refs && tail_copies==1);
  missing=1;a52q_crash_registers("SpringBoard",25);assert(!refs);missing=0;
  state.bits=32;a52q_crash_registers("SpringBoard",25);assert(!refs);state.bits=64;
  a52q_crash_registers("unrelated",25);a52q_crash_registers(NULL,25);assert(!refs);

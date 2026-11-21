@@ -7,6 +7,7 @@ REGISTERS = '''
 #if defined(ARM64_BOARD_CONFIG_A52Q)
 #include <arm/thread.h>
 #include <vm/vm_shared_region.h>
+#include <arm64/a52q_fb_console.h>
 /* V26: actual SpringBoard SIGTRAP needs the cache slide and return PC.
  * Read saved state only, never walk/dereference user stacks during exit. */
 void a52q_crash_registers(const char *name, int pid);
@@ -32,6 +33,10 @@ void a52q_crash_registers(const char *name, int pid)
         for (unsigned j=0;j<8;j++) crc=(crc>>1)^(0xedb88320U&(0U-(crc&1)));
     }
     for (unsigned i=0;i<3;i++) printf("A52CR1 %s %08x\\n",body,crc^0xffffffffU);
+    char line[240];
+    n=snprintf(line,sizeof(line),"A52CR1 %s %08x\\n",body,crc^0xffffffffU);
+    if (n>0 && (unsigned)n<sizeof(line))
+        a52q_early_critical(line,(unsigned)n,!strcmp(name,"SpringBoard") ? 6 : 7);
 }
 #endif
 '''

@@ -21,6 +21,75 @@ static volatile uint32_t *a52ui_frame;
 static int a52ui_state, a52ui_busy;
 static unsigned a52ui_frames;
 static uint64_t a52ui_nonce;
+static unsigned a52ui_sequence;
+static uint64_t a52ui_heartbeat_deadline;
+static char a52ui_latest[6][240];
+static unsigned a52ui_latest_length[6];
+static int a52ui_latest_busy[6];
+static unsigned a52ui_printed[6];
+
+/* Public state only. CRC records supplement ordinary pstore text; after full
+ * the fixed slots retain the latest record without changing its header. */
+void a52q_ui_observe(unsigned slot,const char *payload)
+{
+    if (!a52ui_nonce || slot>=6 || !payload) return;
+    char body[208],line[240];
+    unsigned sequence=__atomic_add_fetch(&a52ui_sequence,1,__ATOMIC_RELAXED);
+    int n=snprintf(body,sizeof(body),"%016llx/%08x/%02x/%.168s",
+        (unsigned long long)a52ui_nonce,sequence,slot,payload);
+    if (n<=0 || (unsigned)n>=sizeof(body)) return;
+    for (int i=0;i<n;i++) if ((unsigned char)body[i]<32 || (unsigned char)body[i]>126) body[i]='?';
+    uint32_t crc=0xffffffffU;
+    for (int i=0;i<n;i++) {
+        crc^=(uint8_t)body[i];
+        for (unsigned j=0;j<8;j++) crc=(crc>>1)^(0xedb88320U&(0U-(crc&1)));
+    }
+    n=snprintf(line,sizeof(line),"A52OBS1 %s %08x\n",body,crc^0xffffffffU);
+    if (n<=0 || (unsigned)n>=sizeof(line)) return;
+    int expected=0;
+    if (__atomic_compare_exchange_n(&a52ui_latest_busy[slot],&expected,1,0,__ATOMIC_ACQUIRE,__ATOMIC_RELAXED)) {
+        memcpy(a52ui_latest[slot],line,(unsigned)n);
+        a52ui_latest_length[slot]=(unsigned)n;
+        __atomic_store_n(&a52ui_latest_busy[slot],0,__ATOMIC_RELEASE);
+    }
+    a52q_early_critical(line,(unsigned)n,slot);
+    if (__atomic_fetch_add(&a52ui_printed[slot],1U,__ATOMIC_RELAXED)<64)
+        for (unsigned i=0;i<(slot ? 3U : 1U);i++) printf("%s",line);
+}
+
+void a52q_ui_heartbeat(unsigned poweroff)
+{
+    /* Called only by the framebuffer workloop, every5s. Reads only the same
+     * mapped registers and64 bounded framebuffer samples; no device writes. */
+    if (mach_absolute_time()<a52ui_heartbeat_deadline) return;
+    nanoseconds_to_deadline(5000*NSEC_PER_MSEC,&a52ui_heartbeat_deadline);
+    /* Repeat last matching/open/selector results into late slots, even when
+     * the corresponding service operation happened before the log filled. */
+    for (unsigned slot=1;slot<6;slot++) {
+        int expected=0;char line[240];unsigned length=0;
+        if (__atomic_compare_exchange_n(&a52ui_latest_busy[slot],&expected,1,0,__ATOMIC_ACQUIRE,__ATOMIC_RELAXED)) {
+            length=a52ui_latest_length[slot];
+            if (length) memcpy(line,a52ui_latest[slot],length);
+            __atomic_store_n(&a52ui_latest_busy[slot],0,__ATOMIC_RELEASE);
+            if (length) a52q_early_critical(line,length,slot);
+        }
+    }
+    int state=__atomic_load_n(&a52ui_state,__ATOMIC_ACQUIRE);
+    if (state!=1) {
+        char body[64];snprintf(body,sizeof(body),"tick state=%d owner=%d off=%u",
+            state,a52q_fb_console_owner(),poweroff);a52q_ui_observe(0,body);return;
+    }
+    uint32_t hash=2166136261U,first=0;unsigned colour=0;
+    for (unsigned i=0;i<64;i++) {
+        uint32_t value=a52ui_frame[(uint64_t)i*(A52Q_UI_WIDTH*A52Q_UI_HEIGHT-1)/63];
+        hash=(hash^value)*16777619U;
+        if (value!=0xff000000U && value!=0xffffffffU) {if (!colour) first=value;++colour;}
+    }
+    char body[168];
+    snprintf(body,sizeof(body),"tick state=%d owner=%d off=%u frames=%u dsi=%08x start=%08x sample=%08x colour=%u first=%08x",
+        state,a52q_fb_console_owner(),poweroff,a52ui_frames,*a52ui_regs[6],*a52ui_regs[1],hash,colour,first);
+    a52q_ui_observe(0,body);
+}
 
 static int a52ui_property(DTEntry node, const char *name, void *out, unsigned length)
 {

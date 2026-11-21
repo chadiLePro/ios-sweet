@@ -18,6 +18,10 @@ static unsigned a52text_head,a52text_count;
 static int a52text_queue_busy,a52text_draw_busy,a52text_state; /* 0 queue,1 own,2 GUI,3 off */
 static struct a52text_grid a52text_screen;
 static uint64_t a52text_deadline;
+int a52q_fb_console_owner(void)
+{
+    return __atomic_load_n(&a52text_state,__ATOMIC_ACQUIRE);
+}
 static int a52text_try(int *lock)
 {
     int expected=0;

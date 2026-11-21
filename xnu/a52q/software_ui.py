@@ -49,6 +49,19 @@ def transform(name, source):
             'AppleCLCD::present(const uint8_t *rec)\n{\n#if defined(A52Q)\n\tif (!a52q_fb_console_handoff()) { swap(rec); return; }\n#endif')
         change('AppleCLCD::vsyncFired(OSObject *owner, IOTimerEventSource *sender)\n{',
             'AppleCLCD::vsyncFired(OSObject *owner, IOTimerEventSource *sender)\n{\n#if defined(A52Q)\n\ta52q_fb_console_tick(0);\n#endif')
+        change('\tAppleCLCD *fb = (AppleCLCD *)owner;',
+            '\tAppleCLCD *fb = (AppleCLCD *)owner;\n#if defined(A52Q)\n'
+            '\tIOLockLock(fb->fLock);\n\tunsigned a52off=fb->fPowerOff;\n\tIOLockUnlock(fb->fLock);\n'
+            '\ta52q_ui_heartbeat(a52off);\n#endif')
+        change('\t\t    args->scalarOutputCount, args->structureOutputSize, ret);',
+            '\t\t    args->scalarOutputCount, args->structureOutputSize, ret);\n#if defined(A52Q)\n'
+            '\t\tstatic unsigned a52logged;\n'
+            '\t\tif (__atomic_fetch_add(&a52logged,1U,__ATOMIC_RELAXED)<64) {\n'
+            '\t\t\tchar body[168];\n'
+            '\t\t\tsnprintf(body,sizeof(body),"call proc=%.16s pid=%d sel=%u ret=%08x out=%u/%llx/%llx in=%u/%u",\n'
+            '\t\t\t    name,proc_selfpid(),selector,ret,outCount,(unsigned long long)out[0],(unsigned long long)out[1],\n'
+            '\t\t\t    args->scalarInputCount,args->structureInputSize);\n'
+            '\t\t\ta52q_ui_observe(5,body);\n\t\t}\n#endif')
         change('extern "C" int sweet_console_muted;     /* osfmk/console/serial_console.c */',
             '#if defined(SWEET)\nextern "C" int sweet_console_muted;     /* osfmk/console/serial_console.c */\n#endif')
         change('\tPE_Video video;', '#if defined(SWEET)\n\tPE_Video video;\n#endif')

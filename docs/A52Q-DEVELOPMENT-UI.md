@@ -215,5 +215,46 @@ UI bridge implementation and comment-only profile header changed from V27.
 Exact-kernel diagnostic QEMU passed3 entry records/13 PID1 heartbeats; the
 pristine16GiB master rehash and independent BOOT payload validation passed.
 BOOT SHA256 b6d971e320bcd61c4005b9fee7180a8510470b93a31c7994f59f0b7ddb5385f2.
-The candidate is unflashed; physical console output and the main CADisplay
-condition require the next phone trial. Original BOOT is restored and verified.
+V28 was subsequently tested. The operator saw the banner/text briefly before it
+disappeared with flickering colours. CRC records confirm prepare and submissions
+1,2,3 without a retained rejection. SpringBoard still traps at the same unslid
+FrontBoardServices PC0x19b968ca8. Original BOOT was restored and independently
+hash-verified, as were recovery, DTBO and vbmeta. This proves brief physical text
+output, not a stable display, Apple graphics composition or a lock screen.
+
+### Late display/service observability
+
+The ordinary262132-byte pstore text fills around48 seconds, before much of the
+five-minute trial. Absence of a later handoff or failure from that prefix is
+inconclusive. The next candidate supplements it with eight fixed512-byte slots
+in the final4KiB of the existing256KiB reservation, **only after the ordinary log
+is full and its header is valid**. The normal byte writer, header and initial
+252KiB remain unchanged. This explicitly replaces the last4KiB of full ordinary
+text; it allocates no new physical region and makes no storage write. Each slot
+contains two or three copies of a bounded CRC-protected record. Updates use a
+try-lock, drop when busy, and neither wait nor print from the RAM writer.
+
+Slots0..5 retain display heartbeat, framebuffer matching, surface matching,
+framebuffer open, surface open and framebuffer selector results respectively.
+Slots6/7 retain late SpringBoard/other selected crash register records. Matching
+and open observations are restricted to SpringBoard/backboardd; no matching
+iterator is consumed or reset for diagnostics and no result is changed. An
+iterator-created record does not prove a service was returned: returned objects
+are observed only after the caller's existing next-object operation. RPC and
+IOKit open results are distinct, with an explicit validity flag on early returns.
+
+The framebuffer workloop records ownership, power-off state, adapter state,
+completed submissions, the already-mapped DSI/START values, and64 bounded pixel
+samples every5 seconds. Samples include a hash and count/first value differing
+from the font's opaque black/white; they do not constitute an image or an error
+diagnosis. The latest matching/open/selector records are repeated to their slots
+at this interval, so an early observation survives later log saturation. Normal
+diagnostic prints are capped per slot, while latest records continue updating.
+`tools/a52q_ui_late_trace.py` verifies CRC, schema, nonce and sequence conflicts.
+
+No display initialization, refresh predicate, START operation, surface allocator,
+UFS driver, root mount, catalog, keybag, physical reservation or power/watchdog
+behaviour is changed. These diagnostics are needed to distinguish missing IOKit
+services, rejected client connections, a client handoff/power-off request and
+ongoing scanout problems before attempting a compatibility fix. They neither
+bypass the CADisplay assertion nor provide Metal/OpenGL ES compatibility.

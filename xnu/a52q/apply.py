@@ -18,6 +18,7 @@ import keybag_trace
 import software_ui
 import data_fstab
 import text_console
+import graphics_trace
 
 HERE = Path(__file__).resolve().parent
 
@@ -67,6 +68,7 @@ def apply(root, filesystem='mockfs'):
     changes[exit_trace.REGISTER_TARGET] = exit_trace.exception(read(exit_trace.REGISTER_TARGET))
     changes[keybag_trace.VFS] = keybag_trace.vfs(read(keybag_trace.VFS))
     changes[keybag_trace.IOKIT] = keybag_trace.iokit(read(keybag_trace.IOKIT))
+    changes[keybag_trace.IOKIT] = graphics_trace.iokit(read(keybag_trace.IOKIT))
     for ui_name in software_ui.PINS:
         ui_path='iokit/Kernel/arm/'+ui_name
         changes[ui_path]=software_ui.transform(ui_name,read(ui_path))

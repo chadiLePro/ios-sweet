@@ -1,4 +1,29 @@
-# CURRENT PHONE ACTION: V28 RUNNING; BOOT RESTORATION PENDING
+# CURRENT: V28 CLOSED, original BOOT restored and independently hash-verified
+
+V28 receipt original_boot_restored=true/requires_restore=false. Fresh full BOOT,
+recovery, DTBO and vbmeta hashes MATCH (backup/a52q/ios-ufs-v28/
+independent-protected-hashes.json). No restoration pending and no active writer.
+Operator confirmed A52Q banner/text appeared briefly BEFORE reset, then disappeared
+with flickering colours. This verifies brief physical bitmap-console visibility,
+not stable output or SpringBoard. Console SHA256
+762019ecc83f280ae01abbb1470203e82d714e06b51ceeec8247fdd49c27d229.
+CRC UI prepare/submit frames1,2,3; no retained guard rejection. SpringBoard saved
+PC minus slide again 0x19b968ca8 (FrontBoardServices: failed to find main CADisplay).
+Retained 262132-byte prefix fills around48s; later ownership/services unknown.
+Next host-only work: bounded CRC late display/service records in final4KiB of
+EXISTING RAM console ONLY after ordinary log fills. Preserve header/first252KiB,
+normal byte writer, carveouts, UFS, catalog2786, keybag and display programming.
+No new root/var write authorized or required for these diagnostics.
+
+Late-observer implementation now complete on host:154tests and repo validation
+PASS. Actual pinned IOKit transform preserves every original operation/return
+when new A52-only blocks are removed; no iterator consumption/reset. Expected
+96source map computed,11 observer units/headers changed and85 identical toV28,
+E:/A52-iOS16/late-trace-{expected-overlay,protected-invariants}.json.
+Next: commit/full HFS build, verify all archived hashes, exact-kernel QEMU,
+master rehash and BOOT packaging. NO V29 phone trial or candidate yet.
+
+# HISTORICAL V28 START (closed above)
 
 User returnedwithcontinue; held reviewed candidateb6d971...b5385f2 authorized
 BOOT-only. FreshADB=recovery and BOOT/recovery/DTBO/vbmeta hashes matchoriginals;

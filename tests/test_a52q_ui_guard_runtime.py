@@ -34,6 +34,11 @@ static struct a52q_ui_guard guards[13];
 static unsigned char *frame;
 static uint64_t ticks;
 void a52q_fb_console_start(void){assert(frame_maps==1);++console_starts;}
+static unsigned tails;
+int a52q_fb_console_owner(void){return 1;}
+void a52q_early_critical(const char *line,unsigned length,unsigned slot) {
+ assert(length>8 && length<=240 && slot<6 && !memcmp(line,"A52OBS1 ",8));++tails;
+}
 static int test_snprintf(char *p,size_t n,const char *fmt,...) {
  va_list a;va_start(a,fmt);int v=vsnprintf(p,n,fmt,a);va_end(a);return v;
 }
@@ -110,6 +115,14 @@ int main(void){
  assert(!a52q_ui_physical_allowed(physical+4096,width,height,stride));
  assert(a52q_ui_flush() && a52ui_frames==1 && regs[1]==0);
  assert(a52q_ui_flush_quiet() && a52ui_frames==2 && regs[1]==0);
+ a52ui_heartbeat_deadline=0;
+ memset(frame,0xff,A52Q_UI_BYTES);
+ uint32_t *pixels=(uint32_t *)frame;pixels[0]=0xff123456U;
+ a52q_ui_observe(3,"open proc=backboardd io=0");
+ unsigned before_tails=tails,before_frames=a52ui_frames;
+ a52q_ui_heartbeat(0);
+ assert(tails==before_tails+2 && a52ui_frames==before_frames && pixels[0]==0xff123456U);
+ a52q_ui_heartbeat(1);assert(tails==before_tails+2); /* rate limit */
  consume=0;assert(!a52q_ui_flush() && regs[1]==1 && !a52q_ui_pixels());
  int state=a52ui_state;assert(!a52q_ui_flush() && a52ui_state==state);
  reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
@@ -138,5 +151,12 @@ int main(void){
             self.assertTrue(any(b'/03/02/00000003' in body for body,crc in details))
             self.assertTrue(any(b'/06/01/00000001' in body for body,crc in details))
             self.assertEqual(v.stdout.split(b'QUIET-BEGIN')[1].split(b'QUIET-END')[0].strip(),b'')
+            sys_path=str(R/'tools')
+            import sys
+            sys.path.insert(0,sys_path)
+            from a52q_ui_late_trace import decode
+            late=decode(v.stdout)['records']
+            self.assertTrue(any('colour=1 first=ff123456' in row['payload'] for row in late))
+            self.assertTrue(any('owner=1 off=0 frames=2' in row['payload'] for row in late))
 
 if __name__=='__main__':unittest.main()
