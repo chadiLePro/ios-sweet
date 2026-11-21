@@ -85,3 +85,12 @@ Files changed for this feature:
 
 Host tests, kernel compile/link, diagnostic emulation, visible boot text, actual
 Apple service startup and a rendered lock screen are separate milestones.
+
+V27 host validation completed on source18c6d78: full HFS build44939199104,
+hostCI44939190163 (150tests),96 archived source hashes, exact-kernel diagnostic
+QEMU (3 entry records and13 diagnostic PID1 heartbeats), preserved master rehash
+and independent BOOT validation. BOOT SHA256 is
+203155dbee765f9ae80d4596924f79547e11e00ad3d5027259d83e2ecc6da009.
+The candidate is unflashed. UserEventAgent behavior, the display runtime failure
+and SpringBoard remain subject to the next physical trial. The optional noisy
+cs_debug=2 argument is omitted; signature enforcement and console logging remain.

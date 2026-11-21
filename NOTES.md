@@ -1,3 +1,44 @@
+# CURRENT: V27 READY, UNFLASHED; user away, wait for "continue" before phone trial
+
+Full HFS44939199104 SUCCESS. Compiledsource18c6d78cdf37bcc282e070e41523f50617087df3.
+LinuxhostCI44939190163 SUCCESS150tests. All96 archived overlay-source contents
+verified against independently constructed map fromV26. Four compiledsourceunits
+differ: AMFI measuredUEA Boolean, UIflushdetail, BSDexitcall, Machregisterhelper.
+Kernel SHA 8c1770355fee120130484f91076a5f67285b731482f0be70048e8b132bab917b.
+Pipeline67679 completedSUCCESS: research/runtime-diagnostics-mach-build-package.log.
+Exactkernel diagnostic QEMU3CRCentrycopies/13diagnosticPID1heartbeats, enforcement
+system1/process1; NOT Appleuserland or Samsunghardware emulation. Pristine16GiB
+master fullrehash unchanged. Plan23/hardware25 packaged and independent checker
+PASS including matching150-testCI, source hashes, payload/UI/root/var bindings.
+BOOT96MiB SHA 203155dbee765f9ae80d4596924f79547e11e00ad3d5027259d83e2ecc6da009.
+Image shim/out/a52q-ios-ufs-hardware-v25/build/a52q-ios-ufs-UNTESTED.img.
+E:/A52-iOS16/runtime-diagnostics-v27-{candidate,review}.json. Review lists13files,
+fullhashes/proposedBOOT-onlyrange, backup/recovery, scope and unresolvedbugs.
+
+PHONE: V26 originalBOOT restored/fullreadback +independent fresh4protectedhashes
+match. Receipt backup/a52q/ios-ufs-v26/receipt.json closed; NO restoration pending.
+Installedvar6f30 was fullreadbackverified; root16GiB preserved. No phonewrite atall
+whileuseraway. V27launcher/watcher NOTRUN; no V27receipt. Do NOT flash untiluser
+returnswithcontinue andcanperform5-minute reset toTWRP. ExistingBOOT-onlyscope:
+sda19 bytes[0,100663296), thenautomaticoriginalBOOTrestore. No newvar/rootwrite.
+Futurestart research/start_runtime_diagnostics_trial.py; C: watcher
+research/watch_ios_ufs_v27_restore.py. Backend plan23 +installedvarreceipt6f30 +
+--text-console; omit optional--ios-codesign-debug (cs_debug2spam filledV26log).
+Allnormalprintf/pstore/signatureenforcement retained. OnTWRPreturn collect then
+restore/hashFIRST; use UI CRCG2 reason/index/value foractualruntimeflushfailure,
+and tools/a52q_crash_trace.py forCRC savedPC/LR/cache slide. Do not speculate.
+
+Fixedhostpolicy: exact master-measuredUEA low-spaceIOBoolean checked by full
+84016BfileSHA/requiredvnode pluscatalog/platform/ROroot. Native negativesPASS.
+No liveUEAfix proofyet. Display andSpringBoard remainUNRESOLVED untilnewtrace.
+V26user NO TEXT; UImapped,frame1 STARTcompleted,thene1error(noG2detail). V26
+MKBdone andEarlyBootComplete provedtzinitseedprogress. SpringBoardpid25 SIGTRAP,
+UEApid24lowspaceEPERMabort, logdtrap/mediaserverdSEGV observedbefore256KiBfull.
+No visibleconsole/UI/60Hzpanel/lockscreen claimed. UFS/catalog2786/KeyStore/
+RAMreservations/physicalFBvalues/oldRGBdiagnostic/pstoreimplementation unchanged.
+
+## Historical host work and V26 evidence (latest state above is authoritative)
+
 # CURRENT: V26 restored; host fixes/build while user away; NO PHONE TRIAL until continue
 
 Full44937633007 FAILED: BSDtranslationunit hidesstructtask andvm_shared_region
