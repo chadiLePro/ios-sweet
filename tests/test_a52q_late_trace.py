@@ -85,6 +85,7 @@ int main(void) {
         with self.assertRaises(ValueError):decode(line+frame(body.replace(b'owner=1',b'owner=2')))
 
     def test_iokit_helpers_only_observe_graphics_processes_and_known_open_classes(self):
+        self.assertNotIn('strstr(',graphics_trace.HELPER) # not declared by this XNU unit
         source=r'''
 #include <assert.h>
 #include <stdio.h>

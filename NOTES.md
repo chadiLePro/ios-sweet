@@ -20,8 +20,29 @@ PASS. Actual pinned IOKit transform preserves every original operation/return
 when new A52-only blocks are removed; no iterator consumption/reset. Expected
 96source map computed,11 observer units/headers changed and85 identical toV28,
 E:/A52-iOS16/late-trace-{expected-overlay,protected-invariants}.json.
-Next: commit/full HFS build, verify all archived hashes, exact-kernel QEMU,
-master rehash and BOOT packaging. NO V29 phone trial or candidate yet.
+Source21a997dab3ca98fe0367c0907ef0ec805ebba930 pushed (includes backboardd crash
+capture as well as SpringBoard/logd/mediaserverd). CI44948686986 SUCCESS154tests.
+Full HFS44948688023 FAILED: IOUserClient.cpp kernel header does not declare
+strstr (3 diagnostics); host compiler accepted it. Replace only the observer's
+substring predicates with exact known framebuffer/surface class strcmp checks.
+All154 host tests PASS again; next full HFS build required. No artifact packaged.
+Earlier44948387960 cancelled deliberately to include backboardd, not a failure.
+Host-only pipeline session93449 ended failure; research/late-trace-build-package-v2.log
+and research/development-ui-build-failure-44948688023.log retain exact errors.
+Next pipeline must use corrected source/run and verify96 archived hashes,
+exact-kernel diagnostic QEMU, pristine-master rehash, plan25/hardware27 package.
+NO V29 phone trial or checked candidate yet. Backend pinned to next plan25 only
+after V28 receipt closed; new helpers start_late_trace_trial.py and
+watch_ios_ufs_v29_restore.py are configured but NOT EXECUTED.
+Next: finish/review build and package, then operator readiness for BOOT-only test.
+Never start a trial while source/build verification or restoration is pending.
+
+Static measured20H392 IOMFB audit E:/A52-iOS16/iomfb-abi-v29-audit-v1/report.json:
+matching class IOMobileFramebuffer, notification IOServiceFirstMatch; selectors
+18 is-main (0in/1out),8 display-size (0in/2out),3 surface (2in/1out), agree with
+current driver. Actual cache .13 and .42.dyldlinkedit FULLSHA verified to master.
+This rules out those simple class/selector mismatches, not all ABI mismatches
+or the underlying CADisplay failure. No Apple binary or assertion patched.
 
 # HISTORICAL V28 START (closed above)
 

@@ -14,8 +14,8 @@ static bool a52q_graphics_process(char *name, unsigned size)
 static unsigned a52q_graphics_class(const char *name)
 {
     if (!name) return 0;
-    if (strstr(name,"Surface")) return 2;
-    if (strstr(name,"Framebuffer") || strstr(name,"CLCD")) return 1;
+    if (!strcmp(name,"IOCoreSurfaceRoot") || !strcmp(name,"IOSurfaceRoot")) return 2;
+    if (!strcmp(name,"IOMobileFramebuffer") || !strcmp(name,"AppleCLCD")) return 1;
     return 0;
 }
 static void a52q_graphics_match(OSDictionary *dict,kern_return_t result,
