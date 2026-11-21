@@ -94,3 +94,13 @@ and independent BOOT validation. BOOT SHA256 is
 The candidate is unflashed. UserEventAgent behavior, the display runtime failure
 and SpringBoard remain subject to the next physical trial. The optional noisy
 cs_debug=2 argument is omitted; signature enforcement and console logging remain.
+
+V27 was subsequently tested and restored. No text was visible. Its new failure
+record proves the extra DSI-idle wait stalled with status5 after the first START.
+The next correction follows the already visible RGB diagnostic's unchanged
+refresh operation: validate the observed0/5 states, then bound START completion,
+without a clock-change idle wait. All configuration pins remain enforced.
+The saved crash registers locate SpringBoard's FrontBoardServices assertion
+about an unavailable main CADisplay. Its assertion and the GUI result remain
+unmodified and subject to the next hardware test. See the detailed evidence in
+`A52Q-DEVELOPMENT-UI.md`.

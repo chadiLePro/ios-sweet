@@ -1,3 +1,27 @@
+# CURRENT: V27 RESTORED/HASH-VERIFIED; user away again; NO PHONE TRIAL
+
+User reported noIOS16text, nowTWRP, willnotbeoncomputer. Watchercompleted.
+V27receipt restoredTrue/pendingFalse; freshBOOT/recovery/DTBO/vbmeta hashes match.
+No restoration pending. Do notstartanothertrial withoutuserreturn/readiness.
+Rawlog262132B SHA659ec822a6f0af8e134525accac6a34f675260a0d7185c593c9274463ad4e1a4.
+EntryCRC3, rebootconfirmed. CRCG1frame1 threecopies, e1frame1 twocopies.
+CRCG2 reason5/index6/value5 onevalidcopy: DSI-idle wait timesout afterfirstSTART.
+PriorphysicalRGBtest snapshot DSI_STATUS5 accepted, no idlewait, barsvisible.
+PinnedSamsung dsi_display.c useswait_for_cmd_mode_mdp_idle only when dynamic
+clockchange_pending, notordinaryunchangedMDP refresh. Hostauditneeded; likely
+incorrectextraidleconditioninouradapter. Keep13pins/0or5predicate/STARTbound,
+no clock/reset/panelcommands. V27scope root/varMKBdone/EarlyBootComplete persists.
+No validUEAcapabilitylog; nooldUEAabort inretainedrange, notsuccessproof; logfull
+at~48.88sec. UEA live fix remainsunproven.
+CRCsavedSpringBoardpid26 and93: pc=lr0x1e0580ca8, slide0x44c18000, unslid
+0x19b968ca8, FrontBoardServices __TEXTbase0x19b910000/size0x9c000. Three/twocopies.
+Measuredcache.09 SHAcheckedagainstmaster; actualinstruction brk#0. Constantat
+0x1d7162ef0 beforetrap likelyexplainsassertion; hostsymbolicationongoing.
+E:/A52-iOS16/frontboard-trap-v27-audit-v1 and runtime-diagnostics-v27-result.json.
+C: backup/a52q/ios-ufs-v27 hasrecords/keybag/UI/independentprotectedhashes.
+Savedlogd pid90 mainoffset0x18160; mediaserverd unslidPC0x186e5e0cc CoreFoundation.
+Hostanalysis/fixes/buildonlywhileuseraway. Catalog2786/root/var/KeyStore untouched.
+
 # CURRENT PHONE ACTION: V27 RUNNING; BOOT RESTORATION PENDING
 
 User resumed held reviewed candidate203155db...c6da009. ADB recovery; fresh

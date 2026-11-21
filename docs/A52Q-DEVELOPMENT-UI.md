@@ -173,9 +173,38 @@ The display rejection identified register index 6, `0x0ae94008`: observed 0,
 captured expectation 5, in two CRC-valid copies. This is DSI_STATUS, not a mode
 register. The pinned Samsung
 [MDP-idle implementation](https://github.com/LineageOS/android_kernel_samsung_sm7125/blob/f6bbda4e5986f09e4d51ceffd1b645b2d5aa75b4/drivers/gpu/drm/msm/dsi-staging/dsi_ctrl_hw_cmn.c#L1576)
-polls bit 2 until clear. The UI adapter now permits the two observed states 0/5,
-waits at most 100 ms for idle zero before mapping or START, and rejects unknown
+polls bit 2 until clear. V26 permitted the two observed states 0/5,
+but also waited at most 100 ms for idle zero before mapping or START. It rejected unknown
 or error states. It never writes the status register to force success. Other
 configuration guards, physical geometry, the old RGB diagnostic, UFS/root code,
 code catalog, reservations and pstore remain unchanged. Native tests cover idle,
 busy-to-idle, busy timeout, unexpected/error bits, and unchanged START timeout.
+
+### V27: refresh idle-wait regression and the SpringBoard assertion
+
+Original BOOT was restored with full readback and independent protected-partition
+hash checks. The operator saw no console text. After one completed START, the
+CRC-valid record `A52G2 f7d1eef0bf0947e4/05/06/00000005 e4066bc4` identifies the
+next failure as our added DSI-idle wait at register index6, status5. The earlier
+physically visible RGB diagnostic accepted that same captured status5, wrote
+only START, and bounded START completion; it imposed no DSI-idle precondition.
+
+The inspected pinned vendor
+[pre-kickoff clock-change path](https://github.com/LineageOS/android_kernel_samsung_sm7125/blob/f6bbda4e5986f09e4d51ceffd1b645b2d5aa75b4/drivers/gpu/drm/msm/dsi-staging/dsi_display.c#L7910)
+waits for DSI idle while a clock change is pending. Our refresh changes no clocks,
+panel modes or DSI configuration. The correction removes that extra idle wait
+and retains the exact observed status predicate0/5, all other configuration pins,
+framebuffer mapping/geometry, sole START write, barriers and100ms completion
+timeout. Unknown/error status still fails. Native execution now covers repeated
+successful submissions while DSI remains5 and unchanged rejection/START-timeout
+paths. Legacy timeout records remain decodable. Physical output needs a new test.
+
+SpringBoard PID26/93 saved PC/LR0x1e0580ca8 and cache slide0x44c18000 have three/two
+CRC-valid copies. Unslid PC0x19b968ca8 lies in FrontBoardServices, at `brk #0`.
+The matching master's code and constant-cache files were fully SHA256-verified.
+Decoding the referenced CFString using its actual cache slide-v2 mask yields
+“failed to find the main CADisplay.” This establishes the failing assertion; it
+does not establish why the main display object was unavailable. No assertion is
+skipped and no fake display object is returned. Root, var, MKB and early boot
+progress remain observed; the UEA capability fix still lacks positive runtime
+proof in the retained log, which filled at about48.88 seconds.

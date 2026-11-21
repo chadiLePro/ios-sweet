@@ -70,11 +70,11 @@ vm_offset_t ml_io_map_unmappable(vm_offset_t address,vm_size_t bytes,unsigned fl
  ++frame_maps;return(uintptr_t)frame;
 }
 static void harness_barrier(void) {
- for(unsigned i=0;i<13;i++)if(i!=1)assert(regs[i]==(i==6 ? 0 : a52q_ui_expected[i].value));
+ for(unsigned i=0;i<13;i++)if(i!=1)assert(i==6 ? (regs[i]==0 || regs[i]==5) : regs[i]==a52q_ui_expected[i].value);
 }
 static void nanoseconds_to_deadline(uint64_t span,uint64_t *out){*out=ticks+span;}
 static uint64_t mach_absolute_time(void){
- ticks+=consume && busy_clears ? 1 : 101000000;
+ ticks+=consume ? 1 : 101000000;
  if(consume)regs[1]=0;
  if(busy_clears)regs[6]=0;
  return ticks;
@@ -98,8 +98,10 @@ int main(void){
  reset();geometry[2]+=4;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!reg_maps && !frame_maps);
  reset();regs[6]^=1;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(reg_maps==7 && !frame_maps);
  reset();regs[6]=0x80000000;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(reg_maps==7 && !frame_maps);
- reset();regs[6]=5;assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(regs[6]==0);
- reset();regs[6]=5;busy_clears=0;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!frame_maps && regs[6]==5);
+ reset();regs[6]=5;assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(regs[6]==5);
+ assert(a52q_ui_flush() && regs[6]==0);
+ reset();regs[6]=5;busy_clears=0;assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
+ assert(regs[6]==5 && a52q_ui_flush() && a52q_ui_flush() && a52ui_frames==2 && regs[6]==5);
  reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
  assert(reg_maps==13 && frame_maps==1 && physical==A52Q_UI_PHYS && width==1080 && height==2400 && stride==4320);
  assert(console_starts==1);
@@ -113,7 +115,7 @@ int main(void){
  reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
  assert(a52q_ui_flush());regs[2]^=1;assert(!a52q_ui_flush() && !a52q_ui_pixels());
  reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
- regs[6]=5;busy_clears=0;assert(!a52q_ui_flush() && !a52q_ui_pixels());
+ regs[6]=1;assert(!a52q_ui_flush() && !a52q_ui_pixels());
  reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
  puts("QUIET-BEGIN");consume=0;assert(!a52q_ui_flush_quiet());puts("QUIET-END");
  free(frame);return 0;
@@ -132,7 +134,7 @@ int main(void){
             self.assertTrue(all(zlib.crc32(body)==int(crc,16) for body,crc in details))
             self.assertTrue(any(b'/01/ff/00000000' in body for body,crc in details))
             self.assertTrue(any(b'/03/06/00000001' in body for body,crc in details))
-            self.assertTrue(any(b'/05/06/00000005' in body for body,crc in details))
+            self.assertFalse(any(b'/05/' in body for body,crc in details))
             self.assertTrue(any(b'/03/02/00000003' in body for body,crc in details))
             self.assertTrue(any(b'/06/01/00000001' in body for body,crc in details))
             self.assertEqual(v.stdout.split(b'QUIET-BEGIN')[1].split(b'QUIET-END')[0].strip(),b'')

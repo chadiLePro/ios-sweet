@@ -42,7 +42,7 @@ static void a52ui_report(unsigned phase)
 }
 /* V24 rejected before prepare. Diagnose the existing guards; never relax them.
  * reason 1: profile, 2: register mapping, 3: register value, 4: frame mapping,
- * 5: DSI MDP busy timeout, 6: START completion timeout.
+ * 5: legacy DSI idle-wait timeout, 6: START completion timeout.
  * Never writes DSI_STATUS to force an idle state.
  * index ff means no individual register; value is a public display register.
  */
@@ -61,15 +61,11 @@ static void a52ui_rejection(unsigned reason,unsigned index,uint32_t value)
 static int a52ui_guard_read(unsigned index,uint32_t *value)
 {
     *value=*a52ui_regs[index];
-    if (!a52q_ui_guard_value_matches(index,*value)) return 0;
-    if (index!=6 || !*value) return 1;
-    uint64_t deadline;nanoseconds_to_deadline(100*NSEC_PER_MSEC,&deadline);
-    do {
-        if (mach_absolute_time()>=deadline) return -1;
-        *value=*a52ui_regs[index];
-        if (!a52q_ui_guard_value_matches(index,*value)) return 0;
-    } while (*value);
-    return 1;
+    /* V27 proves our extra idle wait stalls after START with status5. The
+     * earlier visible RGB test used this same status5 and bounded START.
+     * Vendor idle-wait is used before dynamic clock changes; we change none.
+     * Retain the exact 0/5 status predicate and every configuration pin. */
+    return a52q_ui_guard_value_matches(index,*value);
 }
 int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
 {
@@ -99,7 +95,6 @@ int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
             if (!a52ui_regs[i]) goto reject;
             reason=3;
             int sampled=a52ui_guard_read(i,&observed);
-            if (sampled<0) {reason=5;goto reject;}
             if (!sampled) goto reject;
         }
         /* Match IOSurface's user mapping attribute. Never map this frame with
@@ -137,7 +132,7 @@ static int a52ui_flush_internal(int report)
     for (unsigned i=0;i<13;i++) {
         index=i;
         int sampled=a52ui_guard_read(i,&observed);
-        if (sampled!=1) {reason=sampled<0 ? 5 : 3;goto fail;}
+        if (!sampled) goto fail;
     }
     __asm__ volatile("dsb sy" ::: "memory");
     *a52ui_regs[1]=1;

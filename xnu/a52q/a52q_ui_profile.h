@@ -30,8 +30,9 @@ static const struct a52q_ui_guard a52q_ui_expected[13] = {
 #define A52Q_UI_STRIDE 4320U
 /* DSI_STATUS is transient, not configuration: the pinned Samsung
  * dsi_ctrl_hw_cmn_wait_for_cmd_mode_mdp_idle() waits for bit 2 to clear.
- * V25 observed idle 0; the old physical snapshot observed busy 5. Accept
- * only those two observed states, then require idle before mapping/START.
+ * V25 observed idle0; the visible RGB test accepted busy5 before START.
+ * V27's added idle-wait fails after the first START. Keep both observed states
+ * without imposing a clock-change idle precondition on unchanged refreshes.
  * Every other configuration register still matches its captured value.
  */
 static inline int a52q_ui_guard_value_matches(unsigned index,uint32_t value)
