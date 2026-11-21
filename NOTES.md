@@ -1,3 +1,18 @@
+# CURRENT PHONE ACTION: V26 RUNNING; BOOT RESTORATION PENDING
+
+User approved exact newvar6f30 range and BOOTb3d7 trial, confirms besidephone.
+Consent backup/a52q/ios-timezone-var-install-v1/consent.json.
+NEWvar6f30 fully installed/readback verified; root16GiB and protectedpartitions
+rehashPASS, originalBOOT stillmatched. Receipt verifiedTrue. Earlier pending
+varapproval notes below are HISTORICAL. Now starting start_text_console_trial.py,
+V26receipt/watchguard authoritative for any pending BOOTrestoration.
+V26 receipt confirms candidate b3d7bf44...83dabf7 readback and recoveryUSBdeparture.
+Restoration watcher7096 ACTIVE; C: logs backup/a52q/ios-ufs-v26/. User asked to
+wait5fullminutes thenreturnTWRP; operator-timing.json recordssignal/not-before.
+Onreturn confirmrequires_restoreFalse/original_boot_restoredTrue/fullhash BEFORE
+analysis. Newvar6f30 staysinstalled; restoringBOOT does notrollbackvar.
+No visibleconsole/Apple service/SpringBoard claim yet.
+
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
 ## ACTIVE: combined text-console/idle/zoneinfo candidate checked; awaiting exact-var approval/readiness
