@@ -1,3 +1,19 @@
+# CURRENT PHONE ACTION: V28 RUNNING; BOOT RESTORATION PENDING
+
+User returnedwithcontinue; held reviewed candidateb6d971...b5385f2 authorized
+BOOT-only. FreshADB=recovery and BOOT/recovery/DTBO/vbmeta hashes matchoriginals;
+independentcandidatecheck PASS. Newrecord backup/a52q/ios-ufs-v28/operator-resume.
+V28receipt confirms candidateb6d9 fullreadback and recoveryUSBdeparture. C:watcher
+9676 ACTIVE, noerrors. Userasked fivefullminutes thenTWRP; operator-timing.json
+records signal/not-beforeUTC. FIRST onreturn confirmrestoredTrue/pendingFalse
+andfreshoriginalBOOT/protectedhashes beforeanalysis. No root/varwrites.
+Launcher research/start_refresh_guard_trial.py completed(session31153), parentlog
+research/refresh-guard-v28-start.log. It verifiesfullroot/var beforeBOOTwrite,
+archives/rearms RAMconsole, stages/readbacksBOOT, reboots thenstartsC:watcher.
+Do NOT signal5mintimer before confirmeddeparture+watcher. Receipt authoritative
+for pendingrestoration. No newroot/varwrite/format. Earlierawayhold revokedby
+thiscontinue. OnTWRPreturn collect+restore originalBOOT/hash FIRST, thenanalyze.
+
 # CURRENT: V28 READY, UNFLASHED; V27 restored; user away again, wait for return
 
 Sourcecf23c5aea21c9385c5e0e6dfce9e195c4bb66b36 pushed. Full HFS44942860068
