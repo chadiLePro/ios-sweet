@@ -110,6 +110,12 @@ int main(void){
  assert(a52q_ui_flush_quiet() && a52ui_frames==2 && regs[1]==0);
  consume=0;assert(!a52q_ui_flush() && regs[1]==1 && !a52q_ui_pixels());
  int state=a52ui_state;assert(!a52q_ui_flush() && a52ui_state==state);
+ reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
+ assert(a52q_ui_flush());regs[2]^=1;assert(!a52q_ui_flush() && !a52q_ui_pixels());
+ reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
+ regs[6]=5;busy_clears=0;assert(!a52q_ui_flush() && !a52q_ui_pixels());
+ reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
+ puts("QUIET-BEGIN");consume=0;assert(!a52q_ui_flush_quiet());puts("QUIET-END");
  free(frame);return 0;
 }
 """
@@ -127,5 +133,8 @@ int main(void){
             self.assertTrue(any(b'/01/ff/00000000' in body for body,crc in details))
             self.assertTrue(any(b'/03/06/00000001' in body for body,crc in details))
             self.assertTrue(any(b'/05/06/00000005' in body for body,crc in details))
+            self.assertTrue(any(b'/03/02/00000003' in body for body,crc in details))
+            self.assertTrue(any(b'/06/01/00000001' in body for body,crc in details))
+            self.assertEqual(v.stdout.split(b'QUIET-BEGIN')[1].split(b'QUIET-END')[0].strip(),b'')
 
 if __name__=='__main__':unittest.main()

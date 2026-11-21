@@ -42,7 +42,8 @@ static void a52ui_report(unsigned phase)
 }
 /* V24 rejected before prepare. Diagnose the existing guards; never relax them.
  * reason 1: profile, 2: register mapping, 3: register value, 4: frame mapping,
- * 5: DSI MDP busy timeout. Never writes DSI_STATUS to force an idle state.
+ * 5: DSI MDP busy timeout, 6: START completion timeout.
+ * Never writes DSI_STATUS to force an idle state.
  * index ff means no individual register; value is a public display register.
  */
 static void a52ui_rejection(unsigned reason,unsigned index,uint32_t value)
@@ -130,23 +131,26 @@ int a52q_ui_physical_allowed(uint64_t phys,uint32_t w,uint32_t h,uint32_t stride
 static int a52ui_flush_internal(int report)
 {
     int expected=0;
+    unsigned reason=3,index=0xff;uint32_t observed=0;
     if (!a52q_ui_pixels() || !__atomic_compare_exchange_n(&a52ui_busy,&expected,1,0,__ATOMIC_ACQ_REL,__ATOMIC_ACQUIRE)) return 0;
     /* The only write is the exact START consumed by the previous RGB test. */
     for (unsigned i=0;i<13;i++) {
-        uint32_t observed;
-        if (a52ui_guard_read(i,&observed)!=1) goto fail;
+        index=i;
+        int sampled=a52ui_guard_read(i,&observed);
+        if (sampled!=1) {reason=sampled<0 ? 5 : 3;goto fail;}
     }
     __asm__ volatile("dsb sy" ::: "memory");
     *a52ui_regs[1]=1;
     __asm__ volatile("dsb sy" ::: "memory");
     uint64_t deadline;nanoseconds_to_deadline(100*NSEC_PER_MSEC,&deadline);
-    while (*a52ui_regs[1]&1) if (mach_absolute_time()>=deadline) goto fail;
+    reason=6;index=1;
+    while ((observed=*a52ui_regs[1])&1) if (mach_absolute_time()>=deadline) goto fail;
     ++a52ui_frames;
     if (report && a52ui_frames<=3) a52ui_report(0x30);
     __atomic_store_n(&a52ui_busy,0,__ATOMIC_RELEASE);return 1;
 fail:
     __atomic_store_n(&a52ui_state,-2,__ATOMIC_RELEASE);
-    if (report) a52ui_report(0xe1);
+    if (report) {a52ui_rejection(reason,index,observed);a52ui_report(0xe1);}
     __atomic_store_n(&a52ui_busy,0,__ATOMIC_RELEASE);return 0;
 }
 int a52q_ui_flush(void) { return a52ui_flush_internal(1); }

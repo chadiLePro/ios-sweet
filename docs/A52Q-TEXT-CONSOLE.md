@@ -7,7 +7,25 @@ HFS run44916663730, hostCI44916653849 (147tests),95 archived source hashes,
 exact-kernel diagnostic QEMU (3 entry records,13 diagnostic PID1 heartbeats),
 preserved-master rehash and independently checked BOOT packaging. The QEMU
 fixture does not exercise Samsung display/UFS hardware or Apple userland.
-The new timezone seed and combined BOOT have not been installed on the phone.
+V26 installed and verified the timezone seed, then temporarily booted the
+combined BOOT. Original BOOT was restored and independently hash-verified.
+The operator saw no text. CRC records show adapter preparation, one completed
+START submission, then a runtime flush failure. These are separate observations.
+The timezone task progressed to EarlyBootComplete; the retained 256 KiB log then
+captured SpringBoard SIGTRAP and UserEventAgent's low-space IO policy abort.
+The complete five-minute userland run was not retained because the log filled.
+
+The follow-up adds a CRC guard index/value or START timeout reason on runtime
+flush failure, preserving every guard and the quiet panic path. Saved PC/LR and
+shared-cache slide are recorded with CRC for SpringBoard, logd and mediaserverd;
+no user stack is dereferenced and termination behavior stays intact.
+UserEventAgent's exact original signed low-space Boolean is exposed through the
+existing AMFI query callbacks only after catalog/platform checks and a full
+84,016-byte SHA-256 of its read-only root vnode. All 15 code pages and signed
+XML/DER hashes were checked against the pristine master. This capability affects
+an IO policy bit; storage stays read-only. Other keys and binaries remain denied.
+The 2,786-entry catalog is unchanged. A new phone trial is needed to establish
+the display failure and crash callers.
 
 The opt-in `--text-console` payload flag requires the guarded hardware UI profile,
 a compiled renderer marker, and the exact `a52q_text_console=1` boot argument.

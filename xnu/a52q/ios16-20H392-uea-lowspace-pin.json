@@ -1,0 +1,23 @@
+{
+  "build": "20H392",
+  "master_sha256": "0f4bcaa7c1a6f0a531c8b4d4d67b0dd8843b5ab58c2c31a005e07b1bde312149",
+  "path": "/usr/libexec/UserEventAgent",
+  "bytes": 84016,
+  "sha256": "2f149077b52e771974d42673bb034cd661b0681af2e581fcab2d1aee1a8742eb",
+  "cdhash": "1d38d646afccbe81efa496c33d8be0725c7d46ee",
+  "verified_code_pages": 15,
+  "xml": {
+    "bytes": 4385,
+    "sha256": "6307bc2e97cc9d9c52fc6724045641f3716be2d3094bad1323492aa35bbcd10f",
+    "special_slot_hashes_match": true
+  },
+  "der": {
+    "bytes": 2982,
+    "sha256": "407ee70e552d243e60f5228315cbf17b08cc420e846bf7feb9ae9f861a2e182e",
+    "special_slot_hashes_match": true
+  },
+  "capability": {
+    "com.apple.private.vfs.allow-low-space-writes": true
+  },
+  "scope": "exact original measured executable and signed Boolean only; not Apple CMS trust, general entitlements or writable storage"
+}

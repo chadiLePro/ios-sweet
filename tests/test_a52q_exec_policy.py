@@ -83,6 +83,11 @@ typedef struct fake_vnode *vnode_t;
 vnode_t rootvnode;
 static vnode_t measured_cache_vnode;
 static int measured_files_valid = 1;
+static vnode_t measured_uea_vnode;
+static int uea_measurement_valid = 1;
+static int a52q_uea_file_verified(vnode_t required) {
+ return uea_measurement_valid && required == measured_uea_vnode;
+}
 static proc_t caller;
 static proc_t current_proc(void) { return caller; }
 static int a52q_boot_cache_files_verified(vnode_t required) {
@@ -372,6 +377,32 @@ int main(void) {
  assert(a52q_object_proc(&process,key,&object)==KERN_RESOURCE_SHORTAGE && object==NULL);
  copy_failure=0;
  assert(boolean_copies==2); /* no rejected query may construct an object */
+ /* V26: honor only the measured UserEventAgent's original signed low-space
+    Boolean. This grants an IO policy query, never a writable disk/root. */
+ static const uint8_t uea_pin[20]={0x1d,0x38,0xd6,0x46,0xaf,0xcc,0xbe,0x81,0xef,0xa4,
+  0x96,0xc3,0x3d,0x8b,0xe0,0x72,0x5c,0x7d,0x46,0xee};
+ memset(&blob,0,sizeof(blob));memcpy(blob.csb_cdhash,uea_pin,20);
+ blob.csb_flags=CS_VALID|CS_ADHOC;blob.csb_vnode=&task;
+ blob.csb_entitlements_blob=&xml;blob.csb_der_entitlements_blob=&der;
+ xml_bytes=4385;der_bytes=2982;
+ assert(a52q_without_monitor(NULL,&blob)==KERN_SUCCESS);
+ process.blob=&blob;process.flags=CS_VALID|CS_SIGNED;measured_uea_vnode=&task;
+ const char *lowspace="com.apple.private.vfs.allow-low-space-writes";
+ assert(a52q_bool_proc(&process,lowspace)==KERN_SUCCESS);
+ object=NULL;assert(a52q_object_proc(&process,lowspace,&object)==KERN_SUCCESS && object==&boolean_true);
+ assert(a52q_bool_proc(&process,key)==KERN_DENIED);
+ assert(a52q_bool_proc(&process,"com.apple.private.vfs.allow-low-space-writes.extra")==KERN_DENIED);
+ uea_measurement_valid=0;assert(a52q_bool_proc(&process,lowspace)==KERN_DENIED);uea_measurement_valid=1;
+ measured_uea_vnode=NULL;assert(a52q_bool_proc(&process,lowspace)==KERN_DENIED);measured_uea_vnode=&task;
+ for(unsigned byte=0;byte<20;byte++) {
+  blob.csb_cdhash[byte]^=1;assert(a52q_bool_proc(&process,lowspace)==KERN_DENIED);blob.csb_cdhash[byte]^=1;
+ }
+ xml_bytes--;assert(a52q_bool_proc(&process,lowspace)==KERN_DENIED);xml_bytes++;
+ der_bytes--;assert(a52q_bool_proc(&process,lowspace)==KERN_DENIED);der_bytes++;
+ full_root=0;assert(a52q_bool_proc(&process,lowspace)==KERN_DENIED);full_root=1;
+ ro.flags=MNT_ROOTFS;assert(a52q_bool_proc(&process,lowspace)==KERN_DENIED);ro.flags=MNT_RDONLY|MNT_ROOTFS;
+ process.flags=CS_VALID;assert(a52q_bool_proc(&process,lowspace)==KERN_DENIED);process.flags=CS_VALID|CS_SIGNED;
+ blob.csb_platform_binary=0;assert(a52q_bool_proc(&process,lowspace)==KERN_DENIED);blob.csb_platform_binary=1;
  /* Every measured standalone identity must pass the actual catalog checker.
     Page and signed-slot hashing are tested by the independent image auditor. */
  static const uint8_t springboard_pin[20]={

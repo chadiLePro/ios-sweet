@@ -1,17 +1,39 @@
-# CURRENT PHONE ACTION: V26 RUNNING; BOOT RESTORATION PENDING
+# CURRENT: V26 restored; host fixes/build while user away; NO PHONE TRIAL until continue
 
-User approved exact newvar6f30 range and BOOTb3d7 trial, confirms besidephone.
-Consent backup/a52q/ios-timezone-var-install-v1/consent.json.
-NEWvar6f30 fully installed/readback verified; root16GiB and protectedpartitions
-rehashPASS, originalBOOT stillmatched. Receipt verifiedTrue. Earlier pending
-varapproval notes below are HISTORICAL. Now starting start_text_console_trial.py,
-V26receipt/watchguard authoritative for any pending BOOTrestoration.
-V26 receipt confirms candidate b3d7bf44...83dabf7 readback and recoveryUSBdeparture.
-Restoration watcher7096 ACTIVE; C: logs backup/a52q/ios-ufs-v26/. User asked to
-wait5fullminutes thenreturnTWRP; operator-timing.json recordssignal/not-before.
-Onreturn confirmrequires_restoreFalse/original_boot_restoredTrue/fullhash BEFORE
-analysis. Newvar6f30 staysinstalled; restoringBOOT does notrollbackvar.
-No visibleconsole/Apple service/SpringBoard claim yet.
+User: "fix all bugs and build kernel and when ill come back ill say continue".
+Phone TWRP, V26receipt original_boot_restoredTrue/requires_restoreFalse. Fresh
+BOOT/recovery/DTBO/vbmeta hashes match; independent-protected-hashes.json saved.
+Newvar6f30 installed/fullreadbackverified;16GiBroot preserved. No rollback pending.
+V26 user saw NO text. Captured full262132B RAMlog SHA
+ e0fb51e3505d3ff9c665b140bffa538a857730df387f7f07df0eef54360eb0e3.
+CRCentry3, rebootconfirmed, UIpreparephase10 two validcopies, frame1 phase30
+threecopies, thene1/frames1 onevalidcopy. NoG2detail; noGUIhandoff. Thus optional
+adapter mapped/submitted once thenruntimeflushfailed, not visibletext/GUI proof.
+MKB SystemKeybagloaded/DONE, realUFSroot andROvar mounted; tzinitfailurecleared,
+raw EarlyBootComplete ContinuingSystemBoot. Actual SpringBoard pid25 SIGTRAP
+exception6 subcode0x1eb9f8ca8 three rawcopies; no cache slide/LR -> cannot yet
+symbolicate reliably. UserEventAgent pid24 SIGABRT OS_REASON_LIBXPC18/code2:
+"Error setting low space io policy: 1 (Operation not permitted)" threecopies.
+backboardd xpcproxy spawnedpid56; runtime services/lockscreen unproved.
+Rawlogcapacity reached at~56sec (of5min). Otherlogd SIGTRAP/mediaserverd SIGSEGV
+present, unlocated causes; do not claim all bugs fixed or bypass crashes.
+
+Host changes: flush failures now report existing CRCG2 guardreason/index/value
+ornewreason6 STARTcompletiontimeout. Guards/START/map untouched; quietpanic
+path remainsnoprint. ExactUEA read from master inROisolatedguest; SHA
+2f149077b52e771974d42673bb034cd661b0681af2e581fcab2d1aee1a8742eb and15pages+
+signedXML4385/DER2982 hashes matchmastercatalog. Actualsigned lowspaceBooleanTrue.
+XNU kern_resource.c deniesfalseIOCurrentTaskHasEntitlement; minimal AMFIreturns
+noobjectforUEA. Add ONLY measuredUEA lowspaceBoolean via existingAMFI callbacks,
+exactCDhash+catalog+ROroot+platform+full84016BvnodefileSHA256 includingentitlements.
+No catalog/signature enforcement/othercapability/storagewritepolicy change.
+Native tests reject changedidentity/failedhash/wrongvnode/root/metadata/key/flags.
+Fatalexittrace addsCRCprotected savedregs+cache slide for3actuallycrashingnames;
+no arbitraryuser reads, stackwalk orchangedtermination. Full149hosttestsPASS.
+Need fullHFSbuild/archive95/QEMU/master/candidate, noflash untilusercontinue.
+RO masterUEA audit E:/A52-iOS16/master-user-event-agent-audit-v1; derived proof
+uea-v26-entitlements-audit.json. Publicsmall metadata uea-lowspace-pin.json.
+V26result E:/A52-iOS16/text-console-v26-result.json; C: backup/a52q/ios-ufs-v26/.
 
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 

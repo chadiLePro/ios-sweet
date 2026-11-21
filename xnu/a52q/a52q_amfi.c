@@ -5,6 +5,7 @@
  * The separate full UFS root may also attempt measured 20H392 Mach-O identities
  * from its generated catalog and the separately audited shared caches. Only the
  * exact admitted mount task may query its verified signed bindfs Boolean;
+ * exact measured UserEventAgent may query its signed low-space IO Boolean.
  * A local IOKit query also recognizes the exact measured launchd data cache
  * for the exact loader. No entitlement context or Apple trust is fabricated;
  * this is an experimental hash policy, not Apple's AMFI/trust service.
@@ -88,6 +89,25 @@ static int a52q_boot_cache_files_verified(vnode_t required)
         signature, A52Q_BOOT_CACHE_SIGNATURE_BYTES);
     if (!matches) printf("A52Q boot cache: cache/signature SHA256 mismatch; rejected\n");
     return matches;
+}
+
+/* V26 UserEventAgent aborts on IOPOL_TYPE_VFS_ALLOW_LOW_SPACE_WRITES.
+ * Its original signed XML contains the true Boolean. Measure the entire exact
+ * master executable (including XML/DER) rather than trusting a process name. */
+static int a52q_uea_file_verified(vnode_t required)
+{
+    static const uint8_t expected[32] = {
+        0x2f,0x14,0x90,0x77,0xb5,0x2e,0x77,0x19,0x74,0xd4,0x26,0x73,0xbb,0x03,0x4c,0xd6,
+        0x61,0xb0,0x68,0x1a,0xf2,0xe5,0x81,0xfc,0xab,0x2d,0x1a,0xee,0x1a,0x87,0x42,0xeb
+    };
+    if (!required) return 0;
+    uint8_t digest[32];
+    vfs_context_t context = vfs_context_create(NULL);
+    if (!context) return 0;
+    int error = a52q_measure_boot_file("/usr/libexec/UserEventAgent", 84016,
+        digest, context, required);
+    vfs_context_rele(context);
+    return !error && !memcmp(digest, expected, sizeof(expected));
 }
 
 static void a52q_ent_invalidate(void *ent)
@@ -539,9 +559,25 @@ static int a52q_bindfs_task(proc_t proc, const char *name)
     return a52q_verified_mount_blob(blob) && blob->csb_platform_binary &&
         (blob->csb_flags & (CS_SIGNED | CS_PLATFORM_BINARY)) == (CS_SIGNED | CS_PLATFORM_BINARY);
 }
+static int a52q_lowspace_task(proc_t proc, const char *name)
+{
+    static const uint8_t pin[CS_CDHASH_LEN] = {
+        0x1d,0x38,0xd6,0x46,0xaf,0xcc,0xbe,0x81,0xef,0xa4,
+        0x96,0xc3,0x3d,0x8b,0xe0,0x72,0x5c,0x7d,0x46,0xee
+    };
+    extern int a52q_ufs_root_named(const char *name);
+    if (!proc || !name || strcmp(name,"com.apple.private.vfs.allow-low-space-writes") ||
+        !a52q_ufs_root_named("a52ios0") ||
+        (proc_getcsflags(proc)&(CS_SIGNED|CS_VALID))!=(CS_SIGNED|CS_VALID)) return 0;
+    struct cs_blob *blob=csproc_get_blob(proc);
+    if (!blob || memcmp(blob->csb_cdhash,pin,sizeof(pin)) ||
+        a52q_verified_catalog_blob(blob)<0 || !blob->csb_platform_binary ||
+        (blob->csb_flags&(CS_SIGNED|CS_PLATFORM_BINARY))!=(CS_SIGNED|CS_PLATFORM_BINARY)) return 0;
+    return a52q_uea_file_verified(blob->csb_vnode);
+}
 static kern_return_t a52q_bool_proc(proc_t proc, const char *name)
 {
-    return a52q_bindfs_task(proc, name) ? KERN_SUCCESS : KERN_DENIED;
+    return a52q_bindfs_task(proc, name) || a52q_lowspace_task(proc, name) ? KERN_SUCCESS : KERN_DENIED;
 }
 static kern_return_t a52q_string(const void *ent __unused, const char *name __unused,
     const char *value __unused) { return KERN_DENIED; }
@@ -558,13 +594,13 @@ static kern_return_t a52q_object_proc(proc_t proc, const char *name, void **obje
 {
     if (!object) return KERN_INVALID_ARGUMENT;
     *object = NULL;
-    if (!a52q_bindfs_task(proc, name)) return KERN_NOT_FOUND;
+    if (!a52q_bindfs_task(proc, name) && !a52q_lowspace_task(proc, name)) return KERN_NOT_FOUND;
     /* Actual IOKit consumer expects a retained OSBoolean, not a C true value.
      * Construct/copy it through C++ so no object/reference ABI is guessed. */
     extern void *a52q_copy_bindfs_true(void);
     *object = a52q_copy_bindfs_true();
     if (!*object) return KERN_RESOURCE_SHORTAGE;
-    printf("A52Q bindfs capability: exact admitted mount, signed true Boolean copied; all other keys denied\n");
+    printf("A52Q measured capability: signed true Boolean copied for %s; unrelated keys denied\n", name);
     return KERN_SUCCESS;
 }
 static const amfi_t a52q_diagnostic_amfi = {
@@ -591,6 +627,6 @@ static const amfi_t a52q_diagnostic_amfi = {
 __startup_func static void a52q_register_diagnostic_amfi(void)
 {
     amfi_interface_register(&a52q_diagnostic_amfi);
-    printf("A52Q AMFI diagnostic interface registered: exact hash policy; only admitted mount bindfs capability\n");
+    printf("A52Q AMFI diagnostic interface registered: exact hash policy; measured mount bindfs and UserEventAgent low-space Booleans only\n");
 }
 STARTUP(EARLY_BOOT, STARTUP_RANK_MIDDLE, a52q_register_diagnostic_amfi);
