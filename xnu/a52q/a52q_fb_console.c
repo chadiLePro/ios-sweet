@@ -64,7 +64,10 @@ void a52q_fb_console_tick(int force)
         used+=n;
     }
     if ((used || force) && a52text_draw((volatile uint32_t *)a52q_ui_pixels(),
-        A52Q_UI_BYTES,iso_font,&a52text_screen)) (void)a52q_ui_flush();
+        A52Q_UI_BYTES,iso_font,&a52text_screen)) {
+        if (force==2) (void)a52q_ui_flush_quiet();
+        else (void)a52q_ui_flush();
+    }
 done:
     __atomic_store_n(&a52text_draw_busy,0,__ATOMIC_RELEASE);
 }
@@ -80,6 +83,6 @@ int a52q_fb_console_handoff(void)
 void a52q_fb_console_panic(void)
 {
     /* Never wait for a preempted renderer or reclaim a GUI-owned display. */
-    a52q_fb_console_tick(1);
+    a52q_fb_console_tick(2);
 }
 #endif

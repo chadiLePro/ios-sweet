@@ -107,6 +107,7 @@ int main(void){
  assert(a52q_ui_physical_allowed(physical,width,height,stride));
  assert(!a52q_ui_physical_allowed(physical+4096,width,height,stride));
  assert(a52q_ui_flush() && a52ui_frames==1 && regs[1]==0);
+ assert(a52q_ui_flush_quiet() && a52ui_frames==2 && regs[1]==0);
  consume=0;assert(!a52q_ui_flush() && regs[1]==1 && !a52q_ui_pixels());
  int state=a52ui_state;assert(!a52q_ui_flush() && a52ui_state==state);
  free(frame);return 0;

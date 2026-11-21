@@ -26,7 +26,11 @@ Applyadds5newarchivepaths -> expected95overlayfiles. SoftwareUIpinnedtransform
 addsconsumer/handoff; defaultRedmibody preserved. UFS/catalog/keystore/source
 physicalRGBdiagnostic/reservations untouched. docs/A52Q-TEXT-CONSOLE.md scope.
 All147hosttestsPASS; repo81patches/45tools/7shell PASS withGitBash+PYTHONUTF8.
-Needcommit/fullHFSbuild, expected95archivecheck, diagnosticQEMU/newrootplan21/
+Initialconsolecommitbc634048914ced5ff0cb8796337ce1c60c3ba6ac pushed;
+CI44914949352 SUCCESS147. Full44914949227 superseded beforeflash: panicpath
+neededquietrefresh toavoidprintfrecursion/locks. Addedinternalreportflag normal
+flushsamebehavior; panicusesa52q_ui_flush_quiet withnopostprintf/errors. Native
+testsassertquietpanicrefresh. All147PASS. Neednewcommit/fullHFSbuild, expected95archivecheck, diagnosticQEMU/newrootplan21/
 hardware23 +consoleCLIflag. Retainexistingvar6f30plan/image andbackup44eb.
 Thenindependentcandidate+installerprepare/review; phonefreshreadiness required.
 

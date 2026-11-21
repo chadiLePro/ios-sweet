@@ -127,7 +127,7 @@ int a52q_ui_physical_allowed(uint64_t phys,uint32_t w,uint32_t h,uint32_t stride
     return a52q_ui_pixels() && phys==A52Q_UI_PHYS && w==A52Q_UI_WIDTH &&
         h==A52Q_UI_HEIGHT && stride==A52Q_UI_STRIDE;
 }
-int a52q_ui_flush(void)
+static int a52ui_flush_internal(int report)
 {
     int expected=0;
     if (!a52q_ui_pixels() || !__atomic_compare_exchange_n(&a52ui_busy,&expected,1,0,__ATOMIC_ACQ_REL,__ATOMIC_ACQUIRE)) return 0;
@@ -142,10 +142,14 @@ int a52q_ui_flush(void)
     uint64_t deadline;nanoseconds_to_deadline(100*NSEC_PER_MSEC,&deadline);
     while (*a52ui_regs[1]&1) if (mach_absolute_time()>=deadline) goto fail;
     ++a52ui_frames;
-    if (a52ui_frames<=3) a52ui_report(0x30);
+    if (report && a52ui_frames<=3) a52ui_report(0x30);
     __atomic_store_n(&a52ui_busy,0,__ATOMIC_RELEASE);return 1;
 fail:
-    __atomic_store_n(&a52ui_state,-2,__ATOMIC_RELEASE);a52ui_report(0xe1);
+    __atomic_store_n(&a52ui_state,-2,__ATOMIC_RELEASE);
+    if (report) a52ui_report(0xe1);
     __atomic_store_n(&a52ui_busy,0,__ATOMIC_RELEASE);return 0;
 }
+int a52q_ui_flush(void) { return a52ui_flush_internal(1); }
+/* Panic caller must never re-enter printf or its console locks. */
+int a52q_ui_flush_quiet(void) { return a52ui_flush_internal(0); }
 #endif

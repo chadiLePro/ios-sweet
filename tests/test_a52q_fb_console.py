@@ -30,13 +30,14 @@ class BitmapConsoleTests(unittest.TestCase):
 #define ARM64_BOARD_CONFIG_A52Q 1
 #define NSEC_PER_MSEC 1000000ULL
 unsigned char iso_font[256*16];
-static uint32_t *pixels;static int flag=1,mapped=1,flushes;
+static uint32_t *pixels;static int flag=1,mapped=1,flushes,quiet_flushes;
 static uint64_t ticks;
 static int PE_parse_boot_argn(const char *name,void *v,size_t n) {
  assert(!strcmp(name,"a52q_text_console") && n==sizeof(int));memcpy(v,&flag,n);return 1;
 }
 uintptr_t a52q_ui_pixels(void){return mapped ? (uintptr_t)pixels : 0;}
 int a52q_ui_flush(void){++flushes;return 1;}
+int a52q_ui_flush_quiet(void){++flushes;++quiet_flushes;return 1;}
 static uint64_t mach_absolute_time(void){return ticks;}
 static void nanoseconds_to_deadline(uint64_t span,uint64_t *v){*v=ticks+span;}
 static int test_print(const char *fmt,...) {
@@ -48,7 +49,7 @@ static int test_print(const char *fmt,...) {
         checks=r'''
 static void reset(void) {
  a52text_head=a52text_count=0;a52text_queue_busy=a52text_draw_busy=a52text_state=0;
- a52text_deadline=0;flag=mapped=1;flushes=0;ticks=0;
+ a52text_deadline=0;flag=mapped=1;flushes=quiet_flushes=0;ticks=0;
 }
 int main(void) {
  unsigned char *allocation=malloc(A52Q_UI_BYTES+8);assert(allocation);
@@ -72,7 +73,7 @@ int main(void) {
  for(unsigned i=0;i<4;i++)assert(allocation[i]==0xa5);
  for(uint64_t i=4+1080ULL*2400*4;i<A52Q_UI_BYTES+8;i++)assert(allocation[i]==0xa5);
  for(unsigned i=0;i<A52TEXT_QUEUE+1000;i++)a52q_fb_console_putc('A');
- assert(a52text_count==A52TEXT_QUEUE);a52q_fb_console_panic();assert(!a52text_count && flushes==2);
+ assert(a52text_count==A52TEXT_QUEUE);a52q_fb_console_panic();assert(!a52text_count && flushes==2 && quiet_flushes==1);
  a52text_draw_busy=1;a52q_fb_console_panic();assert(flushes==2);
  assert(!a52q_fb_console_handoff());a52text_draw_busy=0;assert(a52q_fb_console_handoff());
  uint32_t before=pixels[0];a52q_fb_console_putc('Z');a52q_fb_console_tick(1);a52q_fb_console_panic();

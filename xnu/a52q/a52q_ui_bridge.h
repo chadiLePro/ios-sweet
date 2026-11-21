@@ -7,6 +7,7 @@ extern "C" {
 int a52q_ui_framebuffer(uint64_t *, uint32_t *, uint32_t *, uint32_t *);
 uintptr_t a52q_ui_pixels(void);
 int a52q_ui_flush(void);
+int a52q_ui_flush_quiet(void);
 int a52q_ui_physical_allowed(uint64_t, uint32_t, uint32_t, uint32_t);
 #ifdef __cplusplus
 }

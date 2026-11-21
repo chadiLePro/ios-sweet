@@ -26,7 +26,8 @@ Those losses do not suppress the original pstore output.
 The existing framebuffer workloop drains the queue and refreshes dirty text at
 at most 10 Hz, using the already bounded guarded START operation. This is a text
 refresh rate, not a new assertion about physical panel Hz. A panic requests a
-bounded best-effort drain if the console owns a valid mapping. It never waits
+bounded best-effort drain if the console owns a valid mapping. Panic refresh
+uses a quiet path with no logging, avoiding printf/console locks. It never waits
 for a preempted renderer or reclaims a GUI-owned display; pstore remains the
 recovery channel when direct drawing is unsafe or unavailable.
 
