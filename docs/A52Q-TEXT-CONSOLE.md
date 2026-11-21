@@ -31,9 +31,11 @@ uses a quiet path with no logging, avoiding printf/console locks. It never waits
 for a preempted renderer or reclaims a GUI-owned display; pstore remains the
 recovery channel when direct drawing is unsafe or unavailable.
 
-An accepted framebuffer presentation requests permanent console handoff. If a
-console draw was preempted, the presenter requeues its existing frame and retries
-after the renderer releases ownership. Kernel and userland console logging keeps
+Exporting the default physical surface requests permanent console handoff before
+its port is exposed to userland. `IOWorkLoop::runAction` serializes this with the
+timer renderer, so a process cannot write through the shared mapping during a
+console draw. Presentation checks ownership too; if a concurrent panic draw is
+busy, the presenter requeues its existing frame. Kernel and console logging keeps
 reaching pstore after handoff. Handoff is not proof of backboardd, a composed
 frame, or a visible SpringBoard lock screen.
 

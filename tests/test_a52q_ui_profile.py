@@ -153,5 +153,61 @@ int main(void) {
                     self.assertIn('a52q_ui_physical_allowed',out)
                 if name=='SweetFramebuffer.cpp':
                     self.assertIn('a52q_ui_copy_rect',out);self.assertIn('16667',out);self.assertIn('(void)a52q_ui_flush()',out)
+                    export=out[out.index('case kSweetFBGetLayerDefaultSurface:'):]
+                    self.assertLess(export.index('fFB->handoffConsole()'),export.index('sweet_surface_port_in_task'))
+                    self.check_surface_handoff(out)
+
+    def check_surface_handoff(self, source):
+        """Execute the transformed action against a workloop-gate concurrency model."""
+        cc='C:/winlibs/mingw64/bin/g++.exe' if os.name=='nt' else shutil.which('c++')
+        if not cc:self.skipTest('native C++ compiler unavailable')
+        action=source[source.index('static IOReturn\na52q_console_handoff_action'):]
+        action=action[:action.index('\n#endif')]
+        code=r'''
+#include <cassert>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+using IOReturn=int;
+const int kIOReturnSuccess=0,kIOReturnNotReady=1;
+struct OSObject {};
+struct IOWorkLoop {
+ std::recursive_mutex gate;
+ using Action=IOReturn (*)(OSObject *,void *,void *,void *,void *);
+ IOReturn runAction(Action a,OSObject *o) {
+  std::lock_guard<std::recursive_mutex> guard(gate);return a(o,nullptr,nullptr,nullptr,nullptr);
+ }
+};
+static bool drawing=false,owned=true;
+static bool a52q_fb_console_handoff() {assert(!drawing);owned=false;return true;}
+struct AppleCLCD:OSObject {IOWorkLoop *fWorkLoop;bool handoffConsole();};
+''' + action + r'''
+int main() {
+ IOWorkLoop loop;AppleCLCD fb;fb.fWorkLoop=&loop;
+ std::mutex mutex;std::condition_variable cv;bool started=false,release=false;
+ std::atomic<bool> attempting(false),exported(false);
+ std::thread renderer([&] {
+  std::lock_guard<std::recursive_mutex> gate(loop.gate);drawing=true;
+  std::unique_lock<std::mutex> lock(mutex);started=true;cv.notify_all();
+  cv.wait(lock,[&]{return release;});assert(owned);drawing=false;
+ });
+ {std::unique_lock<std::mutex> lock(mutex);cv.wait(lock,[&]{return started;});}
+ std::thread client([&] {attempting=true;assert(fb.handoffConsole());exported=true;});
+ while(!attempting.load())std::this_thread::yield();
+ assert(!exported.load());
+ {std::lock_guard<std::mutex> lock(mutex);release=true;}cv.notify_all();
+ renderer.join();client.join();assert(exported && !owned);
+ assert(fb.handoffConsole());fb.fWorkLoop=nullptr;assert(!fb.handoffConsole());
+}
+'''
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'handoff.cpp';p.write_text(code);exe=Path(d)/('handoff.exe' if os.name=='nt' else 'handoff')
+            args=[cc,'-std=c++11','-Wall','-Wextra','-Werror','-pthread']
+            if os.name=='nt':args.append('-static')
+            v=subprocess.run([*args,str(p),'-o',str(exe)],capture_output=True,text=True)
+            self.assertEqual(v.returncode,0,v.stderr)
+            v=subprocess.run([str(exe)],capture_output=True,text=True,timeout=15)
+            self.assertEqual(v.returncode,0,v.stderr)
 
 if __name__=='__main__':unittest.main()

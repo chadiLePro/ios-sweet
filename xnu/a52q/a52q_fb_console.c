@@ -73,10 +73,10 @@ done:
 }
 int a52q_fb_console_handoff(void)
 {
-    /* A preempted renderer must finish before the GUI copies a frame. The
-     * presenter retries via its existing pending-frame queue if busy. */
+    /* Surface export serializes against normal rendering through its workloop.
+     * Presentation also checks here; a concurrent panic renderer returns busy. */
     int old=__atomic_exchange_n(&a52text_state,2,__ATOMIC_ACQ_REL);
-    if (old==1) printf("A52Q text console: framebuffer presenter requested handoff\n");
+    if (old==1) printf("A52Q text console: framebuffer client requested handoff\n");
     if (!a52text_try(&a52text_draw_busy)) return 0;
     __atomic_store_n(&a52text_draw_busy,0,__ATOMIC_RELEASE);return 1;
 }

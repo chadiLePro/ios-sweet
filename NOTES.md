@@ -1,6 +1,25 @@
 # iOS 16 on sweet (Redmi Note 10 Pro, SM7150) - working notes
 
-## ACTIVE: saved idle/zoneinfo build packaged; new bitmap console implemented, needs full build
+## ACTIVE: console build passed; serializing shared-surface export before phone trial
+
+Full HFS44915225317 (49113a5) SUCCESS;95archive source hashes, exact-kernel
+RAM diagnostic QEMU, preserved-master rehash, plan21/hardware23 packaging PASS.
+Kernelc14147f8c535349d36cf375ae5ee6a470708ce57eabedf2a1ba9aeacf9c14805.
+No phone write. This unflashed candidate is superseded by a discovered ownership
+race fix: selector3 could export default physical IOSurface before firstpresent,
+allowing client writes concurrent with console rendering. New A52-only method
+runs console handoff through existing IOWorkLoop::runAction BEFORE surfaceport
+export. Pinned IOTimerEventSource timeout/timeoutAndRelease hold same gate during
+action; normal event delivery also gated. Existing present fallback retained.
+Native C++ test executes transformed method against recursive gate, renderer
+and client threads; verifies no export during rendering. All147tests and repo
+validation PASS. No UFS/catalog/keybag/displaybounds/pstore implementation change.
+Need fresh full HFS build,95-source archive/QEMU/master/plan22/hardware24 checks.
+Keep previous plan21/hardware23/qemu-v1 evidence. New qemu-v2, same preserved
+var6f30 seed and rollback44eb; no installation yet. ADB currently recovery.
+Then updated concrete review + physical readiness, newvar install and BOOTtrial.
+
+## Earlier console implementation notes
 
 User returned2026-11-21 requesting finish/flashsavedchanges PLUS live scaled
 bitmapconsole, preservingUFS/catalog/keybag/displaybounds/pstore. No newphonewrite.

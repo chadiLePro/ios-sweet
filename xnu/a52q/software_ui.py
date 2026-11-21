@@ -32,6 +32,19 @@ def transform(name, source):
     elif name=='SweetFramebuffer.cpp':
         change('#include "SweetSurface.h"', '#include "SweetSurface.h"\n#if defined(A52Q)\n#include "a52q_ui_bridge.h"\n#include "a52q_ui_copy.h"\n#endif')
         change('#include "a52q_ui_copy.h"','#include "a52q_ui_copy.h"\n#include "a52q_fb_console.h"')
+        change('\tvoid present(const uint8_t *rec);',
+            '\tvoid present(const uint8_t *rec);\n#if defined(A52Q)\n\tbool handoffConsole();\n#endif')
+        change('OSDefineMetaClassAndStructors(AppleCLCD, IOMobileFramebuffer);',
+            'OSDefineMetaClassAndStructors(AppleCLCD, IOMobileFramebuffer);\n'
+            '#if defined(A52Q)\n'
+            'static IOReturn\na52q_console_handoff_action(OSObject *, void *, void *, void *, void *)\n{\n'
+            '\treturn a52q_fb_console_handoff() ? kIOReturnSuccess : kIOReturnNotReady;\n}\n'
+            'bool\nAppleCLCD::handoffConsole()\n{\n'
+            '\t/* Timer rendering and surface export share the recursive workloop gate. */\n'
+            '\treturn fWorkLoop && fWorkLoop->runAction(a52q_console_handoff_action, this)==kIOReturnSuccess;\n}\n#endif')
+        change('\t\tout[0] = sweet_surface_port_in_task(fFB->fSurface, fTask);',
+            '#if defined(A52Q)\n\t\tif (!fFB->handoffConsole()) return kIOReturnNotReady;\n#endif\n'
+            '\t\tout[0] = sweet_surface_port_in_task(fFB->fSurface, fTask);')
         change('AppleCLCD::present(const uint8_t *rec)\n{',
             'AppleCLCD::present(const uint8_t *rec)\n{\n#if defined(A52Q)\n\tif (!a52q_fb_console_handoff()) { swap(rec); return; }\n#endif')
         change('AppleCLCD::vsyncFired(OSObject *owner, IOTimerEventSource *sender)\n{',
