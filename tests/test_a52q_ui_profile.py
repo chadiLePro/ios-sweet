@@ -47,6 +47,13 @@ class UIProfileTests(unittest.TestCase):
             b=adt.serialize(tree);data[off:]=b;struct.pack_into('<Q',data,0x28,len(b))
             manifest['payload_sha256']=hashlib.sha256(data).hexdigest();validate_payload(data,manifest)
         check()
+        cfg['abort_reason']=True
+        with self.assertRaisesRegex(ValueError,'abort-reason'):check()
+        oldcmd=cmd;cmd+=b' a52qscan=backboardd'
+        data[0x48:0x2a8]=cmd+bytes(608-len(cmd));check()
+        del cfg['abort_reason']
+        with self.assertRaisesRegex(ValueError,'abort-reason'):check()
+        cmd=oldcmd;data[0x48:0x2a8]=cmd+bytes(608-len(cmd));check()
         cfg['display_scale']=3
         with self.assertRaisesRegex(ValueError,'display scale'):check()
         chosen=next(n for n in tree.children if n.name=='chosen')

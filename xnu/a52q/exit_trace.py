@@ -1,4 +1,5 @@
 """Observe fatal A52 process exits; preserve termination and other targets."""
+import failure_reason
 
 TARGET = 'bsd/kern/kern_exit.c'
 REGISTER_TARGET = 'osfmk/kern/exception.c'
@@ -8,6 +9,7 @@ REGISTERS = '''
 #include <arm/thread.h>
 #include <vm/vm_shared_region.h>
 #include <arm64/a52q_fb_console.h>
+static void a52q_crash_strings(const char *, int);
 /* A short checked-copy frame walk follows the upstream SWEET crash mechanism.
  * Only backboardd needs the caller chain beyond pthread_kill. */
 static void a52q_backboard_stack(arm_saved_state_t *ss, uint64_t slide,
@@ -72,6 +74,8 @@ void a52q_crash_registers(const char *name, int pid)
         a52q_early_critical(line,(unsigned)n,!strcmp(name,"SpringBoard") ? 6 : 7);
     if (!strcmp(name,"backboardd"))
         a52q_backboard_stack(ss,slide,task->mach_header_vm_address,pid);
+    if (!strcmp(name,"backboardd"))
+        a52q_crash_strings(name,pid);
 }
 #endif
 '''
@@ -115,4 +119,4 @@ def transform(text):
 def exception(text):
     if text.count(REGISTER_ANCHOR)!=1 or REGISTERS in text:
         raise ValueError('unexpected Mach exception source or trace already applied')
-    return text.replace(REGISTER_ANCHOR,REGISTERS+REGISTER_ANCHOR,1)
+    return text.replace(REGISTER_ANCHOR,REGISTERS+failure_reason.helper(text)+REGISTER_ANCHOR,1)

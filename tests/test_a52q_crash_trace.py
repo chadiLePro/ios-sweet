@@ -31,7 +31,9 @@ class CrashTraceTests(unittest.TestCase):
         self.assertLess(out.index('a52q_crash_registers(p->p_comm'),out.index('#if defined(ARM64_BOARD_CONFIG_SWEET)'))
         with self.assertRaises(ValueError):exit_trace.transform(out)
         mach='#if defined(ARM64_BOARD_CONFIG_SWEET)\n#include <vm/vm_shared_region.h>\nold_helper();\n#endif'
-        changed=exit_trace.exception(mach)
+        from unittest.mock import patch
+        with patch.object(exit_trace.failure_reason,'helper',return_value=''):
+            changed=exit_trace.exception(mach)
         self.assertIn(mach,changed);self.assertIn('task->mach_header_vm_address',changed)
         with self.assertRaises(ValueError):exit_trace.exception(changed)
 
@@ -58,6 +60,7 @@ typedef struct {uint64_t sr_slide;} *vm_shared_region_t;
 static struct {uint64_t sr_slide;} region={0x4000};
 static struct {uint64_t mach_header_vm_address;} task={0x100000000};
 static arm_saved_state_t state={64};static int missing,refs;
+static void a52q_crash_strings(const char *name,int pid){assert(!strcmp(name,"backboardd") && pid>0);}
 static void *current_thread(void){return &state;}
 static task_t current_task(void){return (task_t)&task;}
 static arm_saved_state_t *find_user_regs(void *t){assert(t==&state);return missing ? NULL : &state;}

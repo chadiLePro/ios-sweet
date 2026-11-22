@@ -25,6 +25,8 @@ def validate_config(config):
         raise ValueError('invalid opt-in bitmap console declaration')
     if 'display_scale' in config and (type(config['display_scale']) is not int or config['display_scale'] != 3):
         raise ValueError('invalid logical display scale')
+    if 'abort_reason' in config and config['abort_reason'] is not True:
+        raise ValueError('invalid opt-in abort-reason probe')
 
 
 def configuration(build,console,kernel_sha256,root_sha256):

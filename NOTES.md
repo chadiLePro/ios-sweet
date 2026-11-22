@@ -1,5 +1,17 @@
 # V32 CLOSED, original BOOT restored and independently hash-verified
 
+USER AWAY. Host work only; no new device write or reboot until operator returns.
+The /var proxy and raw UFS devices reject writes. Container directories alone
+cannot supply writable container storage. Exact exception text remains unproven,
+so prepare the opt-in bounded backboardd failure-reason probe before enabling
+storage writes. It reuses the upstream checked-copy malloc-region observer,
+caps attempted reads at16MiB and region queries at1024, accepts only backboardd
+when a52qscan=backboardd is explicitly enabled, and retains only the targeted
+NSInvalidArgument/container/nil-path text. Higher-specificity matches replace
+generic ones in late slot7. Raw strings are observations, not proof of an active
+exception object. UI/UFS/keybag/catalog sources are unchanged.
+156 host tests and repo validation pass; full kernel build is next.
+
 V32 receipt restored=true/pending=false; fresh BOOT/recovery/DTBO/vbmeta hashes
 match. Strict stack decoder found no record, but a complete body in late slot7
 retains valid CRC90931b8a at raw offset261627; only its text prefix is damaged.
