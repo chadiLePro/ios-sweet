@@ -133,6 +133,8 @@ def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None
             raise ValueError('development UI profile requires full persistent root and no simultaneous display diagnostic')
         from a52q_ui_profile import adt_node, display_node
         result.children.append(adt_node(development_ui_profile))
+        if 'display_scale' in development_ui_profile:
+            chosen.props.append(('display-scale', 0, u32(development_ui_profile['display_scale'])))
         if development_ui_profile.get('var_plan'):
             from a52q_persistent_data import adt_node as var_node
             result.children.append(var_node(development_ui_profile['var_plan'],ufs_root,ufs_test['nonce']))
@@ -306,6 +308,9 @@ def validate_payload(data, manifest):
                 adt.serialize(ui_nodes[0])!=adt.serialize(ui_node(ui)) or manifest.get('display_selftest')):
             raise ValueError('development UI profile kernel/root/flags/ADT mismatch')
         armio=next(n for n in tree.children if n.name=='arm-io')
+        expected_scale = [u32(ui['display_scale'])] if 'display_scale' in ui else []
+        if [value for name, _, value in chosen_nodes[0].props if name == 'display-scale'] != expected_scale:
+            raise ValueError('development UI display scale differs from manifest')
         displays=[n for n in armio.children if n.name=='disp0']
         if len(displays)!=1 or adt.serialize(displays[0])!=adt.serialize(display_node()):
             raise ValueError('development UI display node mismatch')

@@ -20,6 +20,7 @@ class UIProfileTests(unittest.TestCase):
             body=f'{81:016x}/{phase:02x}/{0:08x}'.encode()
             frames.append(b'A52D1 '+body+b' %08x\n'%zlib.crc32(body))
         result=ui.configuration(build,b''.join(frames),'b'*64,'a'*64)
+        self.assertEqual(result['display_scale'],3)
         self.assertEqual(result['geometry'],[1080,2400,4320]);self.assertIsNone(result['physical_panel_hz'])
 
     def test_payload_requires_exact_full_root_flags_and_nodes(self):
@@ -46,6 +47,15 @@ class UIProfileTests(unittest.TestCase):
             b=adt.serialize(tree);data[off:]=b;struct.pack_into('<Q',data,0x28,len(b))
             manifest['payload_sha256']=hashlib.sha256(data).hexdigest();validate_payload(data,manifest)
         check()
+        cfg['display_scale']=3
+        with self.assertRaisesRegex(ValueError,'display scale'):check()
+        chosen=next(n for n in tree.children if n.name=='chosen')
+        chosen.props.append(('display-scale',0,struct.pack('<I',3)))
+        check()
+        chosen.props[-1]=('display-scale',0,struct.pack('<I',0))
+        with self.assertRaisesRegex(ValueError,'display scale'):check()
+        chosen.props.pop()
+        del cfg['display_scale']
         for key,value in [('environment','QEMU virt ONLY; never flash'),('kernel_sha256','e'*64),
                           ('live_dtb_sha256','c'*64),('ios_exec_development',False)]:
             old=manifest[key];manifest[key]=value

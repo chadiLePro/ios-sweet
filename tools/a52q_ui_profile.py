@@ -23,6 +23,8 @@ def validate_config(config):
         raise ValueError('UI profile must distinguish software cadence from physical panel Hz')
     if 'text_console' in config and config['text_console'] is not True:
         raise ValueError('invalid opt-in bitmap console declaration')
+    if 'display_scale' in config and (type(config['display_scale']) is not int or config['display_scale'] != 3):
+        raise ValueError('invalid logical display scale')
 
 
 def configuration(build,console,kernel_sha256,root_sha256):
@@ -32,7 +34,7 @@ def configuration(build,console,kernel_sha256,root_sha256):
     result=dict(cfg,nonce=int.from_bytes(os.urandom(8),'little') or 1,
                 kernel_sha256=kernel_sha256,root_sha256=root_sha256,
                 physical_kernel_console_sha256=hashlib.sha256(console).hexdigest(),
-                software_vsync_us=16667,physical_panel_hz=None,
+                software_vsync_us=16667,physical_panel_hz=None,display_scale=3,
                 scope='development no-SEP and CPU surface bridge; Apple services/visible UI unverified')
     validate_config(result);return result
 

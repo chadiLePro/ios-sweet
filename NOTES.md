@@ -1,3 +1,17 @@
+# V30 display scale trial
+
+V29's compiled ADT lacked /chosen/display-scale. The upstream 20H392 bring-up
+recorded MobileGestalt reading zero when absent, resulting in an invalid display
+mode. V30 publishes u32(3) in the UI profile for 1080x2400 at 360x800 points.
+This is a logical UI setting. Its effect on the A52 main CADisplay trap requires
+a hardware result. Both old manifests and the new declared scale are validated.
+All 154 host tests passed. The reviewed BOOT embeds the same kernel (dd2363bf…),
+same disk root plan and same var. The new BOOT SHA256 is
+4762a6da38919e5eb0410405d0bb909ddfbefb85b398602dcdb85b3295f386c5.
+Hardware package shim/out/a52q-ios-ufs-hardware-v28. Launcher invoked; consult
+backup/a52q/ios-ufs-v30/receipt.json and watcher.log for rollback status.
+After restoration, run research/finish_scale_trial.py and compare V29 trap PCs.
+
 # V29 closed on hardware
 
 TWRP returned. The watcher restored original BOOT with full readback. Independent
