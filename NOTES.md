@@ -1,3 +1,22 @@
+# V29 closed on hardware
+
+TWRP returned. The watcher restored original BOOT with full readback. Independent
+hashes of BOOT, recovery, DTBO and vbmeta match. Decoded trace and crash records
+are in backup/a52q/ios-ufs-v29/late-trace-result.json. The operator saw lines and
+a blue bar followed by a screen resembling cards, a status bar and wallpaper.
+The producer of that frame is unknown. The last valid display sample reports
+owner=1 (text console), off=0, frames=75, colour=0 among 64 samples. backboardd
+matched AppleKeyStore. SpringBoard PIDs 25, 93 and 413 each trapped at unslid PC
+0x19b968ca8, previously resolved to “failed to find the main CADisplay.”
+
+The original physical color-bar writer uses uint32_t pixels (BGRA bytes);
+the checked active SSPP0 capture has SRC_YSTRIDE0=4320, SRC_FORMAT=0x237ff and
+SRC_UNPACK_PATTERN=0x03020001. The kernel color-bar test explicitly requires
+stride == width * 4. A 3240-byte producer pitch would misalign successive rows.
+No 24-bit candidate was built or flashed. To identify a later mode transition,
+correlate the visible change with live source-format, stride, scanout address and
+client presentation records. A clean SpringBoard lock screen remains unverified.
+
 # V29 kernel build verified
 
 Corrected source 54793ef1c35396f11b54c26842df1427d2a47ab2 passed host CI
