@@ -1,5 +1,26 @@
 # V30 closed; display discovery tracing correction
 
+V31 READY, UNFLASHED. Full HFS45037922206 SUCCESS, host CI45037921689 SUCCESS.
+All96 archived source hashes match. QEMU reached diagnosticPID1 and signing1/1;
+pristine16GiB master rehash passed. Independent candidate/review checks passed.
+Kernel SHA2562da9970f9ef3c245baea720ad3009cf9833900b4a7d4463dd8d5725d7e43c766.
+BOOT SHA256601d411ebdc045f8c9cfac2afcb13de195ab15421d25c860be370a9a6db95172.
+Review E:/A52-iOS16/notify-v31-review.json; image hardware-v29/build/
+a52q-ios-ufs-UNTESTED.img; root plan26. Operator readiness question is pending.
+NO V31 launch/receipt exists. V30 original BOOT restored and fresh hashes match.
+Once operator ready: research/start_notify_trial.py. On TWRP return confirm
+restoration FIRST, then research/finish_notify_trial.py for retained diagnostics.
+Only IOUserClient.cpp changed among96 compiled files relative to V29.
+
+V31 source42cab405f8c0c063f64a6bd8925fc3158400b814 is building in full HFS
+workflow45037922206. Host CI45037921689 passed154tests. Only IOUserClient.cpp
+differs among96 compiled overlay files compared with the tested V29 kernel.
+Private pipeline research/finish_notify_artifacts.py (session90362) monitors,
+verifies archived sources, runs exact-kernel diagnostic QEMU, rehashes master,
+and packages hardware-v29/ios-root-plan-v26. Log research/notify-v31-build-package.log.
+Next run research/review_notify_v31.py. No V31 phone trial has started.
+V30 BOOT restoration completed. Its fresh protected hashes match.
+
 V30 BOOT restored and independently hash-verified with recovery/DTBO/vbmeta.
 The retained display sample reports owner=1, off=0, frames=123. SpringBoard
 pid395 again traps at unslid0x19b968ca8. Actual image uses4320 stride; its only
