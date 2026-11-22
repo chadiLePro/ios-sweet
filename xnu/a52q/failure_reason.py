@@ -57,7 +57,11 @@ def helper(source):
         '\t\t\tif (len > (16ull << 20)-scanned) len=(size_t)((16ull << 20)-scanned);\n\t\t\tscanned += len; /* Bound attempted reads, including faults. */')
     replace('\t\t\tscanned += len;\n','')
     replace('if (strncmp(text, last, sizeof(last) - 1) != 0) {',
-        'unsigned rank=a52q_reason_rank(text);\n\t\t\t\t\tif (rank>best && strncmp(text, last, sizeof(last) - 1) != 0) {\n\t\t\t\t\t\tbest=rank;')
+        'unsigned rank=a52q_reason_rank(text);\n\t\t\t\t\tif (rank>best) {\n\t\t\t\t\t\tbest=rank;')
+    # Increasing rank already deduplicates. A 95-byte prefix comparison can
+    # discard a more specific reason that shares the same leading text.
+    replace('\tchar last[96] = "";\n','')
+    replace('\t\t\t\t\t\tstrlcpy(last, text, sizeof(last));\n','')
     replace('printf("STR %s\\n", text);','a52q_reason_record(pid,rank,text);')
     code=code.replace('STR scan of %s heap','A52Q exception-text probe of %s heap')
     code=code.replace('STR done:','A52Q exception-text probe done:')

@@ -1,6 +1,28 @@
 # V32 CLOSED, original BOOT restored and independently hash-verified
 
 USER AWAY. Host work only; no new device write or reboot until operator returns.
+V33 diagnostic review found a prefix-deduplication bug: a more specific exception
+reason with the same first95 bytes could be dropped. Removed the redundant prefix
+filter; a native test runs the transformed upstream observer and proves rank1 ->
+rank3 retention, default-off behavior and process filtering. All158 host tests,
+repository validation and diff checks pass. Prior45046034548 cancelled, host
+pipeline stopped; corrected full HFS build must replace it before packaging.
+Uninstalled directory scaffold is host-only; no new /var write is authorized.
+V33 kernel source58477e06c80385ae59ba8babfc98f507fe9ad819 building in full HFS
+45046034548. Host CI45046033239 passed156tests. Pipeline
+research/finish_exception_artifacts.py session68762, log
+research/exception-v33-build-package.log. New hardware package-v31/root plan28.
+Host check/review must finish; no V33 launcher prepared and backend remains on
+old plan27 until user returns.
+
+Host-only container-directory scaffold prepared in
+E:/A52-iOS16/storage-data-container-scaffold-v1/a52q-ios-var-containers.hfs.img,
+SHA1b8fd88a8574fe0f49f2480044a3c77b9230b29d1837578b52752d7a6ec5ff18.
+fsck passes; all original entries compare unchanged except five new empty
+root-owned0755 containers directories. Keybag bytes preserved. Parent6f30 image
+and validated16GiB master preserved. This is NOT a valid populated MCM container
+or writable-runtime implementation. No installation approval requested yet.
+Planner accepts only that exact declared directory set and metadata.
 The /var proxy and raw UFS devices reject writes. Container directories alone
 cannot supply writable container storage. Exact exception text remains unproven,
 so prepare the opt-in bounded backboardd failure-reason probe before enabling

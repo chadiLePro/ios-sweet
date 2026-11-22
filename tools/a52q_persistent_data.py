@@ -20,6 +20,22 @@ BLOCK_BYTES = 4096
 TIMEZONE_SYMLINKS = {
     'db/timezone/zoneinfo': '/usr/share/zoneinfo.default',
 }
+CONTAINER_DIRECTORIES = {
+    path: dict(uid=0, gid=0, mode='0755')
+    for path in ('containers', 'containers/Data', 'containers/Data/System',
+                 'containers/Shared', 'containers/Shared/SystemGroup')
+}
+
+
+def validate_container_directories(directories):
+    if not isinstance(directories, dict) or set(directories) != set(CONTAINER_DIRECTORIES):
+        raise ValueError('unreviewed container directory seed')
+    for path, expected in CONTAINER_DIRECTORIES.items():
+        attributes=directories[path]
+        if (not isinstance(attributes, dict) or set(attributes) != set(expected) or
+                type(attributes['uid']) is not int or type(attributes['gid']) is not int or
+                attributes != expected):
+            raise ValueError('unreviewed container directory metadata')
 
 
 def validate_timezone_symlinks(links):
@@ -73,6 +89,9 @@ def inspect_data(path, proof, root_sha256):
     if 'seed_symlinks' in proof:
         validate_timezone_symlinks(proof['seed_symlinks'])
         result['seed_symlinks']=proof['seed_symlinks']
+    if 'seed_directories' in proof:
+        validate_container_directories(proof['seed_directories'])
+        result['seed_directories']=proof['seed_directories']
     return result
 
 
@@ -102,6 +121,8 @@ def validate_config(config, root):
         raise ValueError('invalid or overlapping persistent-data plan')
     if 'seed_symlinks' in config:
         validate_timezone_symlinks(config['seed_symlinks'])
+    if 'seed_directories' in config:
+        validate_container_directories(config['seed_directories'])
 
 
 def configuration(capture, root, data):
