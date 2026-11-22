@@ -8,8 +8,40 @@ REGISTERS = '''
 #include <arm/thread.h>
 #include <vm/vm_shared_region.h>
 #include <arm64/a52q_fb_console.h>
-/* V26: actual SpringBoard SIGTRAP needs the cache slide and return PC.
- * Read saved state only, never walk/dereference user stacks during exit. */
+/* A short checked-copy frame walk follows the upstream SWEET crash mechanism.
+ * Only backboardd needs the caller chain beyond pthread_kill. */
+static void a52q_backboard_stack(arm_saved_state_t *ss, uint64_t slide,
+    uint64_t main_header, int pid)
+{
+    uint64_t pcs[16], frame[2];
+    unsigned count=2;
+    pcs[0]=get_saved_state_pc(ss);pcs[1]=get_saved_state_lr(ss);
+    uint64_t sp=get_saved_state_sp(ss),fp=get_saved_state_fp(ss);
+    while (count<16 && fp>=sp && fp-sp<=65536-sizeof(frame) && !(fp&15)) {
+        if (copyin((user_addr_t)fp,frame,sizeof(frame))) break;
+        pcs[count++]=frame[1];
+        if (frame[0]<=fp) break;
+        fp=frame[0];
+    }
+    char body[208],line[240];
+    int n=snprintf(body,sizeof(body),"%d/backboardd/%llx/%llx",pid,
+        (unsigned long long)slide,(unsigned long long)main_header);
+    if (n<=0 || (unsigned)n>=sizeof(body)) return;
+    for (unsigned i=0;i<count;i++) {
+        int added=snprintf(body+n,sizeof(body)-(unsigned)n,"/%llx",(unsigned long long)pcs[i]);
+        if (added<=0 || (unsigned)added>=sizeof(body)-(unsigned)n) {body[n]=0;break;}
+        n+=added;
+    }
+    uint32_t crc=0xffffffffU;
+    for (int i=0;i<n;i++) {
+        crc^=(uint8_t)body[i];
+        for (unsigned j=0;j<8;j++) crc=(crc>>1)^(0xedb88320U&(0U-(crc&1)));
+    }
+    n=snprintf(line,sizeof(line),"A52BT1 %s %08x\\n",body,crc^0xffffffffU);
+    if (n<=0 || (unsigned)n>=sizeof(line)) return;
+    a52q_early_critical(line,(unsigned)n,7);
+    for (unsigned i=0;i<3;i++) printf("%s",line);
+}
 void a52q_crash_registers(const char *name, int pid);
 void a52q_crash_registers(const char *name, int pid)
 {
@@ -35,8 +67,11 @@ void a52q_crash_registers(const char *name, int pid)
     for (unsigned i=0;i<3;i++) printf("A52CR1 %s %08x\\n",body,crc^0xffffffffU);
     char line[240];
     n=snprintf(line,sizeof(line),"A52CR1 %s %08x\\n",body,crc^0xffffffffU);
-    if (n>0 && (unsigned)n<sizeof(line))
+    if (n>0 && (unsigned)n<sizeof(line) &&
+        (!strcmp(name,"SpringBoard") || !strcmp(name,"backboardd")))
         a52q_early_critical(line,(unsigned)n,!strcmp(name,"SpringBoard") ? 6 : 7);
+    if (!strcmp(name,"backboardd"))
+        a52q_backboard_stack(ss,slide,task->mach_header_vm_address,pid);
 }
 #endif
 '''

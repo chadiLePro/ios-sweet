@@ -47,8 +47,18 @@ static void *current_thread(void){return &state;}
 static task_t current_task(void){return (task_t)&task;}
 static arm_saved_state_t *find_user_regs(void *t){assert(t==&state);return missing ? NULL : &state;}
 static int is_saved_state64(arm_saved_state_t *s){return s->bits==64;}
+typedef uint64_t user_addr_t;
+static unsigned stack_copies,copy_calls;
+static int bad_copy,cycle;
+static int copyin(user_addr_t address,void *out,size_t length) {
+ assert(length==16 && address>=0x10100 && address-0x10000<=65536-16 && !(address&15));
+ ++copy_calls;if(bad_copy)return 1;
+ uint64_t *frame=out;frame[0]=cycle ? address : address+32;
+ frame[1]=0x180010000ULL+copy_calls*4;return 0;
+}
 static unsigned tail_copies;
 static void a52q_early_critical(const char *line,unsigned length,unsigned slot) {
+ if(!strncmp(line,"A52BT1 ",7)){assert(length==strlen(line) && slot==7);++stack_copies;return;}
  assert(length==strlen(line) && slot==(strstr(line,"backboardd") ? 7U : 6U) && !strncmp(line,"A52CR1 ",7));++tail_copies;
 }
 static vm_shared_region_t vm_shared_region_get(task_t t){assert(t==(task_t)&task);refs++;return (vm_shared_region_t)&region;}
@@ -66,6 +76,11 @@ int main(void){
  state.bits=32;a52q_crash_registers("SpringBoard",25);assert(!refs);state.bits=64;
  a52q_crash_registers("unrelated",25);a52q_crash_registers(NULL,25);assert(!refs);
  a52q_crash_registers("backboardd",28);assert(!refs && tail_copies==2);
+ assert(stack_copies==1 && copy_calls==14);
+ bad_copy=1;copy_calls=0;a52q_crash_registers("backboardd",29);
+ assert(copy_calls==1 && stack_copies==2);
+ bad_copy=0;cycle=1;copy_calls=0;a52q_crash_registers("backboardd",30);
+ assert(copy_calls==1 && stack_copies==3);
  return 0;
 }
 '''
@@ -74,9 +89,14 @@ int main(void){
             v=subprocess.run([cc,'-std=c11','-Wall','-Wextra','-Werror',str(p),'-o',str(exe)],capture_output=True,text=True)
             self.assertEqual(v.returncode,0,v.stderr)
             v=subprocess.run([str(exe)],capture_output=True);self.assertEqual(v.returncode,0,v.stderr)
-            row=decode(v.stdout)['records'];self.assertEqual(len(row),2)
+            row=decode(v.stdout)['records'];self.assertEqual(len(row),4)
             self.assertEqual(row[0]['valid_copies'],3);self.assertEqual(row[0]['slide'],0x4000)
             self.assertEqual(row[0]['pc'],0x180004000)
             self.assertEqual(row[1]['process'],'backboardd')
+            from a52q_stack_trace import decode as stacks
+            stack=stacks(v.stdout)['records']
+            self.assertEqual([len(row['pcs']) for row in stack],[16,2,3])
+            self.assertTrue(all(row['valid_copies']==3 for row in stack))
+            self.assertEqual(stacks(v.stdout.replace(b'/backboardd/',b'/backboarXd/'))['records'],[])
 
 if __name__=='__main__':unittest.main()

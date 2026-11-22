@@ -1,3 +1,21 @@
+# V31 CLOSED, original BOOT restored and independently hash-verified
+
+V31 watcher finished restoration. Fresh BOOT/recovery/DTBO/vbmeta hashes match.
+Result E:/A52-iOS16/notify-v31-result.json. No framebuffer notification/open
+records survived with valid CRC. Last valid heartbeat owner1, frames131.
+Backboardd pid56 SIGABRT has3 CRC copies: runtimePC0x202be7198,LR0x2121765f8,
+slide0x405d0000, main0x1008fc000, SP0x16f503680,FP0x16f5036a0.
+UnslidPC0x1c2617198 maps libsystem_kernel+0x7198; LR0x1d1ba65f8 maps
+libsystem_pthread+0xd5f8. This identifies the termination path, not the caller
+that requested abort. SpringBoard still traps at unslid0x19b968ca8.
+
+Next diagnostic implements the upstream SWEET checked-copy frame walk only for
+backboardd, bounded to16 PCs and64KiB above SP, with fault/alignment/monotonicity
+checks. CRC A52BT1 records retain the caller chain in slot7. Ordinary A52CR1
+register records continue. Slot7 is reserved for backboardd so unrelated logd/
+media crashes cannot replace it. Native tests cover normal chain, copy fault,
+cycle and CRC corruption; all154 host tests PASS. Full kernel build pending.
+
 # V30 closed; display discovery tracing correction
 
 V31 NOW RUNNING. Operator confirmed ready. Candidate601d411e…6db95172 written
