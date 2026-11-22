@@ -1,4 +1,20 @@
-# CURRENT: V28 CLOSED, original BOOT restored and independently hash-verified
+# V29 kernel build verified
+
+Corrected source 54793ef1c35396f11b54c26842df1427d2a47ab2 passed host CI
+44949611916 and full HFS compile/link 44949612748. On resuming, all 96 archived
+overlay files matched the expected hashes. Kernel SHA256
+dd2363bfac49b844ee8df454020bcd546a437257e36dc561b8afbb8195b885d1.
+V28 recovery remains available and all four protected partition hashes matched.
+Host verification and packaging log: research/late-trace-resume.log.
+The QEMU run produced 3 valid entry records and 13 diagnostic PID1 heartbeats.
+The 16 GiB master matched its recorded SHA256. Independent package review passed
+(E:/A52-iOS16/late-trace-v29-review.json). BOOT SHA256
+3e46e92c5338d5d95475ea2c273af66199774cb64e946a3be62a76f549a0163c.
+Operator returned beside PC. Trial launcher invoked. Use
+backup/a52q/ios-ufs-v29/receipt.json for installation/restoration status.
+The launcher archives the previous pstore console before checking root and var.
+
+# V28 CLOSED, original BOOT restored and independently hash-verified
 
 V28 receipt original_boot_restored=true/requires_restore=false. Fresh full BOOT,
 recovery, DTBO and vbmeta hashes MATCH (backup/a52q/ios-ufs-v28/
