@@ -5,6 +5,21 @@ sys.path.insert(0,str(R/'tools'));from a52q_crash_trace import decode
 sys.path.insert(0,str(R/'xnu/a52q'));import exit_trace
 
 class CrashTraceTests(unittest.TestCase):
+    def test_stack_prefix_recovery_preserves_body_crc_checks(self):
+        from a52q_stack_trace import decode as stacks
+        body=b'395/backboardd/34fb8000/102f70000/1f75cf198/206b5e5f8'
+        checksum=b' %08x\n'%zlib.crc32(body)
+        original=b'A52BT1 '+body+checksum
+        damaged=b'\x0150BT1 '+body+checksum
+        self.assertEqual(stacks(damaged)['records'],[])
+        record=stacks(damaged,recover_framing=True)['records'][0]
+        self.assertEqual(record['recovered_framing_copies'],1)
+        self.assertEqual(record['pcs'],[0x1f75cf198,0x206b5e5f8])
+        combined=stacks(original+damaged,recover_framing=True)['records'][0]
+        self.assertEqual(combined['original_framing_copies'],1)
+        self.assertEqual(combined['recovered_framing_copies'],1)
+        self.assertEqual(stacks(damaged.replace(b'1f75cf198',b'1f75cf199'),True)['records'],[])
+
     def test_transform_accepts_original_anchor_and_keeps_redmi_call_unchanged(self):
         source=('#include <kern/thread_call.h>\n#if defined(ARM64_BOARD_CONFIG_SWEET)\n'
             '\t\tif (p == current_proc()) {\n'

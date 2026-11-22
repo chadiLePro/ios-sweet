@@ -1,6 +1,30 @@
+# V32 CLOSED, original BOOT restored and independently hash-verified
+
+V32 receipt restored=true/pending=false; fresh BOOT/recovery/DTBO/vbmeta hashes
+match. Strict stack decoder found no record, but a complete body in late slot7
+retains valid CRC90931b8a at raw offset261627; only its text prefix is damaged.
+Explicit host --recover-framing mode now accepts CRC/schema-valid original
+bodies and labels recovered framing. No body/address/checksum bytes repaired.
+155 tests pass including prefix recovery and rejection of modified payloads.
+
+Backboardd pid395 caller chain resolves to libc/libc++abi/ObjC/libdispatch and
+main offsets0x9334/0x9a00. Verified master executable SHA7aa6f8bf…f676267c.
+Static disassembly identifies the "window server" phase, block0x10000a770,
+dispatch_once initializer0x10001d7f0. Its early calls request
+BSPathProviderFactory.pathProviderForSystemContainerForCurrentProcess,
+cachesPath, then path. The exact throwing call and exception text are NOT known.
+Read-only audit of installed var image shows containers, Data/System and
+Shared/SystemGroup directories absent. This is a concrete dependency to examine;
+do not assert the older Redmi nil-URL exception was reproduced without evidence.
+Analysis E:/A52-iOS16/backboardd-v32-analysis.json, raw console unchanged under
+backup/a52q/ios-ufs-v32. Symbolication helper accepts --recover-framing.
+Operator reports readable A52Q logs followed by flashing colours. SpringBoard
+still reaches main CADisplay assertion; no visible lock screen is verified.
+No new device write/candidate/var change prepared or authorized in this analysis.
+
 # V31 CLOSED, original BOOT restored and independently hash-verified
 
-V32 NOW RUNNING. Candidate0ac595ab…ef7eaf8f installed and fully read back;
+V32 HISTORICAL START (closed above). Candidate0ac595ab…ef7eaf8f installed and fully read back;
 recovery USB departure confirmed. Original BOOT restoration PENDING.
 Watcher PID2756 active; backup/a52q/ios-ufs-v32/receipt.json authoritative.
 Operator told five minutes from confirmed departure then TWRP. On return,
