@@ -27,7 +27,9 @@ static void a52q_graphics_match(OSDictionary *dict,kern_return_t result,
     OSString *key=OSDynamicCast(OSString,dict->getObject("IONameMatch"));
     const char *requested=cls ? cls->getCStringNoCopy() : key ? key->getCStringNoCopy() : "(other)";
     unsigned slot=a52q_graphics_class(requested);
-    if (!slot) slot=1; /* A graphics process may ask for an unsupported class. */
+    /* Keep the fixed display slots for their actual classes. Frequent
+     * unrelated AppleKeyStore queries previously erased the last result. */
+    if (!slot) return;
     snprintf(body,sizeof(body),"%s proc=%.16s pid=%d class=%.56s ret=%08x found=%.40s",
         operation,name,proc_selfpid(),requested,result,found);
     a52q_ui_observe(slot,body);
@@ -79,6 +81,14 @@ def iokit(text):
     part=text[begin:end];old='\t\t*object = obj;'
     if part.count(old)!=1:raise ValueError('graphics iterator anchor changed')
     text=text[:begin]+part.replace(old,old+block('\t\ta52q_graphics_next(obj);'))+text[end:]
+    begin=text.index('internal_io_service_add_notification(')
+    end=text.index('/* Routine io_service_add_notification */',begin)
+    part=text[begin:end]
+    anchor='\t\t\terr = kIOReturnUnsupported;\n\t\t}'
+    if part.count(anchor)!=1:raise ValueError('graphics notification anchor changed')
+    part=part.replace(anchor,anchor+block(
+        '\t\ta52q_graphics_match(dict,err,notify ? "notification-registered" : "none","notify");'))
+    text=text[:begin]+part+text[end:]
     begin=text.index('is_io_service_open_extended(');end=text.index('/* Routine io_service_close */',begin)
     part=text[begin:end]
     # Ignore a disabled #if0 block but retain it byte-for-byte. Every active

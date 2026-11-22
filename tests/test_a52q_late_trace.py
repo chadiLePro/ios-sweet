@@ -114,6 +114,8 @@ int main(void) {
  a52q_graphics_open(&surface,2,0xe00002c7,0,false);assert(observations==3 && lastslot==4);
  assert(strstr(latest,"valid=0"));a52q_graphics_next(&surface);assert(observations==4 && lastslot==2);
  a52q_graphics_open(&other,0,0,0,true);assert(observations==4);
+ OSString unrelated("AppleKeyStore");OSDictionary keybag{&unrelated};
+ a52q_graphics_match(&keybag,0,"AppleKeyStore","match");assert(observations==4);
  a52q_graphics_next(nullptr);assert(observations==4);
  process="other";a52q_graphics_match(&dict,0,"none","match");a52q_graphics_open(&fb,0,0,0,true);
  a52q_graphics_next(&surface);assert(observations==4);
@@ -129,6 +131,11 @@ is_io_iterator_next() {
         *object = obj;
 }
 /* Routine io_iterator_reset */
+internal_io_service_add_notification() {
+			err = kIOReturnUnsupported;
+        }
+}
+/* Routine io_service_add_notification */
         *existing = IOUserIterator::withIterator(found);
         kr = kIOReturnSuccess;
         kr = *service ? kIOReturnSuccess : kIOReturnNotFound;

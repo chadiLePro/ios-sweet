@@ -1,4 +1,21 @@
-# V30 display scale trial
+# V30 closed; display discovery tracing correction
+
+V30 BOOT restored and independently hash-verified with recovery/DTBO/vbmeta.
+The retained display sample reports owner=1, off=0, frames=123. SpringBoard
+pid395 again traps at unslid0x19b968ca8. Actual image uses4320 stride; its only
+functional change fromV29 is display-scale=3. Operator saw crisp bars/mint
+screen; a SpringBoard lock screen remains unverified.
+Decoded result E:/A52-iOS16/display-scale-v30-result.json.
+
+Measured IOMFB uses IOServiceFirstMatch notifications. The previous observer
+missed notification registration and unrelated AppleKeyStore queries overwrote
+the fixed framebuffer match slot. Add notification result observations and
+retain slots only for the matching display/surface classes. All154 tests pass.
+This is a diagnostic correction. It changes no surface pointer, offset, pixel
+format, UFS/keybag/catalog policy or compositor behavior. Next full kernel build
+and recoverable phone test must determine where discovery stops.
+
+# V30 display scale trial (closed)
 
 V29's compiled ADT lacked /chosen/display-scale. The upstream 20H392 bring-up
 recorded MobileGestalt reading zero when absent, resulting in an invalid display
