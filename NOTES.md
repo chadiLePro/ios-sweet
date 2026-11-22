@@ -1,6 +1,13 @@
 # V30 closed; display discovery tracing correction
 
-V31 READY, UNFLASHED. Full HFS45037922206 SUCCESS, host CI45037921689 SUCCESS.
+V31 NOW RUNNING. Operator confirmed ready. Candidate601d411e…6db95172 written
+and fully read back. Recovery USB departure confirmed. C: restoration watcher
+PID8136 active; receipt backup/a52q/ios-ufs-v31/receipt.json authoritative.
+Original BOOT RESTORATION PENDING. User instructed five minutes then TWRP.
+First on return confirm restored=true/pending=false and fresh protected hashes,
+then research/finish_notify_trial.py. Do not start another trial or overwrite logs.
+
+V31 preparation record. Full HFS45037922206 SUCCESS, host CI45037921689 SUCCESS.
 All96 archived source hashes match. QEMU reached diagnosticPID1 and signing1/1;
 pristine16GiB master rehash passed. Independent candidate/review checks passed.
 Kernel SHA2562da9970f9ef3c245baea720ad3009cf9833900b4a7d4463dd8d5725d7e43c766.
