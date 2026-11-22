@@ -1,5 +1,13 @@
 # V31 CLOSED, original BOOT restored and independently hash-verified
 
+V32 NOW RUNNING. Candidate0ac595ab…ef7eaf8f installed and fully read back;
+recovery USB departure confirmed. Original BOOT restoration PENDING.
+Watcher PID2756 active; backup/a52q/ios-ufs-v32/receipt.json authoritative.
+Operator told five minutes from confirmed departure then TWRP. On return,
+verify restoration and fresh protected hashes FIRST, then
+research/finish_stack_trial.py and research/symbolicate_backboardd_stack.py
+backup/a52q/ios-ufs-v32/console.txt. No further trial until restoration closes.
+
 V32 checked-copy backtrace source365460bd789a55e3e06b4928160c2abc3118933b:
 full HFS45041227929 SUCCESS, host CI45041227022 SUCCESS154tests.
 All96 archived hashes match; exact-kernel QEMU and master16GiB rehash passed.
