@@ -1,5 +1,21 @@
 # V31 CLOSED, original BOOT restored and independently hash-verified
 
+V32 checked-copy backtrace source365460bd789a55e3e06b4928160c2abc3118933b:
+full HFS45041227929 SUCCESS, host CI45041227022 SUCCESS154tests.
+All96 archived hashes match; exact-kernel QEMU and master16GiB rehash passed.
+Independent review E:/A52-iOS16/stack-v32-review.json passed. Only compiled
+osfmk/kern/exception.c differs fromV31 (other95 unchanged). BOOT SHA256
+0ac595ab034a62b389e1511058e5eace3d1729d3f47e02f6cc2c7e71ef7eaf8f.
+Kernel SHA256f5cb8cb281ff020938c8a3c0ff65c4c9b942e0cc10fb0904b3b7a3e77a3c2d7d.
+Pipeline finished, log research/stack-v32-build-package.log. Operator confirmed
+ready; launcher invoked. Receipt backup/a52q/ios-ufs-v32/receipt.json is
+authoritative for installation/restoration. Package hardware-v30, root plan27.
+Master backboardd was extracted read-only and its
+1184848 bytes match catalog SHA7aa6f8bf…f676267c, in
+E:/A52-iOS16/master-backboardd-v32-audit-v1. Original staged UNC is unavailable,
+so use this measured copy for main-executable symbolication.
+Operator confirmed V31 displayed the same bars/mint screen.
+
 V31 watcher finished restoration. Fresh BOOT/recovery/DTBO/vbmeta hashes match.
 Result E:/A52-iOS16/notify-v31-result.json. No framebuffer notification/open
 records survived with valid CRC. Last valid heartbeat owner1, frames131.
