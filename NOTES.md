@@ -1,3 +1,18 @@
+# V33 ACTIVE: original BOOT restoration PENDING
+
+Operator confirmed beside phone and ready for five-minute reset. Candidate
+BOOT dfc436315aedb1fa3e0f5c4f3cc87eaf199b454786a537522fa769eca88e50f1
+installed and fully read back; USB departure confirmed. Root/var full hashes
+matched before BOOT write. Backend now binds reviewed root plan28 and the explicit
+--abort-reason flag. Native Samsung normal-boot reboot reason used.
+C: restoration watcher PID7988 active, research/watch_ios_ufs_v33_restore.py.
+Authoritative receipt backup/a52q/ios-ufs-v33/receipt.json requires_restore=true.
+Operator told wait five minutes then return to TWRP; do not reboot System/format.
+ON RETURN: confirm watcher restoration/full original BOOT hash FIRST, then run
+research/finish_exception_trial.py and symbolize any retained backboardd records.
+New diagnostic A52EX1 decoded with explicit framing recovery, body CRC unchanged.
+No success inferred from console/colour patterns. No new /var write included.
+
 # V32 CLOSED, original BOOT restored and independently hash-verified
 
 USER AWAY. Host work only; no new device write or reboot until operator returns.
