@@ -1,4 +1,26 @@
-# V34 ACTIVE: original BOOT restoration PENDING
+# V34 CLOSED: original BOOT restored and freshly hash-verified
+
+research/finish_var_write_trial.py PASS, fresh BOOT/recovery/DTBO/vbmeta hashes
+match. No pending BOOT restoration. Saved console SHA256
+037f95bb000f60846ff822070ac7f75b2803c65c93567f902b07058e288caeb1.
+A52W1 identical-block WRITE/SYNC/readback probe PASSED5CRC-valid copies,
+error0/OCS0/response0x21000000. Actual pstore also reports
+`A52Q var proxy: verified separate 4GiB UFS development-writable extent; root unchanged`
+and `hfs: mounted A52IOSVar on device a52var0`.
+NEW OBSERVED BLOCKER: `UMD_INIT: Failed to atomically write
+/private/var//keybags/usersession.kb: Failed to atomically swap writing file:
+Operation not supported (45)`. Repeated persona initialization failures follow.
+Backboardd still captures nil URL path in multiple CRC-valid process records.
+Display late heartbeat text owner1, frames1636; no GUI handoff/lock screen proven.
+Read-only post-trial root hash + lossless changed-var snapshot running via
+research/capture_var_v34_after.py session26061, log research/var-v34-after-capture.log.
+DO NOT reuse the initial var/header plan: filesystem changed during approved RW.
+Need preserve snapshot, host fsck working copy and inspect persistent logs.
+Target next fix at observed HFS atomic-exchange gap, preserve actual errno on
+unmatched/failed cases. Original SWEET patch0052 exists but is not shared withA52.
+No additional device write/phone trial started.
+
+# V34 HISTORICAL ACTIVE ENTRY (closed above)
 
 Initial approved var install verified1b8fd88a…6ec5ff18, full root/protected hashes
 unchanged before trial. BOOT2b032071…7d301072 installed and fully read back;
