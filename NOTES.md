@@ -1,4 +1,21 @@
-# V33 ACTIVE: original BOOT restoration PENDING
+# V33 CLOSED: original BOOT restored and freshly hash-verified
+
+research/finish_exception_trial.py PASS; fresh BOOT/recovery/DTBO/vbmeta hashes
+match. No pending restoration. Console262132 bytes SHA256
+2d812dbc08a8edc3f48848d9ffcb7a994c8a40b3d795652fcd572e24779885bf.
+V33 A52EX1 captures `7*** -[NSURL initFileURLWithPath:]: nil string parameter`
+for backboardd pid56 (1CRC-valid copy) and pid368 (3CRC-valid copies). These are
+filtered heap observations at fatal exit, not direct active-exception pointers.
+Pid56 backtrace has3 valid copies and matches the previous window-server chain.
+SpringBoard continues trapping at the same unslid FrontBoard main-display check;
+no visible lock screen or GUI handoff verified. UI heartbeat owner1/text, frames110.
+User reports on-screen logs broke, now in TWRP. Saved pstore remains usable.
+E:/A52-iOS16/exception-v33-result.json and local late-trace-result.json retain all
+records. Investigate BaseBoard system-container path / persistent read-only var.
+Do not change pixel packing or claim graphics success from colour patterns.
+Container scaffold remains uninstalled, /var remains RO, no new write approval.
+
+# V33 HISTORICAL ACTIVE ENTRY (closed above)
 
 Operator confirmed beside phone and ready for five-minute reset. Candidate
 BOOT dfc436315aedb1fa3e0f5c4f3cc87eaf199b454786a537522fa769eca88e50f1
