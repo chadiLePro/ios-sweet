@@ -50,13 +50,44 @@ def digest_valid(value):
     return isinstance(value, str) and re.fullmatch('[0-9a-f]{64}', value) is not None
 
 
+def validate_runtime_snapshot(snapshot, root_sha256):
+    """Validate provenance of a captured /var, not an unchanged master copy."""
+    keys={'format','target','offset_bytes','bytes','sha256','root_sha256',
+          'source_boot_sha256','source_kernel_sha256','root_preserved',
+          'original_boot_restored','other_file_data_preserved','repair_changed_files'}
+    if (not isinstance(snapshot,dict) or set(snapshot)!=keys or
+        snapshot['format']!='a52q-runtime-var-v1' or snapshot['target']!='/dev/block/sda31' or
+        type(snapshot['offset_bytes']) is not int or snapshot['offset_bytes']!=ROOT_BYTES or
+        type(snapshot['bytes']) is not int or snapshot['bytes']!=DATA_BYTES or
+        snapshot['root_sha256']!=root_sha256 or not digest_valid(root_sha256) or
+        any(not digest_valid(snapshot[k]) for k in ('sha256','source_boot_sha256','source_kernel_sha256')) or
+        any(snapshot[k] is not True for k in ('root_preserved','original_boot_restored','other_file_data_preserved'))):
+        raise ValueError('unverified or out-of-range runtime var snapshot')
+    changes=snapshot['repair_changed_files']
+    # Observed forced-reset repair affected this active log only. Never silently
+    # accept repairs that alter executable, keybag or other payload file data.
+    if not isinstance(changes,dict) or not set(changes)<={'log/com.apple.xpc.launchd/launchd.log'}:
+        raise ValueError('unreviewed repaired var file data')
+    for change in changes.values():
+        if (not isinstance(change,dict) or set(change)!={'before_sha256','after_sha256'} or
+            any(not digest_valid(change[k]) for k in change) or
+            change['before_sha256']==change['after_sha256']):
+            raise ValueError('invalid repaired-log checksum evidence')
+
+
 def inspect_data(path, proof, root_sha256):
     info = path.stat()
     if not stat.S_ISREG(info.st_mode) or info.st_size != DATA_BYTES:
         raise ValueError('data image must be a regular 4 GiB file')
+    runtime=proof.get('runtime_snapshot')
+    if runtime is not None:
+        validate_runtime_snapshot(runtime,root_sha256)
+        if proof.get('rsync_checksum_comparison_passed') is True:
+            raise ValueError('runtime capture must not claim unchanged master var contents')
+    copied=runtime is not None or proof.get('rsync_checksum_comparison_passed') is True
     if (not digest_valid(root_sha256) or proof.get('bytes') != DATA_BYTES or
             proof.get('fsck_passed') is not True or
-            proof.get('rsync_checksum_comparison_passed') is not True or
+            not copied or
             proof.get('source_subtree') != '/private/var' or
             proof.get('source_master_sha256') != root_sha256):
         raise ValueError('data image needs matching master, completed fsck and copy proof')
@@ -77,6 +108,7 @@ def inspect_data(path, proof, root_sha256):
         raise ValueError('initial data image must be clean and non-journaled')
     result=dict(bytes=DATA_BYTES, sha256=digest.hexdigest(), volume=volume,
                 header_crc32=zlib.crc32(first), source_root_sha256=root_sha256)
+    if runtime is not None:result['runtime_snapshot']=runtime
     if proof.get('seed_files'):
         files=proof['seed_files']
         if set(files)!={'keybags/systembag.kb'}:
@@ -123,6 +155,8 @@ def validate_config(config, root):
         validate_timezone_symlinks(config['seed_symlinks'])
     if 'seed_directories' in config:
         validate_container_directories(config['seed_directories'])
+    if 'runtime_snapshot' in config:
+        validate_runtime_snapshot(config['runtime_snapshot'],root['sha256'])
 
 
 def configuration(capture, root, data):

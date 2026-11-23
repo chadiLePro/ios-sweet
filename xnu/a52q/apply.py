@@ -19,6 +19,7 @@ import software_ui
 import data_fstab
 import text_console
 import graphics_trace
+import hfs_atomic_write
 
 HERE = Path(__file__).resolve().parent
 
@@ -67,6 +68,7 @@ def apply(root, filesystem='mockfs'):
     changes[exit_trace.TARGET] = exit_trace.transform(read(exit_trace.TARGET))
     changes[exit_trace.REGISTER_TARGET] = exit_trace.exception(read(exit_trace.REGISTER_TARGET))
     changes[keybag_trace.VFS] = keybag_trace.vfs(read(keybag_trace.VFS))
+    changes[hfs_atomic_write.TARGET]=hfs_atomic_write.transform(read(hfs_atomic_write.TARGET))
     changes[keybag_trace.IOKIT] = keybag_trace.iokit(read(keybag_trace.IOKIT))
     changes[keybag_trace.IOKIT] = graphics_trace.iokit(read(keybag_trace.IOKIT))
     for ui_name in software_ui.PINS:

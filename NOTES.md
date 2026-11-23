@@ -12,13 +12,35 @@ NEW OBSERVED BLOCKER: `UMD_INIT: Failed to atomically write
 Operation not supported (45)`. Repeated persona initialization failures follow.
 Backboardd still captures nil URL path in multiple CRC-valid process records.
 Display late heartbeat text owner1, frames1636; no GUI handoff/lock screen proven.
-Read-only post-trial root hash + lossless changed-var snapshot running via
-research/capture_var_v34_after.py session26061, log research/var-v34-after-capture.log.
-DO NOT reuse the initial var/header plan: filesystem changed during approved RW.
-Need preserve snapshot, host fsck working copy and inspect persistent logs.
-Target next fix at observed HFS atomic-exchange gap, preserve actual errno on
-unmatched/failed cases. Original SWEET patch0052 exists but is not shared withA52.
-No additional device write/phone trial started.
+Post-trial full root hash0f4bcaa7…312149 verified unchanged. Lossless var capture
+E:/A52-iOS16/var-after-v34/var.raw.gz, raw4GiB SHA256
+e0f75c92c3df4197dd8b5613ea684a1bce3d02d4d072f5716b9d75560c0eea38.
+Capture complete, compressed archive unchanged. /var genuinely changed on UFS.
+Persistent usermanagerd.log.0 shows ENOTSUP45 on BOTH usersession.kb and persona.kb;
+containermanagerd.log.0 reports no persona attributes after retries. The measured
+master usermanagerd SHA956fb139…b2fd48b7 contains %@.writing; its sole renamex_np
+callsite0x100063ad4 passes flags2. Exact source/header evidence, not Linux errno.
+Host working copy only was fsck repaired. Filesystem now passes fsck -fn.
+Repair changed active log/com.apple.xpc.launchd/launchd.log data (old raw hash
+preserved in archive); full before/after manifest diff proves every other regular
+file's data unchanged. systembag SHA d1db41b2…507f5656 unchanged, uid/gid0 mode0600.
+Repaired4GiB working image E:/A52-iOS16/storage-data-post-v34-v1/
+a52q-ios-var-post-v34.hfs.img SHA256
+e3bf9b044be68e406f4c6ed09fe42d56d5395133ac9cd16b70191af9863cbdf6.
+Runtime provenance is explicit; never claim this var still matches master contents.
+V35 HOST SOURCE READY, kernel compile/packaging next; no new phone write approved.
+Narrow HFS helper preserves original SWEET block, raw/root I/O and display code.
+Only usermanagerd usersession/persona .writing pairs, same directory, regular
+single-link files, actual proven writable var device, HFS + exact keybags path.
+Retains exchangedata MAC and read/write authorization; invokes actual VNOP_EXCHANGE
+and updates BOTH vnode cached identities. Unmatched/failed operations keep errors.
+A52A1 nonce/CRC records describe actual helper return, not daemon/GUI success.
+165 host tests, repo validation51tools, actual pinned kpi transform check PASS.
+Expected100 archive files:98 unchanged from V34; one var identity query and one
+new scoped VFS hook. All UFS read/write transport, display, keybag, root catalog
+and pstore implementations unchanged. Need full kernel build + candidate review.
+No further device operation until repaired-var replacement/rollback and next
+trial are concrete and approved. Do not reuse dirty initial var/header plan.
 
 # V34 HISTORICAL ACTIVE ENTRY (closed above)
 

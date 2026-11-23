@@ -33,6 +33,8 @@ static LCK_MTX_DECLARE(a52v_init_lock,&a52v_group);
 static vnode_t a52v_source;
 static int a52v_ready;
 static int a52v_writable;
+static dev_t a52v_device=NODEV;
+static uint64_t a52v_nonce;
 static uint64_t a52v_start;
 #define A52V_BYTES (4ULL<<30)
 struct a52v_wire { char spec[32],file[64],vfstype[32],mntops[64],type[32]; int32_t freq,passno; uint8_t unused[4]; };
@@ -97,6 +99,13 @@ static int a52v_size(dev_t dev) {return !a52v_ready || minor(dev) ? -1 : A52V_BY
 static const struct bdevsw a52v_bdevsw={.d_open=a52v_open,.d_close=a52v_close,.d_strategy=a52v_strategy,
     .d_ioctl=a52v_ioctl,.d_dump=eno_dump,.d_psize=a52v_size,.d_type=D_DISK};
 
+int a52q_var_atomic_context(dev_t,uint64_t *);
+int a52q_var_atomic_context(dev_t device,uint64_t *nonce)
+{
+    if (!nonce || !a52v_ready || !a52v_writable || device!=a52v_device || !a52v_nonce) return 0;
+    *nonce=a52v_nonce;return 1;
+}
+
 static int a52v_init(DTEntry node)
 {
     DTEntry root;uint64_t window[4],rw[4],nonce,root_nonce;uint32_t crc;
@@ -132,6 +141,7 @@ static int a52v_init(DTEntry node)
     a52v_start=window[2]*4096;a52v_source=source;
     int major_number=bdevsw_add(-1,&a52v_bdevsw);
     if (major_number<0) {error=ENXIO;goto fail;}
+    a52v_device=makedev(major_number,0);a52v_nonce=nonce;
     a52v_ready=1;
     if (!devfs_make_node(makedev(major_number,0),DEVFS_BLOCK,UID_ROOT,GID_OPERATOR,
         a52v_writable ? 0660 : 0440,"a52var0")) {
