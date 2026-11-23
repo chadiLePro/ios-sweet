@@ -1,3 +1,26 @@
+# V35 LIVE PHONE TRIAL; ORIGINAL BOOT RESTORATION PENDING
+
+BOOT07554ec9...36c40ca4 written/read back; native reboot left TWRP/USB.
+Approved repaired var e3bf9b04...863cbdf6 installed, root0f4b unchanged.
+Runtime var writes only sda31[16GiB,20GiB). Operator told five minutes, then
+manual TWRP reset and remain recovery. Authoritative receipt ios-ufs-v35.
+Restoration watcher PID11052 active: watch_ios_ufs_v35_restore.py.
+Collects pstore and restores/hash checks original BOOT on recovery return.
+BOOT restore does not undo var writes. Do not start another trial.
+ON RETURN: confirm original BOOT restored FIRST; finish_hfs_atomic_trial.py
+for fresh protected hashes and nonce/CRC traces. Then capture_var_v35_after.py
+for fullroot hash/lossless changed-var snapshot. Old var plan cannot be reused.
+Persona completion and visible lock screen remain unverified.
+
+# V35 repaired var installed and verified; BOOT trial staging
+
+Approved repaired4GiB e3bf9b04…863cbdf6 installed and full readback passed.
+Root0f4b plus original BOOT/recovery/DTBO/vbmeta hashes unchanged.
+Installer receipt ios-hfs-atomic-var-install-v1 verified=true/runtime_write_approved=true.
+Starting start_hfs_atomic_trial.py --operator-ready --approved-var-runtime.
+No experiment running until recovery departure confirmed; then 5-minute timer/reset.
+Watcher ios-ufs-v35 restores original BOOT on TWRP, does not undo var changes.
+
 # V35 EXACT VAR/TRIAL APPROVED; installation starting
 
 User approved repaired4GiB var e3bf9b04…863cbdf6 replacement and bounded runtime
