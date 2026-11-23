@@ -1,20 +1,26 @@
 # V33 CLOSED: original BOOT restored and freshly hash-verified
 
 V34 HOST WORK IN PROGRESS, NOT authorized for installation/runtime writes.
-Source adds a default-OFF bounded /var-only writer, separate from existing raw
-and root read paths. Same DMA pool/mutex, no clock/reset or display changes.
-Explicit ADT extent/nonce/header + boot flag required; identical first-block
-rewrite + cache sync + byte readback must pass before publishing writable var.
-No arbitrary CDB API. Native actual byte-loop tests cover partial-block retention,
-boundaries, overflow, root exclusion and fault/residual propagation. Payload tests
-reject missing/mutated/undeclared write capabilities.160 host tests,50-tool
-repository validation and diff checks pass. Full XNU compile/packaging pending.
-Host scaffold image1b8fd88a…ec5ff18 remains uninstalled; installed var6f30…75f9 RO.
-Need concrete separate approval before replacing /var or enabling runtime writes.
-Initial header/hash pins deliberately fail closed after first RW boot; capture
-and fsck the changed var before planning a later boot. BOOT rollback cannot undo
-runtime var changes. Existing6f30 image is exact off-phone rollback, freshly
-matched to device before V33. No next phone action yet.
+Source93f5b4a27867f5ae602004485f1fdb214b2210c2; full HFS45204813380 BUILDING;
+host CI45204812425 SUCCESS,160 local tests and repository validation PASS.
+Pipeline research/finish_var_write_artifacts.py session68279, log
+research/var-write-v34-build-package.log. New kernel default-OFF var writer uses
+same DMA pool/mutex, unchanged existing read body, raw/root nodes still RO.
+Explicit ADT extent/nonce/header and boot flag required. Identical first-block
+rewrite/cache sync/full readback required before publishing writable var.
+99 expected archive hashes:94 unchanged from V33,2 changed(ufs include/comment,
+data proxy),3 new isolated files. Display, keybag, root catalog and pstore code
+unchanged. Host-only hardware package-v32, root plan29; not yet verified/ready.
+Fresh device root/var hashes and exact off-phone rollback match, recorded
+E:/A52-iOS16/var-pre-v34-hashes.json. Existing var6f30…75f9 still RO; host seed
+1b8fd88a…ec5ff18 uninstalled. No new write or trial approved/performed.
+Separate installer research/a52q_install_container_var.py and trial backend
+research/a52q_var_write_device_test.py prepared but not invoked. BOOT-only backend
+explicitly rejects every writable-var payload. Need full package independent
+check + install/rollback review + exact initial-write AND runtime-write approval.
+Initial header/hash pins deliberately fail closed after first RW boot. Capture
+and fsck changed var before planning a later boot; BOOT rollback cannot undo var
+changes. Preserve existing6f30 rollback, master root and source images.
 
 research/finish_exception_trial.py PASS; fresh BOOT/recovery/DTBO/vbmeta hashes
 match. No pending restoration. Console262132 bytes SHA256
