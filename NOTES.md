@@ -1,26 +1,35 @@
 # V33 CLOSED: original BOOT restored and freshly hash-verified
 
-V34 HOST WORK IN PROGRESS, NOT authorized for installation/runtime writes.
-Source93f5b4a27867f5ae602004485f1fdb214b2210c2; full HFS45204813380 BUILDING;
-host CI45204812425 SUCCESS,160 local tests and repository validation PASS.
-Pipeline research/finish_var_write_artifacts.py session68279, log
-research/var-write-v34-build-package.log. New kernel default-OFF var writer uses
-same DMA pool/mutex, unchanged existing read body, raw/root nodes still RO.
-Explicit ADT extent/nonce/header and boot flag required. Identical first-block
-rewrite/cache sync/full readback required before publishing writable var.
-99 expected archive hashes:94 unchanged from V33,2 changed(ufs include/comment,
-data proxy),3 new isolated files. Display, keybag, root catalog and pstore code
-unchanged. Host-only hardware package-v32, root plan29; not yet verified/ready.
-Fresh device root/var hashes and exact off-phone rollback match, recorded
-E:/A52-iOS16/var-pre-v34-hashes.json. Existing var6f30…75f9 still RO; host seed
-1b8fd88a…ec5ff18 uninstalled. No new write or trial approved/performed.
-Separate installer research/a52q_install_container_var.py and trial backend
-research/a52q_var_write_device_test.py prepared but not invoked. BOOT-only backend
-explicitly rejects every writable-var payload. Need full package independent
-check + install/rollback review + exact initial-write AND runtime-write approval.
-Initial header/hash pins deliberately fail closed after first RW boot. Capture
-and fsck changed var before planning a later boot; BOOT rollback cannot undo var
-changes. Preserve existing6f30 rollback, master root and source images.
+V34 HOST READY; new var install/runtime writes NOT APPROVED. No V34 phone action.
+Source93f5b4a27867f5ae602004485f1fdb214b2210c2; full HFS45204813380 SUCCESS;
+host CI45204812425 SUCCESS;160 tests/repo validation PASS.99 archived hashes
+verified;94 unchanged from V33,2 prior units changed(ufs include/comment and
+var proxy),3 new isolated write files. Existing read body byte-identical excluding
+new include/comment. Root/raw devices remain RO. Display/keybag/catalog/pstore
+sources unchanged. Default-OFF capability requires extent/nonce/header/bootarg
+and identical-block write/sync/readback. No arbitrary command API or clock/reset.
+BOOT2b032071733270dccfa549ca30249cec7161988bfb9275c214ccd6947d301072.
+Kerneldefacdd43940f2795ca2b627ff7a31e5b1601ee47e6680cd8a3c48faa109dbaf.
+Exact-kernel QEMU diagnostic RAM-root fixture13 PID1 hearts/3 entry CRCs passed;
+NOT hardware write or Apple-userland emulation. Master16GiB rehashed unchanged.
+Package shim/out/a52q-ios-ufs-hardware-v32, root plan29, checked independently.
+Review E:/A52-iOS16/var-write-v34-full-review.json and candidate/install JSONs.
+Fresh root/var and off-phone rollback match: var-pre-v34-hashes.json. New seed
+1b8fd88a…ec5ff18 still UNINSTALLED. Current var6f30…75f9 is RO/original BOOT.
+Initial var target sda31[17179869184,21474836480), replacing4GiB; new kernel would
+permit runtime writes ONLY there. No GPT/root/metadata/recovery/DTBO/vbmeta writes.
+Need exact approval for both initial seed replacement and bounded runtime writes,
+plus operator readiness before temporary BOOT trial. BOOT restoration alone does
+not undo var changes. Exact old6f30 image is verified off-phone var rollback.
+Private scripts prepared/syntax checked but NOT RUN: a52q_install_container_var.py,
+a52q_var_write_device_test.py, start_var_write_trial.py(two explicit readiness/
+var-approval flags), watch_ios_ufs_v34_restore.py, finish_var_write_trial.py,
+capture_var_v34_after.py. Existing BOOT-only backend rejects writable payloads.
+After an approved trial: BOOT restore FIRST, capture pstore and fresh protected
+hashes, full-root hash + lossless changed-var snapshot, then host fsck before
+planning any next boot. Initial var header/hash pins deliberately fail closed
+after writes; refresh from verified snapshot only. Do not reuse old var plan.
+No visible GUI or writable-filesystem hardware result claimed yet.
 
 research/finish_exception_trial.py PASS; fresh BOOT/recovery/DTBO/vbmeta hashes
 match. No pending restoration. Console262132 bytes SHA256
