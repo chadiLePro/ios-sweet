@@ -1,3 +1,13 @@
+# V35 EXACT VAR/TRIAL APPROVED; installation starting
+
+User approved repaired4GiB var e3bf9b04…863cbdf6 replacement and bounded runtime
+writes ONLY sda31[17179869184,21474836480), plus BOOT07554ec9…36c40ca4
+on sda19[0,100663296), five-minute trial/operator beside phone.
+Raw rollbackE0 verified gzip preserved; root/protected hashes checked by installer.
+No trial started yet. Installer receipt ios-hfs-atomic-var-install-v1 authoritative.
+After verified install, start_hfs_atomic_trial.py --operator-ready --approved-var-runtime;
+only after confirmed USB departure start timer; watcher restores original BOOT.
+
 # V34 CLOSED: original BOOT restored and freshly hash-verified
 
 research/finish_var_write_trial.py PASS, fresh BOOT/recovery/DTBO/vbmeta hashes
