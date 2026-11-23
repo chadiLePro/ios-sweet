@@ -1,3 +1,16 @@
+# V34 EXACT STORAGE/TRIAL APPROVED; initial var installation starting
+
+User approved new4GiB seed1b8fd88a…6ec5ff18 + runtime writes only within
+sda31[17179869184,21474836480) and BOOT2b032071…7d301072 on sda19[0,100663296).
+Operator confirms beside phone for5-minute reset. No other partition/range/format.
+Original BOOT currently restored. Root0f4b and rollback var6f30 freshly verified.
+Installer research/a52q_install_container_var.py install --approved-exact-var-write
+--approved-var-runtime about to run. Receipt backup/a52q/ios-container-var-install-v1/
+receipt.json is authoritative for initial /var write and rollback status.
+Only after full var readback/root/protected checks pass launch V34 BOOT trial.
+If interrupted, stay TWRP; recover approved same var range from6f30 backup.
+BOOT watcher restores BOOT only. Changed var remains on UFS for snapshot/fsck.
+
 # V33 CLOSED: original BOOT restored and freshly hash-verified
 
 V34 HOST READY; new var install/runtime writes NOT APPROVED. No V34 phone action.
