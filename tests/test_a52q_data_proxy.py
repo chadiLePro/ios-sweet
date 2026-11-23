@@ -28,6 +28,11 @@ typedef int64_t off_t;
 struct testbuf {uint32_t count,resid;int64_t block;int flags,error,done;char *data;};
 typedef struct testbuf *buf_t;
 static int a52v_ready=1,a52v_source=1,kernproc=0,calls,get_error,read_error,bad_residual;
+static int a52v_writable,write_calls,write_error;
+static uint32_t written;
+static int a52q_ufs_var_write(uint64_t offset,const uint8_t *p,uint32_t bytes,uint32_t *done){
+ assert(offset==512 && p && bytes==512);++write_calls;*done=written;return write_error;
+}
 static uint64_t a52v_start=(uint64_t)7360000*4096,last_offset;
 static uint32_t buf_count(buf_t b){return b->count;}
 static daddr64_t buf_blkno(buf_t b){return b->block;}
@@ -74,6 +79,15 @@ int main(void){
  assert(b.error==EIO && b.resid==512);
  b=(struct testbuf){512,0,0,B_READ,0,0,memory+1};bad_residual=0;get_error=EIO;before=calls;a52v_strategy(&b);
  assert(b.error==EIO && b.resid==512 && calls==before);
+ a52v_writable=1;written=512;
+ b=(struct testbuf){512,0,1,0,0,0,memory+1};a52v_strategy(&b);
+ assert(!b.error && !b.resid && write_calls==1 && calls==before);
+ written=256;write_error=EIO;
+ b=(struct testbuf){512,0,1,0,0,0,memory+1};a52v_strategy(&b);
+ assert(b.error==EIO && b.resid==256 && write_calls==2);
+ written=513;write_error=0;
+ b=(struct testbuf){512,0,1,0,0,0,memory+1};a52v_strategy(&b);
+ assert(b.error==EIO && b.resid==512 && write_calls==3);
  return 0;
 }
 """
@@ -107,7 +121,7 @@ int main(void){
         fake=r"""
 typedef int DTEntry;
 #define kSuccess 0
-static int a52v_ready=1,a52v_init_lock;
+static int a52v_ready=1,a52v_init_lock,a52v_writable;
 static int SecureDTLookupEntry(void *parent,const char *path,DTEntry *node) {
  assert(!parent && !strcmp(path,"/a52q-ufs-var"));*node=1;return var_enabled ? kSuccess : -1;
 }
@@ -125,6 +139,10 @@ static int a52v_init(DTEntry node){(void)node;assert(!"ready proxy must not reop
     int32_t rootpass,varpass;
     memcpy(&rootpass,both+0xe4,4);memcpy(&varpass,both+236+0xe4,4);
     assert(rootpass==1 && varpass==2);
+    assert(!strcmp((char *)both+236+128,"ro"));
+    a52v_writable=1;paired.oldidx=0;
+    assert(a52q_sysctl_edt_fstab(&paired)==0 && paired.oldidx==472);
+    assert(!memcmp(both,bytes,236));assert(!strcmp((char *)both+236+128,"rw"));
     /* Target mount.c: if (passno && fs->fs_passno != passno) continue.
      * Regression: pass 0 is selected by neither mount -P 1 nor mount -P 2. */
     for(int phase=1;phase<=2;phase++) {

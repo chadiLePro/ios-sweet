@@ -1,8 +1,10 @@
-/* A52 UFS kernel selftest and read-only disk: no write CDB, clocks or reset.
+/* A52 UFS kernel selftest and read-only disk: no clocks or reset.
  * Enabled ONLY by the evidence-bound /a52q-ufs-selftest ADT node. Uses the exact
  * packet helpers validated by the independent physical shim experiment.
  * The shim's DMA address contains the loaded kernel now: allocate NEW wired,
  * contiguous kernel RAM and maintain its caches explicitly instead.
+ * A separately gated /var-only writer is included below; the selftest and
+ * existing raw/root read paths do not issue write commands.
  */
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -131,6 +133,7 @@ static int a52u_transfer(unsigned opcode, uint32_t lba, unsigned bytes)
 }
 
 #include "a52q_ufs_disk.c"
+#include "a52q_ufs_var_write.c"
 
 void a52q_ufs_selftest(void);
 void a52q_ufs_selftest(void)

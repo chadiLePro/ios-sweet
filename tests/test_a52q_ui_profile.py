@@ -71,6 +71,26 @@ class UIProfileTests(unittest.TestCase):
         defaults.props[-1]=('no-effaceable-storage',0,struct.pack('<I',0))
         with self.assertRaises(ValueError):check()
         defaults.props[-1]=('no-effaceable-storage',0,struct.pack('<I',1))
+        from test_a52q_persistent_data import PersistentDataTests
+        from a52q_persistent_data import adt_node as var_node,write_adt_node
+        var=PersistentDataTests();var.setUp();cfg['var_plan']=var.plan
+        vn=var_node(var.plan,base.config,base.ufs['nonce']);tree.children.append(vn)
+        check()  # Existing RO data-node behavior is unchanged.
+        cfg['var_write_development']=True
+        with self.assertRaisesRegex(ValueError,'var-write'):check()
+        readonly_cmd=cmd;cmd+=b' a52qvarwrite=1'
+        data[0x48:0x2a8]=cmd+bytes(608-len(cmd))
+        with self.assertRaisesRegex(ValueError,'var-write'):check()
+        wn=write_adt_node(var.plan,base.config,base.ufs['nonce']);tree.children.append(wn)
+        check();self.assertFalse(var.plan['write_approved'])  # A package is not phone approval.
+        original=wn.props[1];wn.props[1]=('ufs-nonce',0,struct.pack('<Q',82))
+        with self.assertRaisesRegex(ValueError,'var-write'):check()
+        wn.props[1]=original;check()
+        del cfg['var_write_development']
+        with self.assertRaisesRegex(ValueError,'undeclared development var writes'):check()
+        tree.children.remove(wn);cmd=readonly_cmd
+        data[0x48:0x2a8]=cmd+bytes(608-len(cmd));check()
+        tree.children.remove(vn);del cfg['var_plan'];check()
         cfg['text_console']=True
         with self.assertRaises(ValueError):check()
         cmd+=b' a52q_text_console=1';data[0x48:0x2a8]=cmd+bytes(608-len(cmd));check()

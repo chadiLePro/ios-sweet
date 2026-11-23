@@ -175,5 +175,19 @@ def adt_node(config, root, nonce):
         ('ufs-nonce',u64(nonce)),('header-crc32',u32(config['header_crc32']))])
 
 
+def write_adt_node(config, root, nonce):
+    """Request a bounded development capability; this is NOT phone approval.
+
+    The installer separately requires review of the exact image/range and its
+    rollback copy. Kernel activation also needs a52qvarwrite=1 and readback.
+    """
+    validate_config(config, root)
+    if type(nonce) is not int or not 0 < nonce < 1 << 64:
+        raise ValueError('invalid write-capability UFS nonce')
+    from mkadt import node, u32, u64
+    return node('a52q-var-write-development',[('window',u64(*config['window'])),
+        ('ufs-nonce',u64(nonce)),('header-crc32',u32(config['header_crc32']))])
+
+
 if __name__ == '__main__':
     main()

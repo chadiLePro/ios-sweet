@@ -1,5 +1,21 @@
 # V33 CLOSED: original BOOT restored and freshly hash-verified
 
+V34 HOST WORK IN PROGRESS, NOT authorized for installation/runtime writes.
+Source adds a default-OFF bounded /var-only writer, separate from existing raw
+and root read paths. Same DMA pool/mutex, no clock/reset or display changes.
+Explicit ADT extent/nonce/header + boot flag required; identical first-block
+rewrite + cache sync + byte readback must pass before publishing writable var.
+No arbitrary CDB API. Native actual byte-loop tests cover partial-block retention,
+boundaries, overflow, root exclusion and fault/residual propagation. Payload tests
+reject missing/mutated/undeclared write capabilities.160 host tests,50-tool
+repository validation and diff checks pass. Full XNU compile/packaging pending.
+Host scaffold image1b8fd88a…ec5ff18 remains uninstalled; installed var6f30…75f9 RO.
+Need concrete separate approval before replacing /var or enabling runtime writes.
+Initial header/hash pins deliberately fail closed after first RW boot; capture
+and fsck the changed var before planning a later boot. BOOT rollback cannot undo
+runtime var changes. Existing6f30 image is exact off-phone rollback, freshly
+matched to device before V33. No next phone action yet.
+
 research/finish_exception_trial.py PASS; fresh BOOT/recovery/DTBO/vbmeta hashes
 match. No pending restoration. Console262132 bytes SHA256
 2d812dbc08a8edc3f48848d9ffcb7a994c8a40b3d795652fcd572e24779885bf.

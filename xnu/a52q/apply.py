@@ -94,6 +94,8 @@ def apply(root, filesystem='mockfs'):
     changes['bsd/dev/a52q_ufs.c'] = (HERE / 'a52q_ufs.c').read_text()
     changes['bsd/dev/a52q_data_proxy.c']=(HERE/'a52q_data_proxy.c').read_text()
     changes['bsd/dev/a52q_var_bounds.h']=(HERE/'a52q_var_bounds.h').read_text()
+    for name in ('a52q_ufs_var_write.c','a52q_var_write_protocol.h','a52q_var_write_plan.h'):
+        changes['bsd/dev/'+name]=(HERE/name).read_text()
     replace('bsd/conf/files', 'bsd/dev/sweet_ufs.c\t\t\tstandard\n',
             'bsd/dev/sweet_ufs.c\t\t\tstandard\nbsd/dev/a52q_data_proxy.c\t\tstandard\n')
     changes['bsd/dev/a52q_display.c'] = (HERE / 'a52q_display.c').read_text()

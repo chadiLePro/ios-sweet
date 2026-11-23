@@ -27,6 +27,8 @@ def validate_config(config):
         raise ValueError('invalid logical display scale')
     if 'abort_reason' in config and config['abort_reason'] is not True:
         raise ValueError('invalid opt-in abort-reason probe')
+    if 'var_write_development' in config and (config['var_write_development'] is not True or not config.get('var_plan')):
+        raise ValueError('development var writes need an explicit persistent var plan')
 
 
 def configuration(build,console,kernel_sha256,root_sha256):

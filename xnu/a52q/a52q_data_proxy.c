@@ -1,5 +1,6 @@
-/* Separate READ-ONLY /var proxy over the existing /dev/ra52ufs0 reader.
- * No UFS transport/root-window changes, no SCSI writes or new DMA mapping.
+/* Separate /var proxy over the existing /dev/ra52ufs0 reader.
+ * Read-only unless the additional development-write capability/probe passes.
+ * Raw/root devices remain read-only. No reset, clock or new DMA mapping.
  */
 #if defined(ARM64_BOARD_CONFIG_A52Q)
 #include <sys/param.h>
@@ -24,10 +25,14 @@
 extern dev_t chrtoblk(dev_t);
 extern int a52q_ufs_root_named(const char *);
 extern int a52q_ufs_rootdev(dev_t *);
+extern int a52q_ufs_var_enable(const uint64_t [4],uint64_t,uint32_t,int *);
+extern int a52q_ufs_var_write(uint64_t,const uint8_t *,uint32_t,uint32_t *);
+extern int a52q_ufs_var_sync(void);
 static LCK_GRP_DECLARE(a52v_group,"a52q_var_proxy");
 static LCK_MTX_DECLARE(a52v_init_lock,&a52v_group);
 static vnode_t a52v_source;
 static int a52v_ready;
+static int a52v_writable;
 static uint64_t a52v_start;
 #define A52V_BYTES (4ULL<<30)
 struct a52v_wire { char spec[32],file[64],vfstype[32],mntops[64],type[32]; int32_t freq,passno; uint8_t unused[4]; };
@@ -39,19 +44,27 @@ static int a52v_property(DTEntry node,const char *name,void *out,unsigned bytes)
     memcpy(out,p,bytes);return 1;
 }
 static int a52v_open(dev_t dev,int flags,int type __unused,struct proc *p __unused)
-{ return !a52v_ready || minor(dev) ? ENXIO : flags&FWRITE ? EROFS : 0; }
+{ return !a52v_ready || minor(dev) ? ENXIO : (flags&FWRITE) && !a52v_writable ? EROFS : 0; }
 static int a52v_close(dev_t dev __unused,int flags __unused,int type __unused,struct proc *p __unused)
 { return 0; }
 static void a52v_strategy(buf_t bp)
 {
     uint32_t count=buf_count(bp);daddr64_t block=buf_blkno(bp);caddr_t destination=NULL;
     int error=0,residual=(int)count;buf_setresid(bp,count);
-    if (!(buf_flags(bp)&B_READ)) {error=EROFS;goto out;}
+    int reading=(buf_flags(bp)&B_READ)!=0;
+    if (!reading && !a52v_writable) {error=EROFS;goto out;}
     if (!a52v_ready || minor(buf_device(bp))) {error=ENXIO;goto out;}
     if (count>INT_MAX || block<0 || (uint64_t)block>UINT64_MAX/DEV_BSIZE ||
         !a52q_ufs_window_range(A52V_BYTES/4096,(uint64_t)block*DEV_BSIZE,count)) {error=EINVAL;goto out;}
     if (!count) goto out;
     if (buf_map(bp,&destination)) {error=EIO;goto out;}
+    if (!reading) {
+        uint32_t completed=0;
+        error=a52q_ufs_var_write((uint64_t)block*DEV_BSIZE,
+            (const uint8_t *)destination,count,&completed);
+        if (completed>count) {error=EIO;completed=0;}
+        buf_setresid(bp,count-completed);buf_unmap(bp);goto out;
+    }
     error=vnode_get(a52v_source);
     if (!error) {
         error=vn_rdwr(UIO_READ,a52v_source,destination,(int)count,
@@ -73,9 +86,10 @@ static int a52v_ioctl(dev_t dev,u_long command,caddr_t data,int flags __unused,s
     case DKIOCSETBLOCKSIZE: return *(uint32_t *)data==DEV_BSIZE ? 0 : EINVAL;
     case DKIOCGETPHYSICALBLOCKSIZE: *(uint32_t *)data=4096;return 0;
     case DKIOCGETBLOCKCOUNT: *(uint64_t *)data=A52V_BYTES/DEV_BSIZE;return 0;
-    case DKIOCISWRITABLE: *(uint32_t *)data=0;return 0;
+    case DKIOCISWRITABLE: *(uint32_t *)data=a52v_writable ? 1 : 0;return 0;
     case DKIOCGETMAXBLOCKCOUNTREAD: *(uint64_t *)data=4096/DEV_BSIZE;return 0;
-    case DKIOCGETMAXBLOCKCOUNTWRITE: *(uint64_t *)data=0;return 0;
+    case DKIOCGETMAXBLOCKCOUNTWRITE: *(uint64_t *)data=a52v_writable ? 4096/DEV_BSIZE : 0;return 0;
+    case DKIOCSYNCHRONIZECACHE:return a52v_writable ? a52q_ufs_var_sync() : 0;
     default:return ENOTTY;
     }
 }
@@ -113,15 +127,19 @@ static int a52v_init(DTEntry node)
     }
     kfree_data(header,4096);
     if (error || residual || (found^0xffffffffU)!=crc) {if (!error) error=EIO;goto fail;}
+    error=a52q_ufs_var_enable(window,nonce,crc,&a52v_writable);
+    if (error) goto fail;
     a52v_start=window[2]*4096;a52v_source=source;
     int major_number=bdevsw_add(-1,&a52v_bdevsw);
     if (major_number<0) {error=ENXIO;goto fail;}
     a52v_ready=1;
-    if (!devfs_make_node(makedev(major_number,0),DEVFS_BLOCK,UID_ROOT,GID_OPERATOR,0440,"a52var0")) {
+    if (!devfs_make_node(makedev(major_number,0),DEVFS_BLOCK,UID_ROOT,GID_OPERATOR,
+        a52v_writable ? 0660 : 0440,"a52var0")) {
         a52v_ready=0;bdevsw_remove(major_number,&a52v_bdevsw);error=ENXIO;goto fail;
     }
     vnode_put(source);
-    printf("A52Q var proxy: verified separate 4GiB UFS read-only extent; root unchanged\n");return 0;
+    printf("A52Q var proxy: verified separate 4GiB UFS %s extent; root unchanged\n",
+        a52v_writable ? "development-writable" : "read-only");return 0;
 fail:
     vnode_close(source,FREAD,ctx);vnode_put(source);return error;
 }
@@ -134,8 +152,9 @@ int a52q_data_fstab(struct sysctl_req *req)
     lck_mtx_unlock(&a52v_init_lock);
     if (error) {printf("A52Q var proxy: publication rejected error=%d\n",error);return error;}
     /* iOS mount -P 2 selects NONROOT_PASSNO exactly. Zero skips BOTH phases. */
-    struct a52v_wire entry={.spec="/dev/a52var0",.file="/private/var",.vfstype="hfs",.mntops="ro",
-        .type="ro",.passno=2};
+    struct a52v_wire entry={.spec="/dev/a52var0",.file="/private/var",.vfstype="hfs",.passno=2};
+    entry.mntops[0]=entry.type[0]='r';
+    entry.mntops[1]=entry.type[1]=a52v_writable ? 'w' : 'o';
     return SYSCTL_OUT(req,&entry,sizeof(entry));
 }
 #endif

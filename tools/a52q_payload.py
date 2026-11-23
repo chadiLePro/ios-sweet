@@ -138,6 +138,9 @@ def make_adt(base, total, gic, frequency, intid, mpidr, seed=None, ufs_test=None
         if development_ui_profile.get('var_plan'):
             from a52q_persistent_data import adt_node as var_node
             result.children.append(var_node(development_ui_profile['var_plan'],ufs_root,ufs_test['nonce']))
+        if development_ui_profile.get('var_write_development') is True:
+            from a52q_persistent_data import write_adt_node
+            result.children.append(write_adt_node(development_ui_profile['var_plan'],ufs_root,ufs_test['nonce']))
         next(n for n in result.children if n.name=='arm-io').children.append(display_node())
         next(n for n in result.children if n.name=='defaults').props.append(('no-effaceable-storage',0,u32(1)))
     return result
@@ -330,6 +333,15 @@ def validate_payload(data, manifest):
             raise ValueError('persistent var node differs from reviewed RO extent')
     elif var_nodes:
         raise ValueError('undeclared persistent var extent')
+    write_nodes=[n for n in tree.children if n.name=='a52q-var-write-development']
+    write_flags=[v for v in command if v.startswith(b'a52qvarwrite=')]
+    if ui and ui.get('var_write_development') is True:
+        from a52q_persistent_data import write_adt_node
+        if (not var_plan or write_flags!=[b'a52qvarwrite=1'] or len(write_nodes)!=1 or
+            adt.serialize(write_nodes[0])!=adt.serialize(write_adt_node(var_plan,ios_root,ufs_test['nonce']))):
+            raise ValueError('development var-write capability/flag/extent mismatch')
+    elif write_flags or write_nodes:
+        raise ValueError('undeclared development var writes')
     if ios_root and any(v.startswith((b'cs_enforcement_disable=', b'amfi_allow_any_signature=',
                                       b'amfi_get_out_of_my_way=')) for v in command):
         raise ValueError('full-root allowlist testing must retain signature enforcement')
@@ -455,6 +467,7 @@ def main():
     p.add_argument('--development-var-plan',type=Path,help='planned separate RO var extent; installation needs new explicit approval')
     p.add_argument('--text-console',action='store_true',help='opt-in bitmap mirror of the existing console; requires guarded hardware UI profile')
     p.add_argument('--abort-reason',action='store_true',help='opt-in bounded backboardd exception-text probe')
+    p.add_argument('--writable-var-development',action='store_true',help='request bounded persistent var writes; separate device approval required')
     p.add_argument('--qemu-dtb', type=Path, help='QEMU-generated virt DTB; makes a payload that phone packaging rejects')
     p.add_argument('--qemu-diagnostic', type=Path, help='matching QEMU loader diagnostic result with measured CNTFRQ')
     p.add_argument('--qemu-lowmem', action='store_true',
@@ -603,6 +616,10 @@ def main():
             validate_var(var_plan,ufs_root)
             if not var_plan.get('seed_files'):raise ValueError('development var lacks reviewed keybag metadata seed')
             ui_profile['var_plan']=var_plan
+        if a.writable_var_development:
+            if ui_profile is None or not ui_profile.get('var_plan') or b'A52W1 ' not in kernel:
+                raise ValueError('var writes need the guarded full-root profile, var extent and compiled bounded writer')
+            ui_profile['var_write_development']=True
         tree_path = a.out.with_suffix('.adt')
         tree_path.write_bytes(adt.serialize(make_adt(base, total, gic, hz, intid, mpidr,
             ufs_test=ufs_test, display_test=display_test, ufs_root=ufs_root, local_boot_manifest=local_manifest, development_ui_profile=ui_profile)))
@@ -614,7 +631,8 @@ def main():
                                        (' cs_debug=2' if a.ios_codesign_debug else '') +
                                        (' a52q_dev_keybag=1 a52q_ui=1' if ui_profile else '')+
                                        (' a52q_text_console=1' if a.text_console else '')+
-                                       (' a52qscan=backboardd' if a.abort_reason else ''),
+                                       (' a52qscan=backboardd' if a.abort_reason else '')+
+                                       (' a52qvarwrite=1' if a.writable_var_development else ''),
                                        ramdisk_path=str(root_path) if root_path else None)
         report = {'target': 'A52Q', 'status': 'bootstrap payload; physical RAM access not yet verified',
                   'environment': environment,
