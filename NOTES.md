@@ -1,19 +1,27 @@
 # V32 CLOSED, original BOOT restored and independently hash-verified
 
 USER AWAY. Host work only; no new device write or reboot until operator returns.
-V33 diagnostic review found a prefix-deduplication bug: a more specific exception
-reason with the same first95 bytes could be dropped. Removed the redundant prefix
-filter; a native test runs the transformed upstream observer and proves rank1 ->
-rank3 retention, default-off behavior and process filtering. All158 host tests,
-repository validation and diff checks pass. Prior45046034548 cancelled, host
-pipeline stopped; corrected full HFS build must replace it before packaging.
-Uninstalled directory scaffold is host-only; no new /var write is authorized.
-V33 kernel source58477e06c80385ae59ba8babfc98f507fe9ad819 building in full HFS
-45046034548. Host CI45046033239 passed156tests. Pipeline
-research/finish_exception_artifacts.py session68762, log
-research/exception-v33-build-package.log. New hardware package-v31/root plan28.
-Host check/review must finish; no V33 launcher prepared and backend remains on
-old plan27 until user returns.
+V33 HOST READY; not installed. Corrected source1128ab2cec1e105f5d886881d42b7646b1e3c111.
+Full HFS45047062452 SUCCESS; host CI45047062194 SUCCESS; local158 tests and
+repository validation PASS. All96 archived source hashes verified; only compiled
+osfmk/kern/exception.c differs from V32 (other95 unchanged). Exact-kernel QEMU
+HFS diagnostic fixture passed3 CRC entry copies and13 PID1 hearts, signing1/1.
+This is not Apple userland/Samsung emulation. Master16GiB rehash passed.
+BOOT dfc436315aedb1fa3e0f5c4f3cc87eaf199b454786a537522fa769eca88e50f1.
+Kernel0aa2a060c5c29d1d4de8ca5f2a06c5311ff91f3ed50b86d88a6c3e37e37ddb4f.
+Independent check_exception_candidate.py PASS. Review:
+E:/A52-iOS16/exception-v33-host-review.json; candidate JSON beside it.
+Package shim/out/a52q-ios-ufs-hardware-v31, root plan28. Pipeline completed.
+Launcher research/start_exception_trial.py requires --operator-ready, prepared
+but NOT RUN. Watcher research/watch_ios_ufs_v33_restore.py prepared. Backend
+has explicit abort-reason flag; intentionally still pinned to old plan27. Before
+installing, after operator confirms beside phone, update backend to reviewed plan28,
+re-run candidate check and only then launch. User last said away; latest continue
+alone does not establish button-reset availability. No new /var write approved.
+Earlier45046034548 was cancelled: prefix deduplication could drop more-specific
+text sharing first95 bytes. Corrected and native tested against upstream observer.
+Source lookup also confirms a null cache path skips both Metal shader-cache
+setters. Do not blame Metal/dirs alone without exception evidence.
 
 Host-only container-directory scaffold prepared in
 E:/A52-iOS16/storage-data-container-scaffold-v1/a52q-ios-var-containers.hfs.img,
@@ -32,7 +40,7 @@ when a52qscan=backboardd is explicitly enabled, and retains only the targeted
 NSInvalidArgument/container/nil-path text. Higher-specificity matches replace
 generic ones in late slot7. Raw strings are observations, not proof of an active
 exception object. UI/UFS/keybag/catalog sources are unchanged.
-156 host tests and repo validation pass; full kernel build is next.
+158 host tests and repository validation pass; corrected full build and host packaging passed.
 
 V32 receipt restored=true/pending=false; fresh BOOT/recovery/DTBO/vbmeta hashes
 match. Strict stack decoder found no record, but a complete body in late slot7
