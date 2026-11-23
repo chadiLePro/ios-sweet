@@ -1,3 +1,32 @@
+# V34 ACTIVE: original BOOT restoration PENDING
+
+Initial approved var install verified1b8fd88a…6ec5ff18, full root/protected hashes
+unchanged before trial. BOOT2b032071…7d301072 installed and fully read back;
+Samsung normal-boot reboot left TWRP/USB, confirmed. C: watcher PID12912 active,
+research/watch_ios_ufs_v34_restore.py. Authoritative BOOT receipt
+backup/a52q/ios-ufs-v34/receipt.json requires_restore=true, restored=false.
+Operator told five full minutes from confirmed start, then manual TWRP reset;
+if recovery returns by itself leave it open. Do not select System/format data.
+Runtime var writes approved ONLY within sda31[17179869184,21474836480).
+ON RETURN: confirm watcher BOOT restoration/full hash FIRST; then
+research/finish_var_write_trial.py for fresh protected hashes and A52W1/A52EX1/
+backtrace records. Next research/capture_var_v34_after.py verifies full root
+unchanged and captures lossless compressed changed var in E:/A52-iOS16/var-after-v34.
+Do not reuse initial var/header plan after writes. Preserve snapshot; host fsck
+needed before next plan. BOOT restoration does not undo /var changes.
+No hardware WRITE probe, mounted-RW var or visible GUI result claimed yet.
+
+# V34 VAR INSTALLED/VERIFIED; BOOT trial staging next
+
+Exact approved4GiB var seed installed/read back1b8fd88a…6ec5ff18. Full root0f4b
+and original BOOT/recovery/DTBO/vbmeta preservation checks passed. Receipt
+backup/a52q/ios-container-var-install-v1/receipt.json verified=true and
+runtime_write_approved=true. New var installed, no experimental kernel started yet.
+Starting guarded research/start_var_write_trial.py --operator-ready
+--approved-var-runtime. Target BOOT2b032071…7d301072. Only when recovery departure
+confirmed tell operator five minutes, then manual TWRP reset. Original BOOT watcher
+will start if receipt requires_restore. Authoritative BOOT receipt ios-ufs-v34.
+
 # V34 EXACT STORAGE/TRIAL APPROVED; initial var installation starting
 
 User approved new4GiB seed1b8fd88a…6ec5ff18 + runtime writes only within
