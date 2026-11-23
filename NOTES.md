@@ -28,19 +28,34 @@ Repaired4GiB working image E:/A52-iOS16/storage-data-post-v34-v1/
 a52q-ios-var-post-v34.hfs.img SHA256
 e3bf9b044be68e406f4c6ed09fe42d56d5395133ac9cd16b70191af9863cbdf6.
 Runtime provenance is explicit; never claim this var still matches master contents.
-V35 HOST SOURCE READY, kernel compile/packaging next; no new phone write approved.
-Narrow HFS helper preserves original SWEET block, raw/root I/O and display code.
-Only usermanagerd usersession/persona .writing pairs, same directory, regular
-single-link files, actual proven writable var device, HFS + exact keybags path.
-Retains exchangedata MAC and read/write authorization; invokes actual VNOP_EXCHANGE
-and updates BOTH vnode cached identities. Unmatched/failed operations keep errors.
-A52A1 nonce/CRC records describe actual helper return, not daemon/GUI success.
-165 host tests, repo validation51tools, actual pinned kpi transform check PASS.
-Expected100 archive files:98 unchanged from V34; one var identity query and one
-new scoped VFS hook. All UFS read/write transport, display, keybag, root catalog
-and pstore implementations unchanged. Need full kernel build + candidate review.
-No further device operation until repaired-var replacement/rollback and next
-trial are concrete and approved. Do not reuse dirty initial var/header plan.
+V35 HOST READY, NOT APPROVED for repaired-var replacement/next trial.
+Sourceb1eff6906bcd5877b570db9f731f879a7a48e873. Full HFS45218319183 SUCCESS;
+host CI45218321263 SUCCESS on retry(package mirror timeout only on first attempt;
+source tests passed).165 tests/repo validation PASS.100 archived hashes verified.
+98 prior files unchanged; only var identity query + new scoped VFS hook. Actual
+UFS transport, display, keybag, catalog2786 and pstore implementations unchanged.
+BOOT07554ec9da6c3682bcf6b939f68d00fed5a735fb431d052c7ad8bc4c36c40ca4.
+Kernel08f15a32666b0cfdf3eb739f67893685c075a4c0a09a18811c13e4541807dfc9.
+Exact-kernel QEMU diagnostic13 PID1 hearts/3 entry CRCs and root master rehash PASS;
+not Apple-userland, HFS-exchange or A52 emulation. Hardwarepackage-v33/rootplan30.
+Independent check_hfs_atomic_candidate.py and installer prepare PASS. Review
+E:/A52-iOS16/hfs-atomic-v35-full-review.json plus candidate/install JSONs.
+Clean repaired var e3bf9b04…863cbdf6 remains HOST ONLY. Current phone var rawE0
+snapshot remains installed and original BOOT is restored; no next trial/write.
+New image changes metadata + active launchd.log only; all other file data/systembag
+preserved. Backup E:/A52-iOS16/var-after-v34/var.raw.gz is lossless raw4GiB E0.
+Host sourceN also archived repaired-source.raw.gz; verified NTFS sparse-zero
+reclamation keeps every logical byte/hash unchanged and frees room for next capture.
+Need exact replacement+runtime trial approval/readiness before sda31[16GiB,20GiB)
+write and temporary BOOT. BOOT-only backend rejects writable payloads. Prepared
+but NOT INVOKED: a52q_install_hfs_atomic_var.py, a52q_hfs_atomic_device_test.py,
+start_hfs_atomic_trial.py, watch_ios_ufs_v35_restore.py, finish_hfs_atomic_trial.py,
+capture_var_v35_after.py. New backend bound plan30 and matching install receipt.
+On approval initial installer verifies gzip raw backup, target/root/GPT/protected
+hashes; writes32 chunks, full readback/root preservation; only then BOOT trial.
+On return BOOT restoration first, then decoderA52A1/A52W1/A52EX1, root hash and
+lossless changed-var capture. Next kernel/var plan needs fresh snapshot/fsck.
+No on-phone atomic exchange/persona or GUI success claimed yet.
 
 # V34 HISTORICAL ACTIVE ENTRY (closed above)
 
