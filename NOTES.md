@@ -1,3 +1,30 @@
+# V39 COMBINED FULL-USERLAND CANDIDATE READY; NOT FLASHED
+
+No kernel/source changes: EXACT physically visible V38 kernel15185655...f4347dcb,
+sourcea222e26/run45442149929. Keeps V36 writable-var/HFS swap/persona/catalog2786/
+keybag/FIPS/pstore code, verified Device frame/physical IOSurface cache mapping.
+V36 var audit confirms personas99/199/100/200 allocated, notification errors8/9
+remain. Do not claim service/GUI success. Root16GiB0f4b physically rehashed PASS.
+Fresh exact4GiB var raw SHA7ef90e6ef2396f4b70922e3c2b5ff0308a7b8c60ed638a05fa0e53fc6ded72df,
+lossless device-hash checked var-after-v36/var.raw.gz preserved. Host copy fsck
+repaired METADATA ONLY; full regular-file manifests identical, systembag/timezone
+preserved. Repaired vardigest ded1696b4e2d2b77db9ad8b446e15768ba1cbbc6ecd041696c9e69b2dc631006.
+Correct runtime provenance: other_file_data_preserved=true, repair_changed_files={}.
+BOOT2bc28fb2629939c39206f06675b05eb74bbd480895ada8eda70aac083a4e2319,
+shim/out/a52q-full-userland-v39/build/a52q-ios-ufs-UNTESTED.img.
+Rootplan full-userland-root-plan-v39.json, var-layout-post-v36.json.
+Independent check_full_userland_v39_candidate.py and installer prepare PASS;
+BOOT/payload/root/var hashes bound, identical kernel151 to V38, no RAM phone root.
+Full review E:/A52-iOS16/full-userland-v39-full-review.json. NEED exact approval
+for repaired var sda31[16GiB,20GiB) + bounded runtime and BOOT[0,96MiB), readiness
+5min before any write. User asked package/flash fast; original precise storage
+approval condition still applies to new snapshot. No write/trial started.
+Prepared correct rootplan-bound backend a52q_full_userland_device_test.py,
+installer a52q_install_full_userland_var.py, start_full_userland_trial_v39.py,
+watch_ios_ufs_v39_restore.py EXPLICIT ios-ufs-v39/receipt.json, finish/capture39.
+Phone original BOOT/TWRP. No pending restoration. On approval installer verifies
+preimage7ef/root/protected/GPT; writes32chunks/readbackDED/root checks, THEN BOOT.
+
 # V38 CLOSED: CRISP XNU APPLE BOOT LOGO VERIFIED; BOOT restored
 
 Operator: crisp Apple logo before reset, now TWRP. finish_display_device_map_v38.py
