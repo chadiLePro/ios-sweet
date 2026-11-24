@@ -10,8 +10,6 @@ class UIGuardRuntimeTests(unittest.TestCase):
         source='\n'.join(l for l in source.splitlines() if not l.startswith('#include'))
         source=source.replace('__asm__ volatile("dsb sy" ::: "memory");','harness_barrier();')
         self.assertEqual(source.count('harness_barrier();'),2)
-        source=source.replace('__asm__ volatile("at s1e1r, %0\\n\\tisb" :: "r"(va) : "memory");','(void)va;')
-        source=source.replace('__asm__ volatile("mrs %0, par_el1" : "=r"(par));','par=harness_translate(va);')
         source=source.replace('__asm__ volatile("mrs %0, mair_el1" : "=r"(mair));','mair=0x44ff;')
         prefix=r"""
 #include <assert.h>
@@ -38,7 +36,7 @@ static unsigned char *frame;
 static uint64_t ticks;
 void a52q_fb_console_start(void){assert(frame_maps==1);++console_starts;}
 static unsigned mapping_fault;
-static uint64_t harness_translate(uintptr_t va){if(mapping_fault)return 1;return (A52Q_UI_PHYS+va-(uintptr_t)frame)&~0xfffULL;}
+static uint64_t ml_vtophys(uintptr_t va){if(mapping_fault)return 0;return A52Q_UI_PHYS+va-(uintptr_t)frame;}
 static unsigned tails;
 int a52q_fb_console_owner(void){return 1;}
 void a52q_early_critical(const char *line,unsigned length,unsigned slot) {

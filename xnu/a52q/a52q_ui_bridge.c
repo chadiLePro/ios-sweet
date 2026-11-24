@@ -138,25 +138,15 @@ static int a52ui_guard_read(unsigned index,uint32_t *value)
      * Retain the exact 0/5 status predicate and every configuration pin. */
     return a52q_ui_guard_value_matches(index,*value);
 }
-static uint64_t a52ui_translate(uintptr_t va)
-{
-    uint64_t par;
-    __asm__ volatile("at s1e1r, %0\n\tisb" :: "r"(va) : "memory");
-    __asm__ volatile("mrs %0, par_el1" : "=r"(par));
-    return par;
-}
 static int a52ui_mapping_valid(void)
 {
     uintptr_t va=(uintptr_t)a52ui_frame;
-    uint64_t first=a52ui_translate(va),last=a52ui_translate(va+A52Q_UI_BYTES-1),mair;
+    /* Use XNU's wired-mapping translator, which protects PAR_EL1 from IRQs. */
+    uint64_t pa0=ml_vtophys(va),pa1=ml_vtophys(va+A52Q_UI_BYTES-1),mair;
     __asm__ volatile("mrs %0, mair_el1" : "=r"(mair));
-    uint64_t pa0=(first&0x0000fffffffff000ULL)|(va&0xfff);
-    uint64_t pa1=(last&0x0000fffffffff000ULL)|((va+A52Q_UI_BYTES-1)&0xfff);
-    printf("A52Q scanout map: pa0=%llx pa1=%llx par0=%llx par1=%llx mair=%llx\n",
-        (unsigned long long)pa0,(unsigned long long)pa1,
-        (unsigned long long)first,(unsigned long long)last,(unsigned long long)mair);
-    return !(first&1) && !(last&1) && pa0==A52Q_UI_PHYS &&
-        pa1==A52Q_UI_PHYS+A52Q_UI_BYTES-1;
+    printf("A52Q scanout map: pa0=%llx pa1=%llx mair=%llx\n",
+        (unsigned long long)pa0,(unsigned long long)pa1,(unsigned long long)mair);
+    return pa0==A52Q_UI_PHYS && pa1==A52Q_UI_PHYS+A52Q_UI_BYTES-1;
 }
 int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
 {
