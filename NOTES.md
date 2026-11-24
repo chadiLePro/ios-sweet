@@ -1,3 +1,37 @@
+# V36 LIVE PHONE TRIAL; ORIGINAL BOOT RESTORATION PENDING
+
+Approved var a8ddc269...4fd006a7 installed/full readback, root0f4b unchanged.
+BOOT a2cd62d5...2e95594 flashed/full readback; native reboot left TWRP/USB.
+Operator told five full minutes from confirmed departure then manual TWRP reset.
+Restoration watcher PID4088 active, research/watch_ios_ufs_v36_restore.py;
+receipt backup/a52q/ios-ufs-v36/receipt.json requires_restore=true. DO NOT start
+another trial. Watcher collects pstore and restores/hash-verifies original BOOT.
+BOOT restore does not undo var writes. On return first confirm BOOT restored;
+finish_static_logo_trial.py for fresh protected hashes/traces; capture_var_v36_after.py
+for full root proof/lossless changed-var capture. Current initial plan unusable
+after runtime var writes; fresh capture/host fsck needed for another candidate.
+Host old-var seed was gzip preserved and verified zero-sparsified only, freeing
+space for next capture without changing its logical bytes; E has sufficient room.
+No logo/persona/UI physical result claimed until logs and operator observation.
+
+# V36 var installed and verified; BOOT trial staging
+
+Repaired var a8ddc269...4fd006a7 full readback PASS, full root0f4b and original
+BOOT/recovery/DTBO/vbmeta unchanged. Starting start_static_logo_trial.py with
+operator readiness and approved var runtime. Only after confirmed departure start
+five-minute timer. Authoritative receipt ios-ufs-v36; watcher restores BOOT.
+
+# V36 EXACT VAR/RUNTIME/TRIAL APPROVED; installer starting
+
+User approved repaired var a8ddc269...4fd006a7 sda31[17179869184,21474836480),
+bounded runtime writes there and BOOT a2cd62d5...2e95594 sda19[0,100663296).
+Operator beside phone for5min reset. Installer a52q_install_static_logo_var.py,
+receipt ios-static-logo-var-install-v1; backup raw fca514a7...101d119b retained.
+After fully verified install, start_static_logo_trial.py --operator-ready
+--approved-var-runtime. Start timer only after confirmed recovery departure.
+Watcher watch_ios_ufs_v36_restore.py, authoritative trial receipt ios-ufs-v36.
+No experiment running until installation/departure confirmed.
+
 # V36 HOST READY: build + exact-kernel QEMU + package independently checked
 
 Source87f41bc HFS run45423793524 SUCCESS; 166 native/host tests passed.
