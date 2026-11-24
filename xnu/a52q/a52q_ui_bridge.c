@@ -81,7 +81,9 @@ void a52q_ui_heartbeat(unsigned poweroff)
     }
     uint32_t hash=2166136261U,first=0;unsigned colour=0;
     for (unsigned i=0;i<64;i++) {
-        uint32_t value=a52ui_frame[(uint64_t)i*(A52Q_UI_WIDTH*A52Q_UI_HEIGHT-1)/63];
+        uint64_t offset=i==63 ? (A52Q_UI_HEIGHT/2)*A52Q_UI_WIDTH+A52Q_UI_WIDTH/2 :
+            (uint64_t)i*(A52Q_UI_WIDTH*A52Q_UI_HEIGHT-1)/63;
+        uint32_t value=a52ui_frame[offset];
         hash=(hash^value)*16777619U;
         if (value!=0xff000000U && value!=0xffffffffU) {if (!colour) first=value;++colour;}
     }
@@ -136,6 +138,26 @@ static int a52ui_guard_read(unsigned index,uint32_t *value)
      * Retain the exact 0/5 status predicate and every configuration pin. */
     return a52q_ui_guard_value_matches(index,*value);
 }
+static uint64_t a52ui_translate(uintptr_t va)
+{
+    uint64_t par;
+    __asm__ volatile("at s1e1r, %0\n\tisb" :: "r"(va) : "memory");
+    __asm__ volatile("mrs %0, par_el1" : "=r"(par));
+    return par;
+}
+static int a52ui_mapping_valid(void)
+{
+    uintptr_t va=(uintptr_t)a52ui_frame;
+    uint64_t first=a52ui_translate(va),last=a52ui_translate(va+A52Q_UI_BYTES-1),mair;
+    __asm__ volatile("mrs %0, mair_el1" : "=r"(mair));
+    uint64_t pa0=(first&0x0000fffffffff000ULL)|(va&0xfff);
+    uint64_t pa1=(last&0x0000fffffffff000ULL)|((va+A52Q_UI_BYTES-1)&0xfff);
+    printf("A52Q scanout map: pa0=%llx pa1=%llx par0=%llx par1=%llx mair=%llx\n",
+        (unsigned long long)pa0,(unsigned long long)pa1,
+        (unsigned long long)first,(unsigned long long)last,(unsigned long long)mair);
+    return !(first&1) && !(last&1) && pa0==A52Q_UI_PHYS &&
+        pa1==A52Q_UI_PHYS+A52Q_UI_BYTES-1;
+}
 int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
 {
     unsigned reason=1,index=0xff;uint32_t observed=0;
@@ -171,6 +193,8 @@ int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
         reason=4;index=0xff;observed=0;
         a52ui_frame=(volatile uint32_t *)ml_io_map_unmappable(reg[0],reg[1],VM_WIMG_WCOMB);
         if (!a52ui_frame) goto reject;
+        reason=7;
+        if (!a52ui_mapping_valid()) goto reject;
         __atomic_store_n(&a52ui_state,1,__ATOMIC_RELEASE);
         a52ui_report(0x10);
         a52q_fb_console_start();
@@ -192,6 +216,37 @@ int a52q_ui_physical_allowed(uint64_t phys,uint32_t w,uint32_t h,uint32_t stride
     return a52q_ui_pixels() && phys==A52Q_UI_PHYS && w==A52Q_UI_WIDTH &&
         h==A52Q_UI_HEIGHT && stride==A52Q_UI_STRIDE;
 }
+/* Explicit PoC clean: the standalone control has caches/MMU off, while
+ * this mapping runs under XNU. Do not change SSPP format, address or stride.
+ * Clean the complete reserved mapping, including the final partial cache line. */
+static void a52ui_clean_frame(void)
+{
+    uint64_t ctr;
+    __asm__ volatile("mrs %0, ctr_el0" : "=r"(ctr));
+    uintptr_t line=4UL<<((ctr>>16)&15);
+    uintptr_t start=(uintptr_t)a52ui_frame;
+    uintptr_t end=start+A52Q_UI_BYTES;
+    __asm__ volatile("dsb sy" ::: "memory");
+    for (uintptr_t p=start&~(line-1);p<end;p+=line)
+        __asm__ volatile("dc cvac, %0" :: "r"(p) : "memory");
+    __asm__ volatile("dsb sy" ::: "memory");
+}
+static void a52ui_boot_readback(void)
+{
+    uint32_t hash=2166136261U;unsigned black=0,white=0,other=0;
+    for (unsigned y=0;y<A52Q_UI_HEIGHT;y++)
+        for (unsigned x=0;x<A52Q_UI_WIDTH;x++) {
+            uint32_t pixel=a52ui_frame[(uint64_t)y*(A52Q_UI_STRIDE/4)+x];
+            hash=(hash^pixel)*16777619U;
+            if(pixel==0xff000000U) ++black;
+            else if(pixel==0xffffffffU) ++white;
+            else ++other;
+        }
+    char body[160];
+    snprintf(body,sizeof(body),"bootframe hash=%08x black=%u white=%u other=%u",hash,black,white,other);
+    a52q_ui_observe(0,body);
+}
+
 static int a52ui_flush_internal(int report)
 {
     int expected=0;
@@ -203,7 +258,8 @@ static int a52ui_flush_internal(int report)
         int sampled=a52ui_guard_read(i,&observed);
         if (!sampled) goto fail;
     }
-    __asm__ volatile("dsb sy" ::: "memory");
+    a52ui_clean_frame();
+    if (report && !a52ui_frames) a52ui_boot_readback();
     *a52ui_regs[1]=1;
     __asm__ volatile("dsb sy" ::: "memory");
     uint64_t deadline;nanoseconds_to_deadline(100*NSEC_PER_MSEC,&deadline);

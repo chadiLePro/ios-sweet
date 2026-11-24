@@ -1,3 +1,18 @@
+# V37 CLOSED: original standalone RGB bars CLEAN; BOOT restored
+
+Operator confirmed bars worked with no corruption. Receipt restored=true and
+fresh BOOT/recovery/DTBO/vbmeta hashes verified. Original shim has MMU/cache off;
+V36 XNU corrupts using identical hardware format/stride/address. No justification
+for UBWC/24bit/stride programming. Target hypothesis now XNU coherency/mapping.
+DISPLAY-ONLY candidate changes a52q_ui_bridge.c + native test: explicit full
+mapped-buffer dc cvac/dsb PoC clean before guarded START; AT S1E1R validates
+first/last VA->known physical range, records MAIR/PAR; one-shot full bootframe
+hash/white/black/other counts; heartbeat includes center (old diagonal missed logo).
+These are experimental coherency changes, NOT an on-phone proven fix. Guarded
+MMIO/pixel format/stride/other subsystem implementations unchanged. Native test
+passed; full kernel build pending. Current phone original BOOT/TWRP; no live trial.
+No var snapshot/install, userspace modifications or new partition writes here.
+
 # V37 LIVE ORIGINAL RGB CONTROL; BOOT RESTORATION PENDING
 
 BOOT0e021a5e...a2e7ff65 flashed/read back, native reboot left recovery confirmed.

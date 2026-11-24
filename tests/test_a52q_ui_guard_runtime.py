@@ -9,7 +9,12 @@ class UIGuardRuntimeTests(unittest.TestCase):
         source=(R/'xnu/a52q/a52q_ui_bridge.c').read_text()
         source='\n'.join(l for l in source.splitlines() if not l.startswith('#include'))
         source=source.replace('__asm__ volatile("dsb sy" ::: "memory");','harness_barrier();')
-        self.assertEqual(source.count('harness_barrier();'),2)
+        self.assertEqual(source.count('harness_barrier();'),3)
+        source=source.replace('__asm__ volatile("mrs %0, ctr_el0" : "=r"(ctr));','ctr=4ULL<<16;')
+        source=source.replace('__asm__ volatile("dc cvac, %0" :: "r"(p) : "memory");','harness_clean(p);')
+        source=source.replace('__asm__ volatile("at s1e1r, %0\\n\\tisb" :: "r"(va) : "memory");','(void)va;')
+        source=source.replace('__asm__ volatile("mrs %0, par_el1" : "=r"(par));','par=harness_translate(va);')
+        source=source.replace('__asm__ volatile("mrs %0, mair_el1" : "=r"(mair));','mair=0x44ff;')
         prefix=r"""
 #include <assert.h>
 #include <stdint.h>
@@ -34,6 +39,14 @@ static struct a52q_ui_guard guards[13];
 static unsigned char *frame;
 static uint64_t ticks;
 void a52q_fb_console_start(void){assert(frame_maps==1);++console_starts;}
+static uint64_t harness_translate(uintptr_t va){return (A52Q_UI_PHYS+va-(uintptr_t)frame)&~0xfffULL;}
+static unsigned cleans;static uintptr_t last_clean;
+static void harness_clean(uintptr_t p) {
+ assert((p&63)==0 && p>=((uintptr_t)frame&~63ULL) && p<(uintptr_t)frame+A52Q_UI_BYTES);
+ if(p==((uintptr_t)frame&~63ULL))cleans=0;
+ if(cleans)assert(p==last_clean+64);
+ last_clean=p;++cleans;
+}
 static unsigned tails;
 int a52q_fb_console_owner(void){return 1;}
 void a52q_early_critical(const char *line,unsigned length,unsigned slot) {
@@ -96,7 +109,7 @@ static void reset(void) {
  console_starts=0;
 }
 int main(void){
- frame=malloc(A52Q_UI_BYTES);assert(frame);memset(frame,0xa5,A52Q_UI_BYTES);
+ unsigned char *allocation=malloc(A52Q_UI_BYTES+16384);frame=(unsigned char *)(((uintptr_t)allocation+16383)&~16383ULL);assert(frame);memset(frame,0xa5,A52Q_UI_BYTES);
  uint64_t physical=1;uint32_t width=1,height=1,stride=1;
  reset();flag=0;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!reg_maps && !frame_maps);
  reset();other=1;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!reg_maps && !frame_maps);
@@ -114,6 +127,7 @@ int main(void){
  assert(a52q_ui_physical_allowed(physical,width,height,stride));
  assert(!a52q_ui_physical_allowed(physical+4096,width,height,stride));
  assert(a52q_ui_flush() && a52ui_frames==1 && regs[1]==0);
+ assert(cleans==A52Q_UI_BYTES/64 && last_clean==(uintptr_t)frame+A52Q_UI_BYTES-64);
  assert(a52q_ui_flush_quiet() && a52ui_frames==2 && regs[1]==0);
  a52ui_heartbeat_deadline=0;
  memset(frame,0xff,A52Q_UI_BYTES);
@@ -131,7 +145,7 @@ int main(void){
  regs[6]=1;assert(!a52q_ui_flush() && !a52q_ui_pixels());
  reset();assert(a52q_ui_framebuffer(&physical,&width,&height,&stride));
  puts("QUIET-BEGIN");consume=0;assert(!a52q_ui_flush_quiet());puts("QUIET-END");
- free(frame);return 0;
+ free(allocation);return 0;
 }
 """
         with tempfile.TemporaryDirectory() as d:
