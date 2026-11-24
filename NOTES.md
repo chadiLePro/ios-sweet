@@ -1,3 +1,21 @@
+# V36 CLOSED: original BOOT freshly hash verified; display-only investigation
+
+finish_static_logo_trial.py PASS. Phone in TWRP, BOOT/recovery/DTBO/vbmeta hashes
+match; watcher restored original BOOT. No pending restoration or writer.
+V36 logs static-logo-v36-result.json: HFS exchange success; early boot complete;
+retained late record owner1 (BOOT), frames1, colour0, valid CRC. No GUI handoff
+or backboardd/SpringBoard rendering proof. Do not infer UI from patterned frame.
+No userland/storage changes authorized in latest request; do not alter them.
+Display path diff b1eff69..87f41bc: bridge/profile/copy/software_ui IDENTICAL.
+Pinned LineageSM7125 source commitf6bbda4e5986f09e4d51ceffd1b645b2d5aa75b4,
+research/a52q-sspp-audit-v36: FORMAT0x237ff FRAME_FORMATbits31:30=0 linear,
+BPPbits10:9+1=4; stride4320. SRC_OP_MODE0x80000000 BWCbit0 clear.
+No basis for blindly enabling/disabling UBWC or changing address/stride.
+Audit E:/A52-iOS16/v36-display-format-audit.json. Need actual distorted-screen
+photo and exact readable-console build identity to isolate first divergent output.
+No new source/register/partition changes or candidate built in this investigation.
+Physical var changed in V36 runtime; old initial header/hash plan cannot be reused.
+
 # V36 guard PID6584 verified active; trial awaits TWRP
 
 Correct V36 receipt bound; watcher-v36.log and watcher-v36.err.log.
