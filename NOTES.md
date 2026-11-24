@@ -1,3 +1,50 @@
+# V36 HOST READY: build + exact-kernel QEMU + package independently checked
+
+Source87f41bc HFS run45423793524 SUCCESS; 166 native/host tests passed.
+101 archive hashes verified;98 prior files identical. Only prior compiled files
+changed: a52q_amfi.c and a52q_fb_console.c; new boot logo header. No UFS/HFS
+exchange/keybag/catalog/pstore/hardware framebuffer profile changes.
+BOOT a2cd62d559ae151f9f869b4d8183079225fd4187e2f7771dcb7d4a9c92e95594.
+Kernel702386810b3559a63214ca80b4dbd9d1f314b5a1dc3041cb949785bab7ee41ab.
+shim/out/a52q-ios-ufs-hardware-v34/build/a52q-ios-ufs-UNTESTED.img,96MiB.
+Plan E:/A52-iOS16/ios-root-plan-v31.json, full review static-logo-v36-full-review.json.
+QEMU initial attempt unable to allocate2GiB, no kernel execution; operator closed
+apps, retry SAME kernel passed13 PID1 heartbeats/3 entry CRCs. run-retry preserved.
+QEMU is diagnostic RAM fixture ONLY; hardware candidate uses full persistent UFS
+root and separate bounded writable var, no diagnostic PID1/root embedded.
+Repaired var a8ddc269...4fd006a7 is HOST ONLY; physical var remains V35 capture
+fca514a7...101d119b. Lossless repaired archive relocated with verified bytes to
+E:/A52-iOS16/storage-data-post-v35-v1/repaired-source.raw.gz (sparse proof updated).
+Raw V35 gzip remains preserved. New exact var replacement/runtime/trial approval
+and matching restore watcher/backend needed BEFORE any phone trial. NOT FLASHED.
+Phone original BOOT restored and V35 closed, no pending restoration or writer.
+Logo180x224 drawn once after verified UI map; no on-screen text/timer redraw.
+Measured phys0x9c000000/32-bit/stride4320 retained; supplied0x3c/24-bit conflicts
+with actual register evidence. owner1=boot artwork,2=GUI. --text-console omitted.
+Measured usermanagerd persona-mgmt signed true capability added; no general
+entitlement policy. On-phone persona success/new service errors still unverified.
+No lock screen proven; persistent logs include notification errors to investigate
+in dependency order after persona trial. Do not claim all userland bugs fixed.
+
+# V36 build/package pipeline active; no phone write
+
+Source87f41bc HFS run45423793524. finish_static_logo_v36.py waits then verifies
+101 archived source hashes and packages hardware-v34/rootplan31. Session57660,
+log research/static-logo-v36-pipeline.log. QEMU exact kernel fixture only.
+Fresh repaired var a8ddc269958a7a50ed46f98cdc6b53ea6c0d3c44b431f837d66427d44fd006a7;
+raw V35 capture fca514a72ab33596ee638d58011ddbd7406f083acea4d63eb734cb8d101d119b.
+fsck and full file manifests checked; launchd.log only data change, all other
+files/systembag preserved. Logical raw hash unchanged after sparse zero reclaim.
+Current physical var remains V35 raw state; no replacement or new trial.
+
+# V36 build active: 45423793524, source87f41bc
+
+HFS build dispatched; logo/precise persona Boolean compiled by native tests,
+full kernel status pending. V35 lossless capture and read-only audit complete;
+host repair_var_after_v35.py running against WORKING COPY only, log
+research/var-v35-repair.log. Raw var-after-v35/var.raw.gz preserved. No device
+writes or trials underway; original BOOT restored.
+
 # V36 static logo + exact persona capability: source ready for HFS build
 
 V35 capture complete, var-after-v35/capture.json root preservation proven;
