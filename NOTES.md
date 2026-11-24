@@ -1,3 +1,27 @@
+# V38 LIVE DISPLAY-ONLY TRIAL; ORIGINAL BOOT RESTORATION PENDING
+
+BOOT46e0790f...13a05147 fully flashed/read back; native Samsung reboot left
+TWRP confirmed. Receipt display-device-map-v38 requires_restore=true and
+read-only diagnostic=true. Root hash0f4b verified before flash. No var mount,
+var flag/write or formatting. User told90seconds then reset TWRP/report logo.
+Dedicated correct-receipt watcher PID5224 verified active; on recovery collects
+pstore and restores/hash-verifies original BOOT. Current flash NOT yet restored.
+Initial preflight stopped before writes on stale root-plan pointer, then on older
+helper var-required assumption. Both corrected only in isolated read-only helper;
+all previous logs/RAM archives retained, all guards still active. Final trial
+backend explicitly REJECTS any var_plan or writable flag. Kernel/image unchanged.
+ON RETURN: confirm BOOT restore first, run finish_display_device_map_v38.py for
+fresh protected hashes and map/bootframe/late traces; compare CPU83be992e,
+white25529/black2566471/other0 with actual display. This is not a full-userland
+boot test. No source/kernel/storage changes while trial pending.
+
+# V38 operator ready; BOOT-only display trial staging
+
+Operator confirms beside phone for90-second reset. Start read-only display
+candidate46e0790f...13a05147 using start_display_device_map_v38.py --operator-ready.
+No var mount/write, root read-only, no formatting. Only after confirmed recovery
+departure begin90-second timer. Dedicated receipt/watcher display-device-map-v38.
+
 # V38 Device-mapping DISPLAY DIAGNOSTIC HOST READY; not flashed
 
 Sourcea222e26 HFS45442149929 SUCCESS;166 host tests PASS;101 archive hashes
