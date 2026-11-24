@@ -1,3 +1,26 @@
+# V37 LIVE ORIGINAL RGB CONTROL; BOOT RESTORATION PENDING
+
+BOOT0e021a5e...a2e7ff65 flashed/read back, native reboot left recovery confirmed.
+Dedicated correct-receipt watcher PID9776 active; display-linear-control-v37 receipt.
+Operator told10 seconds, report clean RGB vs corruption, reset to TWRP/remain open.
+Only BOOT changed; no root/var mounts/writes. This is original standalone shim,
+NOT XNU/iOS boot, not a display fix. On return watcher collects and restores BOOT;
+fresh protected hashes required then compare physical observation/capture against
+XNU V36. No new userspace/storage/SSPP mode changes were made.
+
+# V37 exact original RGB control authorized; starting BOOT-only test
+
+Operator ready for10-second RGB control, same original image SHA0e021a5e...a2e7ff65.
+BOOT sda19[0,100663296) only. No root/var mount/write or userland changes.
+start_display_linear_control_v37.py --operator-ready, dedicated watcher wrapper
+explicit display-linear-control-v37/receipt.json. Control separates corruption
+in standalone physical scanout from XNU-specific corruption; not an iOS boot.
+Photo now confirmed V36. Old 64-sample diagonal hash43de6ac5 equals black-only
+sampling and misses centered logo; cannot claim logo readback from it.
+TWRP GETFB via RAM-only freestanding DRM GET helper:1080x2400,bpp32,depth24,
+pitch4352; not ABL stride. GETFB2 unsupported(EINVAL), debugfs unavailable.
+No target kernel/register fixes yet. On return original BOOT restore first.
+
 # V36 CLOSED: original BOOT freshly hash verified; display-only investigation
 
 finish_static_logo_trial.py PASS. Phone in TWRP, BOOT/recovery/DTBO/vbmeta hashes
