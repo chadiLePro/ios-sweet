@@ -1,3 +1,41 @@
+# V38 Device-mapping DISPLAY DIAGNOSTIC HOST READY; not flashed
+
+Sourcea222e26 HFS45442149929 SUCCESS;166 host tests PASS;101 archive hashes
+verified,99 unchanged. Exact-kernel QEMU13 PID1 hearts/3 entryCRC PASS, fixture
+only, not physical display or Apple service proof. Full persistent master rehash
+0f4b unchanged; candidate independent BOOT/payload/rootplan checks PASS.
+BOOT46e0790fe41fe8b244b3f7736c67d9af3d8ad7649cec8b7af987830813a05147.
+Kernel15185655ecd4a6e481be4fda9f50d7f05b8787764065a930cb74d336f4347dcb.
+shim/out/a52q-display-coherency-v38/build/a52q-ios-ufs-UNTESTED.img,96MiB.
+Plan E:/A52-iOS16/display-coherency-root-plan-v38.json; review device-map-v38-candidate.json.
+Full UFS root read-only. /var NOT MOUNTED, no writable-var flag/DT node/imagewrite;
+not a full-userland candidate. Preserves physical root/var and all their code.
+Only code diffs: bridge VM_WIMG_IO and physical SweetSurface kIOMapInhibitCache,
+matching clean RGB probe; mapping/readback telemetry. No SSPP/stride changes.
+CPU expected bootframe FNV83be992e,white25529,black2566471,other0; physical
+visibility still untested. Watcher explicitly display-device-map-v38 receipt.
+Prepared NOT RUN: start_display_device_map_v38.py --operator-ready;
+a52q_display_device_map_test.py bound exact new rootplan; finish_display_device_map_v38.py.
+Await operator readiness90sec; then BOOT-only temporary trial and original BOOT
+restore on TWRP. Current phone original BOOT/TWRP, V37 closed, no pendingrestore.
+
+# V38 final Device-mapping build active:45442149929, sourcea222e26
+
+Candidate matches clean RGB probe VM_WIMG_IO in kernel and kIOMapInhibitCache
+for physical IOSurface only; all ordinary offscreen buffers/Redmi path unchanged.
+Physical endpoints validated with existing IRQ-safe ml_vtophys, MAIR logged;
+full boot readback hash/counts, center-inclusive heartbeat. No speculative dc cvac.
+166 full host tests passed, seven updated display guard/transform/decoder tests
+passed. New guard failure reason7 accepted by host decoder. Source601/etc superseded
+runs45440284060 and45441416750 cancelled, never flashed. Expected101 compiled
+sources:99 identical to V36, only bridge C and physical-surface cache branch differ.
+Host pipeline finish_coherency_v38.py will verify whole archive, exact-kernelQEMU,
+and package explicitly READ-ONLY display diagnostic: existing full UFS root, no
+var volume or writable-var flag; NOT an Apple-userland/SpringBoard boot claim.
+This avoids new storage writes under latest user constraint. Actual root/var
+images and UFS, HFS swap, catalog2786, keybag/fstab/userland implementations intact.
+Current phone original BOOT/TWRP; V37 control closed, no pending restoration.
+
 # Display-only Device mapping candidate: exact RGB-reference difference found
 
 Working XNU RGB implementation a52q_display.c maps physical frame VM_WIMG_IO;
