@@ -80,7 +80,7 @@ def apply(root, filesystem='mockfs'):
         changes['bsd/dev/'+ui_name]=(HERE/ui_name).read_text()
     replace('bsd/conf/files', 'bsd/dev/sweet_ufs.c\t\t\tstandard\n',
             'bsd/dev/sweet_ufs.c\t\t\tstandard\nbsd/dev/a52q_ui_bridge.c\t\tstandard\n')
-    for name in ('a52q_fb_console.c','a52q_fb_console.h','a52q_text_grid.h'):
+    for name in ('a52q_fb_console.c','a52q_fb_console.h','a52q_text_grid.h','a52q_boot_logo.h'):
         changes['bsd/dev/'+name]=(HERE/name).read_text()
     replace('bsd/conf/files', 'bsd/dev/sweet_ufs.c\t\t\tstandard\n',
             'bsd/dev/sweet_ufs.c\t\t\tstandard\nbsd/dev/a52q_fb_console.c\t\tstandard\n')

@@ -575,9 +575,25 @@ static int a52q_lowspace_task(proc_t proc, const char *name)
         (blob->csb_flags&(CS_SIGNED|CS_PLATFORM_BINARY))!=(CS_SIGNED|CS_PLATFORM_BINARY)) return 0;
     return a52q_uea_file_verified(blob->csb_vnode);
 }
+/* V35 usermanagerd EPERM: expose only its original signed persona-mgmt
+ * Boolean. Keep catalog admission, signed-slot checks and RO-root provenance. */
+static int a52q_persona_task(proc_t proc,const char *name)
+{
+    static const uint8_t pin[CS_CDHASH_LEN] = {
+        0xfe,0x4f,0x08,0x91,0x91,0x73,0xd0,0x3d,0xb9,0x8b,
+        0x98,0xce,0x55,0x57,0xb1,0xc9,0x9c,0x47,0x41,0x9e
+    };
+    if (!proc || !name || strcmp(name,"com.apple.private.persona-mgmt") ||
+        (proc_getcsflags(proc)&(CS_SIGNED|CS_VALID))!=(CS_SIGNED|CS_VALID)) return 0;
+    struct cs_blob *blob=csproc_get_blob(proc);
+    if (!blob || memcmp(blob->csb_cdhash,pin,sizeof(pin)) ||
+        a52q_verified_catalog_blob(blob)<0 || !blob->csb_platform_binary ||
+        (blob->csb_flags&(CS_SIGNED|CS_PLATFORM_BINARY))!=(CS_SIGNED|CS_PLATFORM_BINARY)) return 0;
+    return 1;
+}
 static kern_return_t a52q_bool_proc(proc_t proc, const char *name)
 {
-    return a52q_bindfs_task(proc, name) || a52q_lowspace_task(proc, name) ? KERN_SUCCESS : KERN_DENIED;
+    return a52q_bindfs_task(proc, name) || a52q_lowspace_task(proc, name) || a52q_persona_task(proc, name) ? KERN_SUCCESS : KERN_DENIED;
 }
 static kern_return_t a52q_string(const void *ent __unused, const char *name __unused,
     const char *value __unused) { return KERN_DENIED; }
@@ -594,7 +610,7 @@ static kern_return_t a52q_object_proc(proc_t proc, const char *name, void **obje
 {
     if (!object) return KERN_INVALID_ARGUMENT;
     *object = NULL;
-    if (!a52q_bindfs_task(proc, name) && !a52q_lowspace_task(proc, name)) return KERN_NOT_FOUND;
+    if (!a52q_bindfs_task(proc, name) && !a52q_lowspace_task(proc, name) && !a52q_persona_task(proc, name)) return KERN_NOT_FOUND;
     /* Actual IOKit consumer expects a retained OSBoolean, not a C true value.
      * Construct/copy it through C++ so no object/reference ABI is guessed. */
     extern void *a52q_copy_bindfs_true(void);

@@ -1,3 +1,36 @@
+# V36 static logo + exact persona capability: source ready for HFS build
+
+V35 capture complete, var-after-v35/capture.json root preservation proven;
+read-only audit storage-data-post-v35-v1/audit.log. Original BOOT restored.
+V35 HFS exchanges succeeded; usermanagerd persona allocation now EPERM1, source
+sys_persona.c checks PERSONA_MGMT_ENTITLEMENT before allocation. Measured original
+usermanagerd cdhashfe4f08919173d03db98b98ce5557b1c99c47419e, XML1952/DER1289,
+code pages/special hashes pass; original XML persona-mgmt Boolean true. V36 exposes
+ONLY that key for exact validated catalog identity, signed/valid/platform flags;
+no global entitlement bypass or catalog changes. Other daemon errors remain.
+Display source uses measured phys0x9c000000,32bit,stride4320; user supplied
+0x3c000000/24bit/3240 conflicts with registers. Retain measured profile unchanged.
+Replace bitmap console with centered180x224 one-bit logo from attached reference,
+black background, flush once via same guarded WC mapping/START; putc/tick/panic
+no-op. Keep all pstore writer/late records untouched. owner1=boot,2=GUI.
+Native tests cover no redraw, bounds/handoff, exact capability/rejections.
+V36 source not yet built/packaged or phone tested. Current V35 var dirty snapshot
+needs host-only repair/provenance/new layout before next writable candidate.
+No phone writes/trial authorized for any replacement snapshot yet.
+
+# V35 CLOSED: original BOOT restored; HFS exchanges succeeded
+
+finish_hfs_atomic_trial.py PASS; fresh BOOT/recovery/DTBO/vbmeta hashes match.
+Operator saw colours only, no lock screen. Full root0f4b unchanged post-trial.
+A52A1 CRC-valid exchanges usersession/persona error0 for pid13 and84; targeted
+fix works, persona lifecycle completion not yet established. Backboardd nil
+NSURL path exception persists. Late display owner1=text, frames4177; no GUI handoff.
+Read-only capture_var_v35_after.py currently running, session29269; output
+E:/A52-iOS16/var-after-v35. Do not reuse pretrial var hash/header after writes.
+Next host audit research/audit_var_after_v35.py against preserved snapshot;
+read-only fsck/log/container/keybag inspection, no device writes. No next trial
+prepared or approved. Current phone original BOOT/TWRP, no pending restoration.
+
 # V35 LIVE PHONE TRIAL; ORIGINAL BOOT RESTORATION PENDING
 
 BOOT07554ec9...36c40ca4 written/read back; native reboot left TWRP/USB.
