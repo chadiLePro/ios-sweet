@@ -1,3 +1,16 @@
+# V36 guard PID6584 verified active; trial awaits TWRP
+
+Correct V36 receipt bound; watcher-v36.log and watcher-v36.err.log.
+Original BOOT restoration remains pending. Operator informed corrected watcher
+and still using five-minute reset window from original confirmed departure.
+
+# V36 CORRECTED RESTORATION GUARD ACTIVE
+
+Initial watcher wrapper referenced closed V35 receipt and exited WITHOUT any
+phone write. Corrected wrapper now explicitly references LIVE ios-ufs-v36 receipt;
+new guard launched below. Trial still running, original BOOT restoration pending.
+Logs watcher-v36.log/watcher-v36.err.log preserve initial watcher logs separately.
+
 # V36 LIVE PHONE TRIAL; ORIGINAL BOOT RESTORATION PENDING
 
 Approved var a8ddc269...4fd006a7 installed/full readback, root0f4b unchanged.
