@@ -1,3 +1,41 @@
+# V39 LIVE COMBINED FULL-USERLAND TRIAL; BOOT RESTORATION PENDING
+
+Approved repaired varDED1696b...dc631006 installed/full readback verified; root0f4b
+and original BOOT/recovery/DTBO/vbmeta preserved. BOOT2bc28fb2...3a4e2319 flashed/
+read back; native reboot departed TWRP confirmed. Kernel15185655...f4347dcb is
+EXACT physically crisp V38 kernel with V36 storage/persona/atomic-swap/catalog.
+Full persistent UFS root RO, var RW ONLY sda31[16GiB,20GiB). No full UI proof yet.
+Operator told five FULL minutes from confirmed start then reset to TWRP/report
+logo vs actual interface; if recovery self-returns, leave it open. Original BOOT
+restoration PENDING. Correct-receipt watcher PID15068 active: watch_ios_ufs_v39_restore.py,
+explicit backup/a52q/ios-ufs-v39/receipt.json. Do not start another experiment.
+ON RETURN: confirm original BOOT restored/full hash FIRST; finish_full_userland_trial_v39.py
+fresh protected hashes, A52A1/A52W1/A52OBS/exception/stack records. Then read-only
+capture_var_v39_after.py full root preservation and lossless changed-var snapshot.
+Keep source NDED and raw pretrial7ef backup. Source host sparse reclaim succeeded
+logicalDED hash unchanged, archive verified; E now has room for next capture.
+BOOT restoration DOES NOT undo var runtime changes. Initial var/header plan may
+not be reused after this boot; fresh capture/fsck/provenance needed before retry.
+Actual lock screen requires observed UI plus retained service/frame evidence;
+Apple logo or cache/loader/PID1 alone is not success. No code changes in this task.
+
+# V39 var installed/read back; combined BOOT trial staging
+
+Approved4GiB varDED...dc631006 readback PASS, full root0f4b and original
+BOOT/recovery/DTBO/vbmeta unchanged. Beginning start_full_userland_trial_v39.py
+--operator-ready --approved-var-runtime. Start5min only after confirmed departure;
+explicit watcher ios-ufs-v39/receipt.json. No full-userland success claimed yet.
+
+# V39 EXACT VAR WRITE/RUNTIME/TRIAL APPROVED; installer starting
+
+User approved repaired varDED1696b...dc631006 sda31[17179869184,21474836480),
+bounded runtime writes there and BOOT2bc28fb2...3a4e2319 sda19[0,100663296).
+Operator beside phone for five-minute reset. Installer a52q_install_full_userland_var.py,
+receipt ios-full-userland-var-install-v1; backup raw7ef90e6e...6ded72df preserved.
+After verified install/root/protected checks, start_full_userland_trial_v39.py
+--operator-ready --approved-var-runtime. Dedicated watcher ios-ufs-v39 receipt.
+No experiment running until confirmed departure; no full-userland success claim.
+
 # V39 COMBINED FULL-USERLAND CANDIDATE READY; NOT FLASHED
 
 No kernel/source changes: EXACT physically visible V38 kernel15185655...f4347dcb,
