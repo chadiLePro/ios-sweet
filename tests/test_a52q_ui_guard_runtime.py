@@ -9,9 +9,7 @@ class UIGuardRuntimeTests(unittest.TestCase):
         source=(R/'xnu/a52q/a52q_ui_bridge.c').read_text()
         source='\n'.join(l for l in source.splitlines() if not l.startswith('#include'))
         source=source.replace('__asm__ volatile("dsb sy" ::: "memory");','harness_barrier();')
-        self.assertEqual(source.count('harness_barrier();'),3)
-        source=source.replace('__asm__ volatile("mrs %0, ctr_el0" : "=r"(ctr));','ctr=4ULL<<16;')
-        source=source.replace('__asm__ volatile("dc cvac, %0" :: "r"(p) : "memory");','harness_clean(p);')
+        self.assertEqual(source.count('harness_barrier();'),2)
         source=source.replace('__asm__ volatile("at s1e1r, %0\\n\\tisb" :: "r"(va) : "memory");','(void)va;')
         source=source.replace('__asm__ volatile("mrs %0, par_el1" : "=r"(par));','par=harness_translate(va);')
         source=source.replace('__asm__ volatile("mrs %0, mair_el1" : "=r"(mair));','mair=0x44ff;')
@@ -26,7 +24,7 @@ class UIGuardRuntimeTests(unittest.TestCase):
 #include "a52q_ui_bridge.h"
 #define ARM64_BOARD_CONFIG_A52Q 1
 #define kSuccess 0
-#define VM_WIMG_WCOMB 3
+#define VM_WIMG_IO 3
 #define NSEC_PER_MSEC 1000000ULL
 typedef uintptr_t vm_offset_t;
 typedef size_t vm_size_t;
@@ -39,14 +37,8 @@ static struct a52q_ui_guard guards[13];
 static unsigned char *frame;
 static uint64_t ticks;
 void a52q_fb_console_start(void){assert(frame_maps==1);++console_starts;}
-static uint64_t harness_translate(uintptr_t va){return (A52Q_UI_PHYS+va-(uintptr_t)frame)&~0xfffULL;}
-static unsigned cleans;static uintptr_t last_clean;
-static void harness_clean(uintptr_t p) {
- assert((p&63)==0 && p>=((uintptr_t)frame&~63ULL) && p<(uintptr_t)frame+A52Q_UI_BYTES);
- if(p==((uintptr_t)frame&~63ULL))cleans=0;
- if(cleans)assert(p==last_clean+64);
- last_clean=p;++cleans;
-}
+static unsigned mapping_fault;
+static uint64_t harness_translate(uintptr_t va){if(mapping_fault)return 1;return (A52Q_UI_PHYS+va-(uintptr_t)frame)&~0xfffULL;}
 static unsigned tails;
 int a52q_fb_console_owner(void){return 1;}
 void a52q_early_critical(const char *line,unsigned length,unsigned slot) {
@@ -84,7 +76,7 @@ vm_offset_t ml_io_map(vm_offset_t address,vm_size_t bytes) {
  assert(!"unapproved MMIO map");return 0;
 }
 vm_offset_t ml_io_map_unmappable(vm_offset_t address,vm_size_t bytes,unsigned flags) {
- assert(address==A52Q_UI_PHYS && bytes==A52Q_UI_BYTES && flags==VM_WIMG_WCOMB);
+ assert(address==A52Q_UI_PHYS && bytes==A52Q_UI_BYTES && flags==VM_WIMG_IO);
  ++frame_maps;return(uintptr_t)frame;
 }
 static void harness_barrier(void) {
@@ -112,6 +104,7 @@ int main(void){
  unsigned char *allocation=malloc(A52Q_UI_BYTES+16384);frame=(unsigned char *)(((uintptr_t)allocation+16383)&~16383ULL);assert(frame);memset(frame,0xa5,A52Q_UI_BYTES);
  uint64_t physical=1;uint32_t width=1,height=1,stride=1;
  reset();flag=0;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!reg_maps && !frame_maps);
+ reset();mapping_fault=1;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!a52q_ui_pixels());mapping_fault=0;
  reset();other=1;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!reg_maps && !frame_maps);
  reset();geometry[2]+=4;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(!reg_maps && !frame_maps);
  reset();regs[6]^=1;assert(!a52q_ui_framebuffer(&physical,&width,&height,&stride));assert(reg_maps==7 && !frame_maps);
@@ -127,7 +120,6 @@ int main(void){
  assert(a52q_ui_physical_allowed(physical,width,height,stride));
  assert(!a52q_ui_physical_allowed(physical+4096,width,height,stride));
  assert(a52q_ui_flush() && a52ui_frames==1 && regs[1]==0);
- assert(cleans==A52Q_UI_BYTES/64 && last_clean==(uintptr_t)frame+A52Q_UI_BYTES-64);
  assert(a52q_ui_flush_quiet() && a52ui_frames==2 && regs[1]==0);
  a52ui_heartbeat_deadline=0;
  memset(frame,0xff,A52Q_UI_BYTES);

@@ -73,8 +73,8 @@ def decode_console(data,config):
         if zlib.crc32(m[1])!=int(m[2],16):continue
         nonce,reason,index,value=[int(v,16) for v in m[1].split(b'/')]
         if nonce!=config['nonce']:continue
-        if (reason not in (1,2,3,4,5,6) or
-            (reason in (1,4) and (index!=0xff or value)) or
+        if (reason not in (1,2,3,4,5,6,7) or
+            (reason in (1,4,7) and (index!=0xff or value)) or
             (reason in (2,3) and index>=len(config['guards'])) or
             (reason==2 and value) or
             (reason==5 and (index!=6 or value!=5)) or

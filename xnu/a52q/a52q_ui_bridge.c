@@ -188,10 +188,10 @@ int a52q_ui_framebuffer(uint64_t *phys,uint32_t *w,uint32_t *h,uint32_t *stride)
             int sampled=a52ui_guard_read(i,&observed);
             if (!sampled) goto reject;
         }
-        /* Match IOSurface's user mapping attribute. Never map this frame with
-         * a cached alias, or concurrently with the old VM_WIMG_IO diagnostic. */
+        /* Match the clean XNU RGB probe and the physical IOSurface user mapping:
+         * uncached Device memory throughout; no WriteCombine/cache aliases. */
         reason=4;index=0xff;observed=0;
-        a52ui_frame=(volatile uint32_t *)ml_io_map_unmappable(reg[0],reg[1],VM_WIMG_WCOMB);
+        a52ui_frame=(volatile uint32_t *)ml_io_map_unmappable(reg[0],reg[1],VM_WIMG_IO);
         if (!a52ui_frame) goto reject;
         reason=7;
         if (!a52ui_mapping_valid()) goto reject;
@@ -215,21 +215,6 @@ int a52q_ui_physical_allowed(uint64_t phys,uint32_t w,uint32_t h,uint32_t stride
 {
     return a52q_ui_pixels() && phys==A52Q_UI_PHYS && w==A52Q_UI_WIDTH &&
         h==A52Q_UI_HEIGHT && stride==A52Q_UI_STRIDE;
-}
-/* Explicit PoC clean: the standalone control has caches/MMU off, while
- * this mapping runs under XNU. Do not change SSPP format, address or stride.
- * Clean the complete reserved mapping, including the final partial cache line. */
-static void a52ui_clean_frame(void)
-{
-    uint64_t ctr;
-    __asm__ volatile("mrs %0, ctr_el0" : "=r"(ctr));
-    uintptr_t line=4UL<<((ctr>>16)&15);
-    uintptr_t start=(uintptr_t)a52ui_frame;
-    uintptr_t end=start+A52Q_UI_BYTES;
-    __asm__ volatile("dsb sy" ::: "memory");
-    for (uintptr_t p=start&~(line-1);p<end;p+=line)
-        __asm__ volatile("dc cvac, %0" :: "r"(p) : "memory");
-    __asm__ volatile("dsb sy" ::: "memory");
 }
 static void a52ui_boot_readback(void)
 {
@@ -258,7 +243,7 @@ static int a52ui_flush_internal(int report)
         int sampled=a52ui_guard_read(i,&observed);
         if (!sampled) goto fail;
     }
-    a52ui_clean_frame();
+    __asm__ volatile("dsb sy" ::: "memory");
     if (report && !a52ui_frames) a52ui_boot_readback();
     *a52ui_regs[1]=1;
     __asm__ volatile("dsb sy" ::: "memory");

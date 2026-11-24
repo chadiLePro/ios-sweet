@@ -27,6 +27,8 @@ def transform(name, source):
             '#if defined(A52Q)\n\treturn a52q_ui_pixels();\n#endif\n\tIOLockLock(sweet_surface_lock);\n\tif (kernelMap == NULL && memory != NULL)')
         change('\tSweetSurface *s = sweet_surface_alloc();\n\tif (s == NULL) {\n\t\treturn NULL;',
             '#if defined(A52Q)\n\tif (!a52q_ui_physical_allowed(phys,width,height,bytesPerRow)) return NULL;\n#endif\n\tSweetSurface *s = sweet_surface_alloc();\n\tif (s == NULL) {\n\t\treturn NULL;')
+        change('\ts->mapCache = kIOMapWriteCombineCache;',
+            '#if defined(A52Q)\n\ts->mapCache = kIOMapInhibitCache; /* Match the clean physical RGB probe. */\n#else\n\ts->mapCache = kIOMapWriteCombineCache;\n#endif')
         change('IOCoreSurfaceRoot::start(IOService *provider)\n{',
             'IOCoreSurfaceRoot::start(IOService *provider)\n{\n#if defined(A52Q)\n\tint ui=0;\n\tif (!PE_parse_boot_argn("a52q_ui",&ui,sizeof(ui)) || ui!=1) return false;\n#endif')
     elif name=='SweetFramebuffer.cpp':

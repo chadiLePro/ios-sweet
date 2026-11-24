@@ -1,3 +1,21 @@
+# Display-only Device mapping candidate: exact RGB-reference difference found
+
+Working XNU RGB implementation a52q_display.c maps physical frame VM_WIMG_IO;
+UI bridge used VM_WIMG_WCOMB. Match kernel and PHYSICAL IOSurface user mapping:
+ml_io_map_unmappable(...VM_WIMG_IO), kIOMapInhibitCache for physical surface only.
+Ordinary offscreen IOBuffer mappings and original SWEET else branch unchanged.
+Keep new first/last AT S1E1R physical guards, MAIR/PAR log, full boot readback,
+and center-inclusive late sample. Remove speculative dc cvac helper: Device
+mapping follows exact clean RGB kernel probe and uses existing dsb before START.
+All166 host tests PASS, including native bounds/fault/quiet checks and shared
+surface original-target tests. tools/a52q_ui_profile.py accepts new mapping
+rejection reason7. No storage/userland/keybag/catalog/fstab source changes.
+Earlier coherency-only run45440284060 cancellation requested BEFORE any phone
+flash; host finish_coherency_v38.py exits when cancelled. Its old expected map
+and package scripts require update to next build ID/selected source before use.
+Full HFS build next. No root/var writes or new experiment currently running.
+Current phone original BOOT/TWRP, control V37 closed with clean bars verified.
+
 # V37 CLOSED: original standalone RGB bars CLEAN; BOOT restored
 
 Operator confirmed bars worked with no corruption. Receipt restored=true and

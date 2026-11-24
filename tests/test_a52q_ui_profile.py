@@ -191,6 +191,8 @@ int main(void) {
                 if name=='SweetSurface.cpp':
                     self.assertIn('*existing = true;',out);self.assertIn('if (ret != kIOReturnSuccess && !existing)',out)
                     self.assertIn('a52q_ui_physical_allowed',out)
+                    self.assertIn('s->mapCache = kIOMapInhibitCache;',out)
+                    self.assertIn('#else\n\ts->mapCache = kIOMapWriteCombineCache;\n#endif',out)
                 if name=='SweetFramebuffer.cpp':
                     self.assertIn('a52q_ui_copy_rect',out);self.assertIn('16667',out);self.assertIn('(void)a52q_ui_flush()',out)
                     export=out[out.index('case kSweetFBGetLayerDefaultSurface:'):]
