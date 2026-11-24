@@ -1,3 +1,24 @@
+# V38 CLOSED: CRISP XNU APPLE BOOT LOGO VERIFIED; BOOT restored
+
+Operator: crisp Apple logo before reset, now TWRP. finish_display_device_map_v38.py
+PASS; fresh BOOT/recovery/DTBO/vbmeta hashes match. No pending restoration/writer.
+Actual physical mapping pa0=9c000000 pa1=9c9e3fff, MAIRc08044f00bb44ff.
+CRC-valid CURRENT noncef7ec4ad119160128 bootframe FNV83be992e, black2566471,
+white25529,other0 matches expected logo exactly. Late owner1 (boot), frames1,
+center-inclusive sample0c2193a8; no GUI handoff. This confirms boot display only.
+Canonical display change: VM_WIMG_IO kernel scanout + kIOMapInhibitCache physical
+IOSurface mapping, matching original clean RGB probe. No SSPP/address/stride
+change, no dc cvac helper. Full userland/IOSurface compositor still UNVERIFIED.
+Sourcea222e26 HFS45442149929; BOOT46e0790f...13a05147 kernel15185655...f4347dcb.
+Read-only full UFS root test; /var not mounted or written. Actual var remains
+post-V36 state. All UFS/HFS/keybag/catalog/userland source untouched. Latest user
+constraint remains display-only, no storage/userland alterations. Do not revert
+this known-visible boot path based on earlier24-bit/UBWC guesses.
+Result E:/A52-iOS16/device-map-v38-result.json; image hardwarecoherency-v38.
+Next full-userland trial requires explicitly reviewed fresh state binding for
+existing var; old pre-V36 var header/hash cannot be reused, no automatic repair
+or storage write under current constraint. SpringBoard lock screen not verified.
+
 # V38 LIVE DISPLAY-ONLY TRIAL; ORIGINAL BOOT RESTORATION PENDING
 
 BOOT46e0790f...13a05147 fully flashed/read back; native Samsung reboot left
