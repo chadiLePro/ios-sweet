@@ -1,3 +1,34 @@
+# V40 full compile/package running; no phone writes
+
+Kernel run45613686668 commitd355c36 still compiling; finish_v40_build.py session3733
+verifies artifact/source hashes. complete_v40_package.py session37698 waits proof,
+packages and checks BOOT/payload binding, prepares exact storage review. No host
+suite or QEMU run (user requested skip). Product source ONLY software_ui.py:
+boot-owner fade guard and alpha preservation. Not a proven fix for flashing.
+Fresh current var backup COMPLETE: var-after-v39-retry1/var.raw.gz raw SHA
+32c0e3139f33cb5b71ba71c1e23cc3305b0ddcbf4b605cc7417c094a5e65262f,
+root0f4b unchanged, original BOOTd6bf restored. TWRP connected, no pending trial.
+New V40 installer uses clean DED source (provenance7ef) and current32c rollback;
+these are intentionally distinct. Restoring DED discards V39 runtime changes,
+exactly backed up. Need concrete reviewed write/runtime/trial approval first.
+Scripts prepared but NOT executed against phone. No full UI success claimed.
+# V40 one-file fade guard build active; no tests or QEMU
+
+User quota4%; no host suites/QEMU/broad searches. Actual swap already correct
+32-bit VM_WIMG_IO copy; owner1=boot, not userland. One source edit software_ui.py:
+preserve boot-owned frame when power-off requested; fade RGB only, keep alphaFF
+on A52, original SWEET else unchanged. No storage/persona/keybag/catalog changes.
+Commitd355c36 [skip ci] suppresses automatic suites; explicit full HFS45613686668.
+Artifact checker expected101 sources,100 unchanged from physical V38 kernel;
+ONLY SweetFramebuffer.cpp changed. No emulator/test fixtures planned.
+Prior var-after-v39 capture INCOMPLETE (preserved), cannot trust it. Read-only
+retry var-after-v39-retry1 active via capture_var_v39_retry1.py, session13790.
+Original BOOT restored/TWRP. Native WSL fsck unavailable (missing VHDX). To obey
+no-QEMU, reuse existing checked clean varDED...dc631006 image for next trial,
+NOT repair new filesystem. Need fresh FULL rollback of current var first, then
+explicit review/approval to discard V39 runtime changes (backed up) and restoreDED.
+Do not reuse stale preimage7ef as rollback for current phone. No flash yet.
+
 # V39 LIVE COMBINED FULL-USERLAND TRIAL; BOOT RESTORATION PENDING
 
 Approved repaired varDED1696b...dc631006 installed/full readback verified; root0f4b
@@ -4370,3 +4401,4 @@ Bootloader UFS clock/PHY/power/DMA state remains unmeasured. Do not reuse Redmi
 initialization values. General FS+read-only storage+entitlement support are the
 next iOS-userland gates. Existing WSL distros all point to missing E paths;
 D has enough free space for a future dedicated Linux/rootfs workspace.
+
