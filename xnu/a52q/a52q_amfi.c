@@ -518,8 +518,9 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
         }
         for (unsigned i = 0; i < 2; i++) {
             if (!memcmp(blob->csb_cdhash, apple_pins[i], CS_CDHASH_LEN)) {
-                blob->csb_flags |= CS_SIGNED;
-                printf("A52Q exec policy: pinned 20H392 %s accepted; entitlements UNAVAILABLE, not an execution proof\n",
+                blob->csb_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
+                blob->csb_platform_binary = 1;
+                printf("A52Q exec policy: pinned 20H392 %s admitted as local development platform task\n",
                     i ? "dyld" : "launchd");
                 return KERN_SUCCESS;
             }
