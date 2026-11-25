@@ -1,3 +1,11 @@
+# V40 BOOT RESTORED; requested V41 packing change already present
+
+Watcher completed; fresh phone BOOT SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016 verified in TWRP.
+User requested no tests/QEMU/searches, reverse alleged3-byte path. Direct reads:
+a52q_ui_copy.h already uint32_t BGRA direct copy, profile PA9c000000 stride4320.
+V40 did not introduce3byte packing; owner1 remains boot, owner2GUI. Do NOT change
+PA to unverified3c000000. No V41 source edit/build/flash; requested delta absent.
+V40 console retained backup/a52q/ios-ufs-v40/console.txt; analysis pending.
 # V40 LIVE TRIAL; ORIGINAL BOOT RESTORATION PENDING
 
 Exact var DED installed/full readback PASS; full root0f4b and protected partitions
@@ -4439,6 +4447,7 @@ Bootloader UFS clock/PHY/power/DMA state remains unmeasured. Do not reuse Redmi
 initialization values. General FS+read-only storage+entitlement support are the
 next iOS-userland gates. Existing WSL distros all point to missing E paths;
 D has enough free space for a future dedicated Linux/rootfs workspace.
+
 
 
 
