@@ -83,6 +83,17 @@ def transform(name, source):
         change('\t\tif (src != 0 && bpe == 4) {', '#if defined(A52Q)\n\t\tif (s->pixelFormat!=SWEET_FB_FORMAT_BGRA) src=0;\n#endif\n\t\tif (src != 0 && bpe == 4) {')
         change('\t\ts->release();\n\t}\n}\n\nbool\nIOMobileFramebufferUserClient::initWithTask',
             '\t\ts->release();\n\t}\n#if defined(A52Q)\n\t(void)a52q_ui_flush();\n#endif\n}\n\nbool\nIOMobileFramebufferUserClient::initWithTask')
+        change('\tif (fb->fPowerOff) {',
+            '\tif (fb->fPowerOff) {\n#if defined(A52Q)\n'
+            '\t\tif (a52q_fb_console_owner()!=2) {\n'
+            '\t\t\tstatic bool reported=false;\n'
+            '\t\t\tif (!reported) { reported=true; IOLog("A52Q FB: preserved boot-owned frame during power-off request\\n"); }\n'
+            '\t\t\tIOLockUnlock(fb->fLock);\n'
+            '\t\t\tsender->setTimeoutUS(SWEET_FB_VSYNC_US);\n\t\t\treturn;\n\t\t}\n#endif')
+        change('\t\t\t\t\trow[x] = step < 6 ? (row[x] >> 1) & 0x7f7f7f7f : 0;',
+            '#if defined(A52Q)\n'
+            '\t\t\t\t\trow[x] = 0xff000000U | (step < 6 ? (row[x] >> 1) & 0x007f7f7fU : 0);\n'
+            '#else\n\t\t\t\t\trow[x] = step < 6 ? (row[x] >> 1) & 0x7f7f7f7f : 0;\n#endif')
         change('\t\tsender->setTimeoutUS(SWEET_FB_VSYNC_US);\n\t\treturn;',
             '#if defined(A52Q)\n\t\tif (step<=6) (void)a52q_ui_flush();\n#endif\n\t\tsender->setTimeoutUS(SWEET_FB_VSYNC_US);\n\t\treturn;')
     elif name=='SweetWatchdog.cpp':
