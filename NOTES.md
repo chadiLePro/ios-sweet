@@ -1,3 +1,23 @@
+# V40 LIVE TRIAL; ORIGINAL BOOT RESTORATION PENDING
+
+Exact var DED installed/full readback PASS; full root0f4b and protected partitions
+unchanged. Approved BOOTe4a21238...2b4a92de flashed/read back, TWRP departure
+confirmed. Trial now running; operator told five full minutes then return TWRP.
+Restoration watcher PID9716 wrapper, child5068 explicit receipt
+backup/a52q/ios-ufs-v40/receipt.json; both live checked. Requires_restore TRUE.
+No lockscreen/display success yet. On return watcher collects retained console and
+restores original BOOTd6bf with full readback. Verify receipt AND fresh hash first.
+Current var may change at runtime inside approved [16GiB,20GiB) only; ROOT RO.
+Rollback exact pretrial32c var-after-v39-retry1/var.raw.gz retained off-phone.
+No tests/QEMU run. Kernel5a35cd03...129b5b6, source d355c36, only display fade guard.
+Do not start another trial or select System/format. Preserve all V40 evidence.
+# V40 exact write/runtime/trial APPROVED; installer active
+
+User replied yes I approve to exact V40 /var+BOOT review. Phone TWRP confirmed.
+a52q_install_full_userland_var_v40.py install --approved-exact-var-write
+--approved-var-runtime session66490 log research/v40-var-install.log.
+Wait full readback/root/protected verification BEFORE starting BOOT trial.
+Do not repeat installer if receipt exists. No V40 BOOT flash yet.
 # V40 READY; exact var write approval pending; phone safe in TWRP
 
 Full HFS compile/link45613686668 PASS source d355c36. Kernel SHA
@@ -4419,5 +4439,7 @@ Bootloader UFS clock/PHY/power/DMA state remains unmeasured. Do not reuse Redmi
 initialization values. General FS+read-only storage+entitlement support are the
 next iOS-userland gates. Existing WSL distros all point to missing E paths;
 D has enough free space for a future dedicated Linux/rootfs workspace.
+
+
 
 
