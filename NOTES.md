@@ -1,3 +1,18 @@
+# V41 diagnostics build active; framebuffer already outside managed RAM
+
+User requests memory exclusion verification and >64 late logs; no host tests/QEMU.
+V40 payload phys_base106000000 mem_sizeff00000 => managed[106000000,115f00000).
+shim/loader.c boot_args physBase/memSize/memSizeActual come from these fields.
+Visible framebuffer[9c000000,9c9e3400), full reserved mapping ends9c9e4000,
+completely outside allocator range; ui_profile overlap guard remains unchanged.
+owner1 alone does not prove overwrite. Blit already row-by-row with separate pitches.
+ONLY source change a52q_ui_bridge.c cap64->256 per slot commit0984ca8.
+Late fixed slots unchanged; finite pstore cannot retain every event indefinitely.
+Full HFS kernel45623917283; pipeline run_v41_package.py session2473 log
+research/v41-package-pipeline.log waits compile, verifies source/artifact hashes,
+packages full-userland-v41 BOOT. NO tests/QEMU or device writes.
+Phone original BOOT restored; V40 var runtime changes need fresh backup/review
+before any next writable trial. Do not blindly reinstall older DED var on phone.
 # V40 BOOT RESTORED; requested V41 packing change already present
 
 Watcher completed; fresh phone BOOT SHA d6bf03071b0c49bb554effdc62f49014719efe9dcce8922af9c1082c1cc4b016 verified in TWRP.
