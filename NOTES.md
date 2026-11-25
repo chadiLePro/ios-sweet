@@ -1,3 +1,17 @@
+# V41 PACKAGED from completed artifact; phone disconnected, no flash
+
+Run45623917283 success/source0984ca8 downloaded/101 overlay hashes verified.
+Initial polling died from Windows Go out-of-memory; retry used existing build,
+NO rebuild, QEMU or host tests. Kernel11bb4a88a66bed943ba9d3fb5680d6e6f5e2b23e19d843f026718efe9c85103b.
+BOOT shim/out/a52q-full-userland-v41/build/a52q-ios-ufs-UNTESTED.img 96MiB
+SHA66354d63e2b9dffcc2ad7a40f47b4e0a3fe8d061b2f9cf709d8ff1ed4f88effb.
+User asks V41 trial now; ADB no device. Asked reconnect TWRP, no System/format.
+No V41 device writes. V40 BOOT restored previously; must verify fresh on return.
+V41 packages old known-clean DED var profile; current post-V40 var has runtime
+changes, not captured/repaired yet. Do NOT bypass var hash/install guards or
+restore DED without fresh current backup and concrete replacement approval.
+Next: read-only current var capture using V40 receipt, then reviewed storage plan
+or separately packaged safe RO-var diagnostic. No lockscreen success claimed.
 # V41 diagnostics build active; framebuffer already outside managed RAM
 
 User requests memory exclusion verification and >64 late logs; no host tests/QEMU.
