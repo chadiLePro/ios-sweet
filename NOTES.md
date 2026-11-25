@@ -1,3 +1,21 @@
+# V40 READY; exact var write approval pending; phone safe in TWRP
+
+Full HFS compile/link45613686668 PASS source d355c36. Kernel SHA
+5a35cd034f8363b3c49e1402122ac80777019bc6b36dc3f795248108d129b5b6.
+BOOT e4a21238135d931ce53d8a7e00b669698677780a5ae4fb2299ac335f2b4a92de
+shim/out/a52q-full-userland-v40/build/a52q-ios-ufs-UNTESTED.img (96MiB).
+101 archived source hashes verified, ONLY SweetFramebuffer.cpp changed vs V38.
+Artifact/payload/master binding PASS. No tests/QEMU run, no hardware V40 claim.
+Exact review E:/A52-iOS16/full-userland-var-install-v40-review.json; sourceDED
+known-clean older var, rollback current32c var-after-v39-retry1 capture COMPLETE.
+Host installer prepare rehashes full4GiB image+decompressed rollback; passed.
+WARNING restoringDED discards V39 runtime var changes; needs explicit new approval.
+Phone original BOOT restored/TWRP, no V40 device write or watcher yet.
+After approval: a52q_install_full_userland_var_v40.py install
+--approved-exact-var-write --approved-var-runtime; then
+start_full_userland_trial_v40.py --operator-ready --approved-var-runtime.
+Starter launches dedicated watch_ios_ufs_v40_restore.py receipt ios-ufs-v40;
+confirm watcher live. Operator five-minute reset required. No 24bit/stride edits.
 # V40 full compile/package running; no phone writes
 
 Kernel run45613686668 commitd355c36 still compiling; finish_v40_build.py session3733
@@ -4401,4 +4419,5 @@ Bootloader UFS clock/PHY/power/DMA state remains unmeasured. Do not reuse Redmi
 initialization values. General FS+read-only storage+entitlement support are the
 next iOS-userland gates. Existing WSL distros all point to missing E paths;
 D has enough free space for a future dedicated Linux/rootfs workspace.
+
 
