@@ -53,7 +53,8 @@ void a52q_ui_observe(unsigned slot,const char *payload)
         __atomic_store_n(&a52ui_latest_busy[slot],0,__ATOMIC_RELEASE);
     }
     a52q_early_critical(line,(unsigned)n,slot);
-    if (__atomic_fetch_add(&a52ui_printed[slot],1U,__ATOMIC_RELAXED)<64)
+    /* Retain late transitions through a five-minute trial, not just boot. */
+    if (__atomic_fetch_add(&a52ui_printed[slot],1U,__ATOMIC_RELAXED)<256)
         for (unsigned i=0;i<(slot ? 3U : 1U);i++) printf("%s",line);
 }
 
