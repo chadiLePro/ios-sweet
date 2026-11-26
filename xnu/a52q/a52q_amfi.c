@@ -25,6 +25,8 @@
 #include <sys/vnode_internal.h>
 #include <sys/uio.h>
 #include <sys/errno.h>
+#include <sys/priv.h>
+#include <security/mac_policy.h>
 #include <libkern/crypto/sha2.h>
 #include "a52q_boot_cache_policy.h"
 #include "a52q_root_code_catalog.h"
@@ -641,9 +643,71 @@ static const amfi_t a52q_diagnostic_amfi = {
         .copyEntitlementAsOSObjectWithProc = a52q_object_proc,
     },
 };
+static uint64_t a52q_sandbox_seen;
+static int a52q_sandbox_syscall(struct proc *p, int call, __unused user_addr_t arg)
+{
+    if (call >= 0 && call < 64 && !(a52q_sandbox_seen & (1ULL << call))) {
+        a52q_sandbox_seen |= 1ULL << call;
+        char name[32];
+        proc_name(proc_pid(p), name, sizeof(name));
+        printf("A52Q Sandbox: %s op %d\n", name, call);
+    }
+    switch (call) {
+    case 4:
+    case 5:
+    case 6:
+    case 0x43:
+        return ENOENT;
+    default:
+        return 0;
+    }
+}
+
+#define A52Q_PRIV_LOG_MAX 64
+static struct {
+    int priv;
+    char name[20];
+} a52q_priv_logged[A52Q_PRIV_LOG_MAX];
+static int a52q_priv_logged_count;
+
+static int a52q_sandbox_priv_grant(kauth_cred_t cred __unused, int priv)
+{
+    char name[20];
+    proc_selfname(name, sizeof(name));
+    int allow = (priv == PRIV_WORK_INTERVAL) || (proc_selfpid() == 1);
+    for (int i = 0; i < a52q_priv_logged_count; i++) {
+        if (a52q_priv_logged[i].priv == priv &&
+            strncmp(a52q_priv_logged[i].name, name, sizeof(name)) == 0) {
+            return allow ? 0 : EPERM;
+        }
+    }
+    if (a52q_priv_logged_count < A52Q_PRIV_LOG_MAX) {
+        a52q_priv_logged[a52q_priv_logged_count].priv = priv;
+        strlcpy(a52q_priv_logged[a52q_priv_logged_count].name, name, sizeof(name));
+        a52q_priv_logged_count++;
+        printf("A52Q Sandbox: %s privilege %d %s\n", name, priv, allow ? "granted" : "denied");
+    }
+    return allow ? 0 : EPERM;
+}
+
+static const struct mac_policy_ops a52q_sandbox_mac_ops = {
+    .mpo_policy_syscall = a52q_sandbox_syscall,
+    .mpo_priv_grant = a52q_sandbox_priv_grant,
+};
+
+static struct mac_policy_conf a52q_sandbox_mac_conf = {
+    .mpc_name = "Sandbox",
+    .mpc_fullname = "A52Q permissive sandbox policy",
+    .mpc_ops = &a52q_sandbox_mac_ops,
+};
+
+static mac_policy_handle_t a52q_sandbox_mac_handle;
+
 __startup_func static void a52q_register_diagnostic_amfi(void)
 {
     amfi_interface_register(&a52q_diagnostic_amfi);
     printf("A52Q AMFI diagnostic interface registered: exact hash policy; measured mount bindfs and UserEventAgent low-space Booleans only\n");
+    int sb_err = mac_policy_register(&a52q_sandbox_mac_conf, &a52q_sandbox_mac_handle, NULL);
+    printf("A52Q Sandbox: permissive policy %s (%d)\n", sb_err ? "NOT registered" : "registered", sb_err);
 }
 STARTUP(EARLY_BOOT, STARTUP_RANK_MIDDLE, a52q_register_diagnostic_amfi);
