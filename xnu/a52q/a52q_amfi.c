@@ -143,7 +143,7 @@ static void *a52q_ent_dict(void *ent) { return sweet_entitlements_copy_dict(ent)
 static CEError_t a52q_ent_query(void *ent __unused, uint8_t hash[CS_CDHASH_LEN] __unused,
     CEQuery_t query __unused, size_t length __unused)
 {
-    return kCENotFound;
+    return (CEError_t)-1;
 }
 static bool a52q_ent_blob(void *ent __unused, const CS_GenericBlob **blob)
 {
