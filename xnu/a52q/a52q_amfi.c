@@ -112,31 +112,47 @@ static int a52q_uea_file_verified(vnode_t required)
     return !error && !memcmp(digest, expected, sizeof(expected));
 }
 
-static void a52q_ent_invalidate(void *ent)
+extern void *sweet_entitlements_create(const CS_GenericBlob *blob, size_t blob_len);
+extern void *sweet_entitlements_copy_dict(const void *ent);
+extern bool sweet_entitlements_copy_xml(const void *ent, CS_GenericBlob **out);
+extern bool sweet_entitlements_bool(const void *ent, const char *name);
+extern bool sweet_entitlements_string(const void *ent, const char *name, const char *value);
+extern void *sweet_entitlements_copy_object(const void *ent, const char *name);
+extern void osobject_release(void *object);
+
+static void *a52q_proc_entitlements(proc_t proc)
 {
-    if (ent != NULL) {
-        panic("A52Q diagnostic AMFI: unexpected entitlements object");
-    }
+    if (!proc) return NULL;
+    struct cs_blob *blob = csproc_get_blob(proc);
+    return blob != NULL ? csblob_os_entitlements_get(blob) : NULL;
 }
-static void *a52q_ent_dict(void *ent __unused) { return NULL; }
+
+static void a52q_attach_entitlements(struct cs_blob *code_signing_blob)
+{
+    void *xml = NULL;
+    size_t xml_len = 0;
+    if (csblob_get_entitlements(code_signing_blob, &xml, &xml_len) != 0 || xml == NULL) return;
+    void *ent = sweet_entitlements_create((const CS_GenericBlob *)xml, xml_len);
+    if (ent == NULL) return;
+    csblob_os_entitlements_set(code_signing_blob, ent);
+    osobject_release(ent);
+}
+
+static void a52q_ent_invalidate(void *ent __unused) {}
+static void *a52q_ent_dict(void *ent) { return sweet_entitlements_copy_dict(ent); }
 static CEError_t a52q_ent_query(void *ent __unused, uint8_t hash[CS_CDHASH_LEN] __unused,
     CEQuery_t query __unused, size_t length __unused)
 {
-    panic("A52Q diagnostic AMFI: CoreEntitlements queries unsupported");
+    return kCENotFound;
 }
 static bool a52q_ent_blob(void *ent __unused, const CS_GenericBlob **blob)
 {
-    if (blob != NULL) {
-        *blob = NULL;
-    }
+    if (blob != NULL) *blob = NULL;
     return false;
 }
-static bool a52q_ent_xml(void *ent __unused, CS_GenericBlob **blob)
+static bool a52q_ent_xml(void *ent, CS_GenericBlob **blob)
 {
-    if (blob != NULL) {
-        *blob = NULL;
-    }
-    return false;
+    return sweet_entitlements_copy_xml(ent, blob);
 }
 static bool a52q_no_profile(const uint8_t **profile __unused, size_t *length __unused) { return false; }
 static bool a52q_no_udid(const uint8_t **udid __unused, size_t *length __unused) { return false; }
@@ -553,7 +569,10 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
     printf("A52Q AMFI diagnostic: pinned init signature, no entitlements\n");
     return KERN_SUCCESS;
 }
-static kern_return_t a52q_bool(const void *ent __unused, const char *name __unused) { return KERN_DENIED; }
+static kern_return_t a52q_bool(const void *ent, const char *name)
+{
+    return sweet_entitlements_bool(ent, name) ? KERN_SUCCESS : KERN_DENIED;
+}
 static int a52q_bindfs_task(proc_t proc, const char *name)
 {
     if (!proc || !name || strcmp(name, "com.apple.private.bindfs-allow") ||
@@ -596,30 +615,32 @@ static int a52q_persona_task(proc_t proc,const char *name)
 }
 static kern_return_t a52q_bool_proc(proc_t proc, const char *name)
 {
+    if (sweet_entitlements_bool(a52q_proc_entitlements(proc), name)) return KERN_SUCCESS;
     return a52q_bindfs_task(proc, name) || a52q_lowspace_task(proc, name) || a52q_persona_task(proc, name) ? KERN_SUCCESS : KERN_DENIED;
 }
-static kern_return_t a52q_string(const void *ent __unused, const char *name __unused,
-    const char *value __unused) { return KERN_DENIED; }
-static kern_return_t a52q_string_proc(proc_t proc __unused, const char *name __unused,
-    const char *value __unused) { return KERN_DENIED; }
-static kern_return_t a52q_object(const void *ent __unused, const char *name __unused, void **object)
+static kern_return_t a52q_string(const void *ent, const char *name, const char *value)
 {
-    if (object != NULL) {
-        *object = NULL;
-    }
-    return KERN_NOT_FOUND;
+    return sweet_entitlements_string(ent, name, value) ? KERN_SUCCESS : KERN_DENIED;
+}
+static kern_return_t a52q_string_proc(proc_t proc, const char *name, const char *value)
+{
+    return sweet_entitlements_string(a52q_proc_entitlements(proc), name, value) ? KERN_SUCCESS : KERN_DENIED;
+}
+static kern_return_t a52q_object(const void *ent, const char *name, void **object)
+{
+    if (!object) return KERN_INVALID_ARGUMENT;
+    *object = sweet_entitlements_copy_object(ent, name);
+    return *object != NULL ? KERN_SUCCESS : KERN_NOT_FOUND;
 }
 static kern_return_t a52q_object_proc(proc_t proc, const char *name, void **object)
 {
     if (!object) return KERN_INVALID_ARGUMENT;
-    *object = NULL;
+    *object = sweet_entitlements_copy_object(a52q_proc_entitlements(proc), name);
+    if (*object != NULL) return KERN_SUCCESS;
     if (!a52q_bindfs_task(proc, name) && !a52q_lowspace_task(proc, name) && !a52q_persona_task(proc, name)) return KERN_NOT_FOUND;
-    /* Actual IOKit consumer expects a retained OSBoolean, not a C true value.
-     * Construct/copy it through C++ so no object/reference ABI is guessed. */
     extern void *a52q_copy_bindfs_true(void);
     *object = a52q_copy_bindfs_true();
     if (!*object) return KERN_RESOURCE_SHORTAGE;
-    printf("A52Q measured capability: signed true Boolean copied for %s; unrelated keys denied\n", name);
     return KERN_SUCCESS;
 }
 static const amfi_t a52q_diagnostic_amfi = {
@@ -690,7 +711,24 @@ static int a52q_sandbox_priv_grant(kauth_cred_t cred __unused, int priv)
     return allow ? 0 : EPERM;
 }
 
+static int a52q_vnode_check_signature(struct vnode *vp, __unused struct label *label,
+    __unused cpu_type_t cpu_type, struct cs_blob *cs_blob,
+    unsigned int *cs_flags, __unused unsigned int *signer_type,
+    __unused int flags, __unused unsigned int platform,
+    __unused char **fatal_failure_desc, __unused size_t *fatal_failure_desc_len)
+{
+    mount_t mp = vnode_mount(vp);
+    if (mp != NULL && (vfs_flags(mp) & MNT_ROOTFS)) {
+        *cs_flags |= CS_PLATFORM_BINARY;
+    }
+    if (cs_blob != NULL && cs_blob != cs_blob->csb_ro_addr && cs_blob->csb_entitlements == NULL) {
+        a52q_attach_entitlements(cs_blob);
+    }
+    return 0;
+}
+
 static const struct mac_policy_ops a52q_sandbox_mac_ops = {
+    .mpo_vnode_check_signature = a52q_vnode_check_signature,
     .mpo_policy_syscall = a52q_sandbox_syscall,
     .mpo_priv_grant = a52q_sandbox_priv_grant,
 };
