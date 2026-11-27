@@ -263,7 +263,7 @@ static int a52q_cache_pin_index(const struct cs_blob *blob)
         /* dyld_shared_cache_arm64.symbols */
         {0x47,0x75,0x55,0x2f,0x86,0x5b,0x66,0x83,0xfe,0x78,0x86,0xdb,0x6c,0x0d,0x20,0x3d,0x39,0x01,0x50,0x5d},
     };
-    if (!blob_blob ||
+    if (!blob->csb_der_entitlements_blob ||
         blob->csb_der_entitlements_blob) return -1;
     for (unsigned i = 0; i < sizeof(cache_pins) / sizeof(cache_pins[0]); i++) {
         if (!memcmp(blob->csb_cdhash, cache_pins[i], CS_CDHASH_LEN)) return (int)i;
