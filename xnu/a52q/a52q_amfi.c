@@ -694,7 +694,7 @@ static int a52q_sandbox_priv_grant(kauth_cred_t cred __unused, int priv)
 {
     char name[20];
     proc_selfname(name, sizeof(name));
-    int allow = (priv == PRIV_WORK_INTERVAL) || (proc_selfpid() == 1);
+    int allow = 1;
     for (int i = 0; i < a52q_priv_logged_count; i++) {
         if (a52q_priv_logged[i].priv == priv &&
             strncmp(a52q_priv_logged[i].name, name, sizeof(name)) == 0) {
