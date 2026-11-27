@@ -263,7 +263,7 @@ static int a52q_cache_pin_index(const struct cs_blob *blob)
         /* dyld_shared_cache_arm64.symbols */
         {0x47,0x75,0x55,0x2f,0x86,0x5b,0x66,0x83,0xfe,0x78,0x86,0xdb,0x6c,0x0d,0x20,0x3d,0x39,0x01,0x50,0x5d},
     };
-    if (!blob || blob->csb_entitlements_blob ||
+    if (!blob_blob ||
         blob->csb_der_entitlements_blob) return -1;
     for (unsigned i = 0; i < sizeof(cache_pins) / sizeof(cache_pins[0]); i++) {
         if (!memcmp(blob->csb_cdhash, cache_pins[i], CS_CDHASH_LEN)) return (int)i;
@@ -292,7 +292,7 @@ static int a52q_verified_mount_blob(struct cs_blob *blob)
         0x07,0x59,0x4e,0x7a,0xaf,0x4f,0xdf,0x49,0x49,0xf1
     };
     extern vnode_t rootvnode;
-    if (!blob || !(blob->csb_flags & CS_VALID) || blob->csb_entitlements ||
+    if (!blob || !(blob->csb_flags & CS_VALID) ||
         !blob->csb_entitlements_blob || !blob->csb_der_entitlements_blob ||
         memcmp(blob->csb_cdhash, mount_pin, sizeof(mount_pin)) ||
         !a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) return 0;
@@ -315,7 +315,7 @@ static int a52q_verified_dirs_cleaner_blob(struct cs_blob *blob)
         0x51,0xfa,0xa2,0x1f,0x96,0x10,0x37,0xf7,0xc0,0xad
     };
     extern vnode_t rootvnode;
-    if (!blob || !(blob->csb_flags & CS_VALID) || blob->csb_entitlements ||
+    if (!blob || !(blob->csb_flags & CS_VALID) ||
         !blob->csb_entitlements_blob || !blob->csb_der_entitlements_blob ||
         memcmp(blob->csb_cdhash, pin, sizeof(pin)) ||
         !a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) return 0;
@@ -338,7 +338,7 @@ static int a52q_verified_launchd_cache_loader_blob(struct cs_blob *blob)
         0x0c,0x6c,0x91,0xfa,0xcb,0xd9,0xf0,0x95,0x4a,0x38
     };
     extern vnode_t rootvnode;
-    if (!blob || !(blob->csb_flags & CS_VALID) || blob->csb_entitlements ||
+    if (!blob || !(blob->csb_flags & CS_VALID) ||
         !blob->csb_entitlements_blob || !blob->csb_der_entitlements_blob ||
         memcmp(blob->csb_cdhash, pin, sizeof(pin)) ||
         !a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) return 0;
@@ -362,7 +362,7 @@ static int a52q_verified_xpcproxy_blob(struct cs_blob *blob)
         0x61,0x36,0xfc,0x61,0x54,0x37,0x27,0x63,0xc8,0x46
     };
     extern vnode_t rootvnode;
-    if (!blob || !(blob->csb_flags & CS_VALID) || blob->csb_entitlements ||
+    if (!blob || !(blob->csb_flags & CS_VALID) ||
         !blob->csb_entitlements_blob || !blob->csb_der_entitlements_blob ||
         memcmp(blob->csb_cdhash, pin, sizeof(pin)) ||
         !a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) return 0;
@@ -420,7 +420,7 @@ int a52q_boot_cache_query(const uint8_t *hash, size_t bytes)
 static int a52q_verified_catalog_blob(struct cs_blob *blob)
 {
     extern vnode_t rootvnode;
-    if (!blob || !(blob->csb_flags & CS_VALID) || blob->csb_entitlements ||
+    if (!blob || !(blob->csb_flags & CS_VALID) ||
         !a52q_readonly_root_vnode(blob->csb_vnode, rootvnode)) return -1;
     size_t lo = 0, hi = sizeof(a52q_root_code_pins) / sizeof(a52q_root_code_pins[0]);
     while (lo < hi) {
