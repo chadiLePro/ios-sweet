@@ -263,7 +263,7 @@ static int a52q_cache_pin_index(const struct cs_blob *blob)
         /* dyld_shared_cache_arm64.symbols */
         {0x47,0x75,0x55,0x2f,0x86,0x5b,0x66,0x83,0xfe,0x78,0x86,0xdb,0x6c,0x0d,0x20,0x3d,0x39,0x01,0x50,0x5d},
     };
-    if (!blob || blob->csb_entitlements || blob->csb_entitlements_blob ||
+    if (!blob || blob->csb_entitlements_blob ||
         blob->csb_der_entitlements_blob) return -1;
     for (unsigned i = 0; i < sizeof(cache_pins) / sizeof(cache_pins[0]); i++) {
         if (!memcmp(blob->csb_cdhash, cache_pins[i], CS_CDHASH_LEN)) return (int)i;
@@ -457,7 +457,7 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
         {0x68,0x4d,0x84,0x7c,0x40,0xe6,0xe8,0x73,0xee,0xae,
          0xc6,0x93,0x01,0x1d,0x4d,0x99,0x7a,0x86,0x9d,0x2a}
     };
-    if (blob && !ent && a52q_ufs_root_named("a52ios0")) {
+    if (blob && a52q_ufs_root_named("a52ios0")) {
         extern vnode_t rootvnode;
         /* The observed loader queries this exact data cache before mapping it.
          * Accept neither arbitrary detached signatures nor executable status.
@@ -561,7 +561,7 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
         0x22, 0x70, 0x0c, 0x1b, 0xa0, 0xa7, 0x38, 0x6b, 0x35, 0xa2
     };
     if (blob == NULL || ent != NULL || !(blob->csb_flags & CS_ADHOC) ||
-        blob->csb_entitlements || blob->csb_entitlements_blob || blob->csb_der_entitlements_blob ||
+        blob->csb_entitlements_blob || blob->csb_der_entitlements_blob ||
         memcmp(blob->csb_cdhash, pin, sizeof(pin))) {
         return KERN_DENIED;
     }
