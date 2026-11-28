@@ -570,7 +570,8 @@ static kern_return_t a52q_without_monitor(void *ent, struct cs_blob *blob)
 }
 static kern_return_t a52q_bool(const void *ent, const char *name)
 {
-    return sweet_entitlements_bool(ent, name) ? KERN_SUCCESS : KERN_DENIED;
+    if (sweet_entitlements_bool(ent, name)) return KERN_SUCCESS;
+    return a52q_bindfs_task(current_proc(), name) || a52q_lowspace_task(current_proc(), name) || a52q_persona_task(current_proc(), name) ? KERN_SUCCESS : KERN_DENIED;
 }
 static int a52q_bindfs_task(proc_t proc, const char *name)
 {
